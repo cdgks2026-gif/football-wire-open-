@@ -175,10 +175,10 @@ function agoText(value){
   const t=Date.parse(value||"");
   if(!Number.isFinite(t))return "";
   const m=Math.max(0,Math.round((Date.now()-t)/60000));
-  if(m<60)return \`\${m}分钟前\`;
+  if(m<60)return `${m}分钟前`;
   const h=Math.round(m/60);
-  if(h<24)return \`\${h}小时前\`;
-  return \`\${Math.round(h/24)}天前\`;
+  if(h<24)return `${h}小时前`;
+  return `${Math.round(h/24)}天前`;
 }
 function filteredItems(req){
   const q=String(req.query.q||"").trim();
@@ -188,7 +188,7 @@ function filteredItems(req){
   let items=state.latest||[];
   if(tier!=="全部")items=items.filter((x)=>x.tier===tier);
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
-  if(q)items=items.filter((x)=>\`\${x.title} \${x.source}\`.includes(q));
+  if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
   return items;
 }
@@ -202,19 +202,19 @@ app.get("/",(req,res)=>{
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
   const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
 
-  const rows=items.map((x)=>\`
+  const rows=items.map((x)=>`
     <article class="item">
       <div class="meta">
-        <span>\${escHtml(x.source)}</span>
-        <span>\${escHtml(x.tier)}</span>
-        <span>\${escHtml(x.category)}</span>
-        \${x.confirmations>1?\`<span>\${x.confirmations}源交叉</span>\`:""}
-        <span>\${escHtml(agoText(x.publishedAt))}</span>
+        <span>${escHtml(x.source)}</span>
+        <span>${escHtml(x.tier)}</span>
+        <span>${escHtml(x.category)}</span>
+        ${x.confirmations>1?`<span>${x.confirmations}源交叉</span>`:""}
+        <span>${escHtml(agoText(x.publishedAt))}</span>
       </div>
-      <div class="title">\${escHtml(x.title)}</div>
-    </article>\`).join("");
+      <div class="title">${escHtml(x.title)}</div>
+    </article>`).join("");
 
-  const page=\`<!doctype html>
+  const page=`<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -250,20 +250,20 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="sub">全球足球中文标题流 · 服务器直接渲染 · 每30秒自动刷新</div>
 </header>
 <form method="get" action="/">
-<input name="q" value="\${escHtml(q)}" placeholder="搜索球员、球队、教练">
-<select name="tier">\${tiers.map(v=>\`<option \${v===tier?"selected":""}>\${v}</option>\`).join("")}</select>
-<select name="category">\${cats.map(v=>\`<option \${v===cat?"selected":""}>\${v}</option>\`).join("")}</select>
+<input name="q" value="${escHtml(q)}" placeholder="搜索球员、球队、教练">
+<select name="tier">${tiers.map(v=>`<option ${v===tier?"selected":""}>${v}</option>`).join("")}</select>
+<select name="category">${cats.map(v=>`<option ${v===cat?"selected":""}>${v}</option>`).join("")}</select>
 <select name="hours">
-<option value="0" \${hours? "":"selected"}>全部时间</option>
-<option value="1" \${hours===1?"selected":""}>最近1小时</option>
+<option value="0" ${hours? "":"selected"}>全部时间</option>
+<option value="1" ${hours===1?"selected":""}>最近1小时</option>
 </select>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前 \${items.length} 条 · 后台共 \${(state.latest||[]).length} 个事件 · \${escHtml(state.metrics?.phase||"同步中")}</div>
-<main class="list">\${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
+<div class="status">当前 ${items.length} 条 · 后台共 ${(state.latest||[]).length} 个事件 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
-</html>\`;
+</html>`;
   res.set("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
   res.set("Pragma","no-cache");
   res.set("Expires","0");
