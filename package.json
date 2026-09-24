@@ -1,0 +1,14 @@
+{
+  "name": "football-wire-open",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "开源、自托管的全球足球中文标题快讯聚合器",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check src/miniflux.js && node --check src/translator.js && node --check src/events.js && node --check src/sources.js"
+  },
+  "dependencies": {"express": "^5.1.0"},
+  "engines": {"node": ">=20"}
+}
