@@ -1,0 +1,89 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8088}:8088"
+    depends_on:
+      miniflux:
+        condition: service_started
+      rsshub:
+        condition: service_started
+      libretranslate:
+        condition: service_started
+    environment:
+      PORT: 8088
+      MINIFLUX_URL: http://miniflux:8080
+      MINIFLUX_USERNAME: ${MINIFLUX_USERNAME:-admin}
+      MINIFLUX_PASSWORD: ${MINIFLUX_PASSWORD:-change-this-password}
+      RSSHUB_URL: http://rsshub:1200
+      LIBRETRANSLATE_URL: http://libretranslate:5000
+      REFRESH_FAST_SECONDS: ${REFRESH_FAST_SECONDS:-60}
+      REFRESH_OFFICIAL_SECONDS: ${REFRESH_OFFICIAL_SECONDS:-120}
+      REFRESH_MEDIA_SECONDS: ${REFRESH_MEDIA_SECONDS:-180}
+      REFRESH_CN_SECONDS: ${REFRESH_CN_SECONDS:-300}
+      MAX_VISIBLE: ${MAX_VISIBLE:-250}
+      ENTRY_DAYS: ${ENTRY_DAYS:-5}
+    volumes:
+      - ./data:/app/data
+
+  miniflux:
+    image: miniflux/miniflux:latest
+    restart: unless-stopped
+    ports:
+      - "${MINIFLUX_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://miniflux:${POSTGRES_PASSWORD:-miniflux-db-password}@db/miniflux?sslmode=disable
+      RUN_MIGRATIONS: "1"
+      CREATE_ADMIN: "1"
+      ADMIN_USERNAME: ${MINIFLUX_USERNAME:-admin}
+      ADMIN_PASSWORD: ${MINIFLUX_PASSWORD:-change-this-password}
+      POLLING_FREQUENCY: "5"
+      SCHEDULER_ROUND_ROBIN_MIN_INTERVAL: "5"
+      BATCH_SIZE: "200"
+      WORKER_POOL_SIZE: "16"
+      FETCHER_ALLOW_PRIVATE_NETWORKS: "1"
+      FORCE_REFRESH_INTERVAL: "1"
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: miniflux
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-miniflux-db-password}
+      POSTGRES_DB: miniflux
+    volumes:
+      - miniflux-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U miniflux -d miniflux"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rsshub:
+    image: ghcr.io/diygod/rsshub:chromium-bundled
+    restart: unless-stopped
+    ports:
+      - "${RSSHUB_PORT:-1200}:1200"
+    environment:
+      CACHE_TYPE: memory
+      CACHE_EXPIRE: "300"
+      CACHE_CONTENT_EXPIRE: "600"
+
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    restart: unless-stopped
+    ports:
+      - "${LIBRETRANSLATE_PORT:-5000}:5000"
+    environment:
+      LT_UPDATE_MODELS: "true"
+      LT_LOAD_ONLY: "en,zh,es,fr,de,it,pt"
+    volumes:
+      - libretranslate-models:/home/libretranslate/.local
+
+volumes:
+  miniflux-db:
+  libretranslate-models:
