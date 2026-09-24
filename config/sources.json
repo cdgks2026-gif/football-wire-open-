@@ -1,0 +1,226 @@
+[
+  {
+    "name": "懂球帝·头条",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/1",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·国际",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/120",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·英超",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/3",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·西甲",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/5",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·意甲",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/4",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·德甲",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/6",
+    "enabled": true
+  },
+  {
+    "name": "罗马诺",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"Fabrizio Romano\" football transfer OR \"Here we go\" when:1d",
+    "enabled": true
+  },
+  {
+    "name": "奥恩斯坦",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"David Ornstein\" football transfer when:2d",
+    "enabled": true
+  },
+  {
+    "name": "迪马济奥",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"Gianluca Di Marzio\" football transfer when:2d",
+    "enabled": true
+  },
+  {
+    "name": "普莱滕贝格",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"Florian Plettenberg\" football transfer when:2d",
+    "enabled": true
+  },
+  {
+    "name": "莫雷托",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"Matteo Moretto\" football transfer when:2d",
+    "enabled": true
+  },
+  {
+    "name": "本·雅各布斯",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "\"Ben Jacobs\" football transfer when:2d",
+    "enabled": true
+  },
+  {
+    "name": "国际足联与欧足联",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "(site:fifa.com OR site:uefa.com) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "欧洲豪门官方",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "(site:manutd.com OR site:realmadrid.com OR site:fcbarcelona.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com OR site:chelseafc.com OR site:fcbayern.com OR site:psg.fr) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "五大联赛官方",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "(site:premierleague.com OR site:laliga.com OR site:legaseriea.it OR site:bundesliga.com OR site:ligue1.com) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "路透社足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:reuters.com/sports/soccer football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "天空体育足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:skysports.com/football football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "英国广播公司足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:bbc.com/sport/football football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "竞技体育网与卫报",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:nytimes.com/athletic OR site:theguardian.com/football) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "西班牙媒体",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:marca.com OR site:as.com OR site:mundodeportivo.com OR site:sport.es) futbol football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "法国媒体",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:lequipe.fr OR site:rmcsport.bfmtv.com) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "德国媒体",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:kicker.de OR site:sportbild.bild.de) fussball football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "意大利媒体",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:gazzetta.it OR site:corrieredellosport.it OR site:tuttosport.com) calcio football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "葡萄牙与南美媒体",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(site:abola.pt OR site:record.pt OR site:globo.com OR site:tycsports.com) futebol football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "虎扑足球",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "site:hupu.com 足球 when:1d",
+    "enabled": true
+  },
+  {
+    "name": "中文足球媒体补充",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "(site:sports.qq.com OR site:sports.sina.com.cn OR site:sports.sohu.com) 足球 when:1d",
+    "enabled": true
+  },
+  {
+    "name": "全球球星补充",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(Mbappe OR Yamal OR Haaland OR Messi OR Ronaldo OR Bellingham OR Vinicius OR Salah) football when:1d",
+    "enabled": true
+  },
+  {
+    "name": "全球争议趣闻补充",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "football VAR red card controversy dressing room funny unusual when:1d",
+    "enabled": true
+  }
+]
