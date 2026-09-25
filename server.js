@@ -329,6 +329,30 @@ function isMatchReport(item){
     || /(?:比分为|最终比分|全场比分|半场比分)/i.test(text);
 }
 
+function parseHupuPublishedAt(html){
+  const patterns=[
+    /"publishTime"\s*:\s*"?([0-9]{10,13})"?/i,
+    /"publish_time"\s*:\s*"?([0-9]{10,13})"?/i,
+    /"createTime"\s*:\s*"?([0-9]{10,13})"?/i,
+    /"createdAt"\s*:\s*"?([0-9]{10,13})"?/i,
+    /datetime=["']([^"']{10,40})["']/i
+  ];
+  for(const p of patterns){
+    const m=String(html||"").match(p);
+    if(!m)continue;
+    if(/^\d{10,13}$/.test(m[1])){
+      let n=Number(m[1]);
+      if(n<1e12)n*=1000;
+      const d=new Date(n);
+      if(Number.isFinite(d.getTime()))return d.toISOString();
+    }else{
+      const n=Date.parse(m[1]);
+      if(Number.isFinite(n))return new Date(n).toISOString();
+    }
+  }
+  return "";
+}
+
 async function fetchHupuDirect(){
   try{
     const res=await fetch("https://m.hupu.com/soccer",{headers:{"user-agent":"Mozilla/5.0"}});
@@ -356,6 +380,27 @@ async function fetchHupuDirect(){
         _timeReliable:false,
         url:link
       });
+    }
+
+    state.hupuTimes=state.hupuTimes||{};
+    const toResolve=out.filter((x)=>!state.hupuTimes[x.url]).slice(0,24);
+    await Promise.all(toResolve.map(async(item)=>{
+      try{
+        const r=await fetch(item.url,{headers:{"user-agent":"Mozilla/5.0"}});
+        if(!r.ok)return;
+        const page=await r.text();
+        const ts=parseHupuPublishedAt(page);
+        if(ts)state.hupuTimes[item.url]=ts;
+      }catch{}
+    }));
+
+    for(const item of out){
+      const ts=state.hupuTimes[item.url];
+      if(ts){
+        item.published_at=ts;
+        item.created_at=ts;
+        item._timeReliable=true;
+      }
     }
     return out;
   }catch(err){
