@@ -52,7 +52,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Fabrizio Romano\" transfer OR \"Here we go\" when:1d",
+    "query": "\"Fabrizio Romano\" transfer OR \"Here we go\" when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -60,7 +60,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"David Ornstein\" transfer when:2d",
+    "query": "\"David Ornstein\" transfer when:2d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -68,7 +68,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Gianluca Di Marzio\" transfer when:2d",
+    "query": "\"Gianluca Di Marzio\" transfer when:2d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -76,7 +76,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Florian Plettenberg\" transfer when:2d",
+    "query": "\"Florian Plettenberg\" transfer when:2d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -84,7 +84,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Matteo Moretto\" transfer when:2d",
+    "query": "\"Matteo Moretto\" transfer when:2d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -92,7 +92,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Ben Jacobs\" transfer when:2d",
+    "query": "\"Ben Jacobs\" transfer when:2d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -100,7 +100,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:fifa.com OR site:uefa.com) football when:3d -shop -store -tickets -merchandise -\"phantom football\" -phantom -\"signed football\"",
+    "query": "(site:fifa.com OR site:uefa.com) football when:3d -shop -store -tickets -merchandise -\"phantom football\" -phantom -\"signed football\" -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -108,7 +108,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:manutd.com OR site:realmadrid.com OR site:fcbarcelona.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com OR site:chelseafc.com OR site:fcbayern.com OR site:psg.fr) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\" -\"phantom football\" -phantom -\"signed football\"",
+    "query": "(site:manutd.com OR site:realmadrid.com OR site:fcbarcelona.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com OR site:chelseafc.com OR site:fcbayern.com OR site:psg.fr) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\" -\"phantom football\" -phantom -\"signed football\" -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -116,7 +116,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:premierleague.com OR site:laliga.com OR site:legaseriea.it OR site:bundesliga.com OR site:ligue1.com) football when:3d -shop -store -tickets -merchandise -\"phantom football\" -phantom -\"signed football\"",
+    "query": "(site:premierleague.com OR site:laliga.com OR site:legaseriea.it OR site:bundesliga.com OR site:ligue1.com) football when:3d -shop -store -tickets -merchandise -\"phantom football\" -phantom -\"signed football\" -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -124,7 +124,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "site:reuters.com/sports/soccer football when:1d",
+    "query": "site:reuters.com/sports/soccer football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -132,7 +132,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "site:skysports.com/football football when:1d",
+    "query": "site:skysports.com/football football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -140,7 +140,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "site:bbc.com/sport/football football when:1d",
+    "query": "site:bbc.com/sport/football football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -148,7 +148,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:nytimes.com/athletic OR site:theguardian.com/football) football when:1d",
+    "query": "(site:nytimes.com/athletic OR site:theguardian.com/football) football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -156,7 +156,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:marca.com OR site:as.com OR site:mundodeportivo.com OR site:sport.es) futbol football when:1d",
+    "query": "(site:marca.com OR site:as.com OR site:mundodeportivo.com OR site:sport.es) futbol football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -164,7 +164,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:lequipe.fr OR site:rmcsport.bfmtv.com) football when:1d",
+    "query": "(site:lequipe.fr OR site:rmcsport.bfmtv.com) football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -172,7 +172,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:kicker.de OR site:sportbild.bild.de) fussball football when:1d",
+    "query": "(site:kicker.de OR site:sportbild.bild.de) fussball football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -180,7 +180,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:gazzetta.it OR site:corrieredellosport.it OR site:tuttosport.com) calcio football when:1d",
+    "query": "(site:gazzetta.it OR site:corrieredellosport.it OR site:tuttosport.com) calcio football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -188,7 +188,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:abola.pt OR site:record.pt OR site:globo.com OR site:tycsports.com) futebol football when:1d",
+    "query": "(site:abola.pt OR site:record.pt OR site:globo.com OR site:tycsports.com) futebol football when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -196,7 +196,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:hupu.com 足球 when:5d",
+    "query": "site:hupu.com 足球 when:5d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -204,7 +204,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "(site:sports.qq.com OR site:sports.sina.com.cn OR site:sports.sohu.com) 足球 when:1d",
+    "query": "(site:sports.qq.com OR site:sports.sina.com.cn OR site:sports.sohu.com) 足球 when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -212,7 +212,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(Mbappe OR Yamal OR Haaland OR Messi OR Ronaldo OR Bellingham OR Vinicius OR Salah) (transfer OR injury OR contract OR coach OR interview OR official OR suspended) football when:2d -odds -betting -prediction -fixtures -scores",
+    "query": "(Mbappe OR Yamal OR Haaland OR Messi OR Ronaldo OR Bellingham OR Vinicius OR Salah) (transfer OR injury OR contract OR coach OR interview OR official OR suspended) football when:2d -odds -betting -prediction -fixtures -scores -bets -bookmaker -sportsbook -wager -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -220,7 +220,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "football VAR red card controversy dressing room funny unusual when:1d",
+    "query": "football VAR red card controversy dressing room funny unusual when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -228,7 +228,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(football OR soccer) (transfer OR injury OR coach OR manager OR contract OR squad OR red card OR VAR OR national team) when:1d -prediction -odds -betting",
+    "query": "(football OR soccer) (transfer OR injury OR coach OR manager OR contract OR squad OR red card OR VAR OR national team) when:1d -prediction -odds -betting -bets -bookmaker -sportsbook -wager -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -236,7 +236,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(site:reuters.com/sports/soccer OR site:bbc.com/sport/football OR site:skysports.com/football OR site:theguardian.com/football) (breaking OR official OR confirmed OR injury OR suspended OR sacked OR transfer) when:2d -odds -betting -prediction",
+    "query": "(site:reuters.com/sports/soccer OR site:bbc.com/sport/football OR site:skysports.com/football OR site:theguardian.com/football) (breaking OR official OR confirmed OR injury OR suspended OR sacked OR transfer) when:2d -odds -betting -prediction -bets -bookmaker -sportsbook -wager -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -244,7 +244,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "足球 (转会 OR 伤停 OR 官宣 OR 主帅 OR 国家队 OR 红牌 OR VAR OR 续约 OR 下课) when:1d -彩票 -竞彩 -足彩 -预测",
+    "query": "足球 (转会 OR 伤停 OR 官宣 OR 主帅 OR 国家队 OR 红牌 OR VAR OR 续约 OR 下课) when:1d -彩票 -竞彩 -足彩 -预测 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -276,7 +276,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:m.hupu.com/soccer 足球 when:5d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:m.hupu.com/soccer 足球 when:5d -预测 -彩票 -竞彩 -足彩 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -284,7 +284,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:5d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:5d -预测 -彩票 -竞彩 -足彩 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -292,7 +292,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "(\"Fabrizio Romano:\" OR \"David Ornstein:\" OR \"Florian Plettenberg:\" OR \"Gianluca Di Marzio:\" OR \"Matteo Moretto:\" OR \"Ben Jacobs:\") football when:5d",
+    "query": "(\"Fabrizio Romano:\" OR \"David Ornstein:\" OR \"Florian Plettenberg:\" OR \"Gianluca Di Marzio:\" OR \"Matteo Moretto:\" OR \"Ben Jacobs:\") football when:5d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -300,7 +300,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:dongqiudi.com 足球 when:30d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:dongqiudi.com 足球 when:30d -预测 -彩票 -竞彩 -足彩 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true,
     "historyOnly": true
   },
@@ -309,7 +309,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:hupu.com 足球 when:30d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:hupu.com 足球 when:30d -预测 -彩票 -竞彩 -足彩 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "historyOnly": true,
     "enabled": true
   },
@@ -318,7 +318,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "site:chelseafc.com Chelsea football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\" -\"phantom football\" -phantom -\"signed football\" -nike -adidas -shirt -jersey",
+    "query": "site:chelseafc.com Chelsea football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\" -\"phantom football\" -phantom -\"signed football\" -nike -adidas -shirt -jersey -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -326,7 +326,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:manutd.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"phantom football\" -phantom -\"signed football\"",
+    "query": "(site:manutd.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"phantom football\" -phantom -\"signed football\" -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -334,7 +334,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:realmadrid.com OR site:fcbarcelona.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"phantom football\" -phantom -\"signed football\"",
+    "query": "(site:realmadrid.com OR site:fcbarcelona.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"phantom football\" -phantom -\"signed football\" -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -342,7 +342,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:thecfa.cn OR site:chinafootball.com.cn) 足球 国家队 when:7d -彩票 -竞彩 -培训招生 -商城",
+    "query": "(site:thecfa.cn OR site:chinafootball.com.cn) 足球 国家队 when:7d -彩票 -竞彩 -培训招生 -商城 -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -350,7 +350,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "site:uefa.com (Champions League OR Europa League OR Conference League) football when:3d -shop -store -tickets -merchandise",
+    "query": "site:uefa.com (Champions League OR Europa League OR Conference League) football when:3d -shop -store -tickets -merchandise -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -358,7 +358,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "site:premierleague.com football news when:3d -shop -store -tickets -merchandise -fantasy",
+    "query": "site:premierleague.com football news when:3d -shop -store -tickets -merchandise -fantasy -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   },
   {
@@ -366,7 +366,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "site:espn.com/soccer football when:1d -odds -betting -prediction",
+    "query": "site:espn.com/soccer football when:1d -odds -betting -prediction -bets -bookmaker -sportsbook -wager -predictions -tips -\"bet builder\" -\"free bet\" -\"free bets\" -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率 -亚盘 -欧赔 -投注技巧 -投注推荐",
     "enabled": true
   }
 ]
