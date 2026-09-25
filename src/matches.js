@@ -14,7 +14,7 @@ const TEAM_ZH={
   "Arsenal FC":"阿森纳","Chelsea FC":"切尔西","Liverpool FC":"利物浦","Manchester United FC":"曼联","Manchester City FC":"曼城",
   "Tottenham Hotspur FC":"热刺","Newcastle United FC":"纽卡","Aston Villa FC":"维拉","West Ham United FC":"西汉姆","Brighton & Hove Albion FC":"布莱顿",
   "Everton FC":"埃弗顿","Wolverhampton Wanderers FC":"狼队","Crystal Palace FC":"水晶宫","Fulham FC":"富勒姆","Nottingham Forest FC":"诺丁汉森林",
-  "Brentford FC":"布伦特福德","AFC Bournemouth":"伯恩茅斯","Leeds United FC":"利兹联","Burnley FC":"伯恩利","Sunderland AFC":"桑德兰",
+  "Brentford FC":"布伦特福德","AFC Bournemouth":"伯恩茅斯","Leeds United FC":"利兹联","Burnley FC":"伯恩利","Sunderland AFC":"桑德兰","Hull City AFC":"赫尔城","Ipswich Town FC":"伊普斯维奇","Coventry City FC":"考文垂",
   "Real Madrid CF":"皇马","FC Barcelona":"巴萨","Club Atlético de Madrid":"马竞","Athletic Club":"毕尔巴鄂竞技","Real Sociedad":"皇家社会",
   "Sevilla FC":"塞维利亚","Villarreal CF":"比利亚雷亚尔","Real Betis":"贝蒂斯","Valencia CF":"瓦伦西亚",
   "FC Bayern München":"拜仁","Borussia Dortmund":"多特","Bayer 04 Leverkusen":"勒沃库森","RB Leipzig":"莱比锡","Eintracht Frankfurt":"法兰克福",
@@ -40,7 +40,10 @@ const TEAM_ALIASES={
   "Juventus FC":["尤文","尤文图斯","Juventus"],
   "SSC Napoli":["那不勒斯","Napoli"],
   "Paris Saint-Germain FC":["巴黎","巴黎圣日耳曼","PSG","Paris Saint-Germain"],
-  "Olympique de Marseille":["马赛","Marseille"]
+  "Olympique de Marseille":["马赛","Marseille"],
+  "Hull City AFC":["赫尔城","Hull City","Hull"],
+  "Ipswich Town FC":["伊普斯维奇","Ipswich Town","Ipswich"],
+  "Coventry City FC":["考文垂","Coventry City","Coventry"]
 };
 function scoreFt(score){
   if(!score)return null;
