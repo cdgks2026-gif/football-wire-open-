@@ -66,7 +66,7 @@ function storySummary(x){
     storyId:x.storyId,id:x.id,title:x.title,category:x.category,publishedAt:x.publishedAt,
     firstSeenAt:x.firstSeenAt,lastSeenAt:x.lastSeenAt,confirmations:x.confirmations||0,
     heat:x.heat||0,importance:x.importance||0,sources:x.sources||[],sourceDetails:x.sourceDetails||[],
-    tiers:x.tiers||[],eventKey:x.eventKey||"",aiEventKey:x.aiEventKey||"",url:x.url||"",
+    tiers:x.tiers||[],eventKey:x.eventKey||"",aiEventKey:x.aiEventKey||"",aiTags:x.aiTags||[],url:x.url||"",
     exclusive:Boolean(x.exclusive),isMatchReport:Boolean(x.isMatchReport),members:x.members||[]
   };
 }
