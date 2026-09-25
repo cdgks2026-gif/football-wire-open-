@@ -57,6 +57,59 @@ function junkTitleReason(title){
   return "";
 }
 
+const GENERIC_HEADLINE_RULES=[
+  /^(?:国际足球|国际足坛|国际足坛新闻|国际足球新闻|国内足球|中国足球|足球|足球新闻|足坛|足坛新闻)$/i,
+  /^(?:英超|西甲|意甲|德甲|法甲|欧冠|欧联|欧协联|世界杯|欧洲杯|美洲杯|国家队)$/i,
+  /^(?:转会|转会新闻|足球转会|比赛|赛事|体育|体育新闻|国际体育|更多|最新|头条)$/i,
+  /^(?:football|soccer|football news|soccer news|international football|sports|sports news)$/i
+];
+
+const EVENT_SIGNAL_RULES=[
+  /(?:官宣|宣布|确认|签约|加盟|离队|续约|租借|报价|谈判|协议|达成|拒绝|接触|体检|合同|薪资|转会费)/i,
+  /(?:受伤|伤缺|缺席|复出|手术|停赛|禁赛|红牌|黄牌|处罚|调查|起诉|逮捕)/i,
+  /(?:进球|助攻|绝杀|逆转|击败|战胜|战平|输给|首发|替补|名单|入选|召入|退出)/i,
+  /(?:下课|解雇|任命|执教|采访|表示|回应|否认|承认|批评|透露|曝|消息称)/i,
+  /(?:恋情|约会|结婚|分手|夜店|派对|度假|豪宅|豪车|更衣室|训练)/i,
+  /\b(?:signs?|signed|joins?|joined|leaves?|left|renew(?:s|ed)?|loan|bid|deal|agreement|contract|transfer|medical)\b/i,
+  /\b(?:injur(?:y|ed)|miss(?:es|ed)?|return(?:s|ed)?|suspend(?:ed|sion)?|ban(?:ned)?|red card|investigation)\b/i,
+  /\b(?:scores?|scored|assist(?:s|ed)?|wins?|won|draws?|line-?up|squad|called up|withdraws?)\b/i,
+  /\b(?:sacked|appointed|manager|coach|says?|said|claims?|reveals?|denies?|admits?)\b/i
+];
+
+function stripHtml(value){
+  return String(value||"")
+    .replace(/<script[\s\S]*?<\/script>/gi," ")
+    .replace(/<style[\s\S]*?<\/style>/gi," ")
+    .replace(/<[^>]+>/g," ")
+    .replace(/&nbsp;|&#160;/gi," ")
+    .replace(/&amp;/gi,"&")
+    .replace(/&quot;/gi,'"')
+    .replace(/&#39;|&apos;/gi,"'")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function entryBodyText(entry){
+  return stripHtml(entry?.content||entry?.summary||entry?.description||"").slice(0,3500);
+}
+
+function lowInformationReason(title,entry){
+  const t=String(title||"").replace(/\s+/g," ").trim();
+  if(!t)return "空标题";
+  if(GENERIC_HEADLINE_RULES.some((rule)=>rule.test(t)))return "栏目/分类标题";
+  const body=entryBodyText(entry);
+  const combined=`${t} ${body}`;
+  const hasEvent=EVENT_SIGNAL_RULES.some((rule)=>rule.test(combined));
+
+  // 极短标题必须由正文提供明确事件信息，否则不是可展示新闻。
+  const visibleLen=t.replace(/[^\u4e00-\u9fa5a-z0-9]/gi,"").length;
+  if(visibleLen<7 && !hasEvent)return "短标题且正文无具体事件";
+
+  // 正文存在时，标题与正文都没有任何事件动作，视为栏目页、导航页或低信息内容。
+  if(body.length>=40 && !hasEvent)return "正文无具体新闻事件";
+  return "";
+}
+
 const NON_FOOTBALL_RULES=[
   /(?:篮球|NBA|CBA|WNBA|EuroLeague|欧篮|男篮|女篮)/i,
   /(?:网球|ATP|WTA|温网|美网|法网|澳网|tennis)/i,
@@ -292,7 +345,8 @@ function makeItem(entry,title,meta,sourceInfo){
     tier:meta.tier,
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
-    category:category(title)
+    category:category(title),
+    contentExcerpt:entryBodyText(entry).slice(0,600)
   };
 }
 function publishProcessed(processed,extraMetrics={}){
@@ -354,6 +408,7 @@ function publishProcessed(processed,extraMetrics={}){
     translationCache:Object.keys(state.translations||{}).length,
     junkFiltered:extraMetrics.junkFiltered??state.metrics?.junkFiltered??0,
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
+    lowInformationFiltered:extraMetrics.lowInformationFiltered??state.metrics?.lowInformationFiltered??0,
     unconfirmedFiltered,
     exclusiveVisible,
     platformDirectVisible,
@@ -401,13 +456,19 @@ async function syncEntries(){
     const foreign=[];
     let junkFiltered=0;
     let nonFootballFiltered=0;
+    let lowInformationFiltered=0;
 
     // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
       const meta=metaForEntry(entry);
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
-      if(footballOnlyReason(normalized,meta)){
+      const lowInfo=lowInformationReason(normalized,entry);
+      if(lowInfo){
+        lowInformationFiltered++;
+        continue;
+      }
+      if(footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta)){
         nonFootballFiltered++;
         continue;
       }
@@ -428,6 +489,7 @@ async function syncEntries(){
       hiddenForeign:foreign.length,
       junkFiltered,
       nonFootballFiltered,
+      lowInformationFiltered,
       phase:"中文标题已就绪"
     });
 
@@ -448,7 +510,12 @@ async function syncEntries(){
         hiddenForeign++;
         continue;
       }
-      if(footballOnlyReason(title,meta)){
+      const lowInfo=lowInformationReason(title,entry);
+      if(lowInfo){
+        lowInformationFiltered++;
+        continue;
+      }
+      if(footballOnlyReason(`${title} ${entryBodyText(entry)}`,meta)){
         nonFootballFiltered++;
         continue;
       }
@@ -477,6 +544,7 @@ async function syncEntries(){
       hiddenForeign,
       junkFiltered,
       nonFootballFiltered,
+      lowInformationFiltered,
       phase:"完成"
     });
   }catch(err){
@@ -618,7 +686,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="status">${section==="sun"
   ? `太阳报足球花边 ${items.length} 条 · 单源花边可收录 · 多源一致则标交叉确认`
   : `当前 ${items.length} 条 · 平台直发 ${state.metrics?.platformDirectVisible||0} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 仅隐藏其他低可信单源 ${state.metrics?.unconfirmedFiltered||0} 条`}
- · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+ · 栏目/空泛内容 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
