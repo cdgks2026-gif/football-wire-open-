@@ -61,10 +61,11 @@ export function registerFeatureRoutes(app,ctx){
     const members=story.members||[];
     const context=await teamContext([story.title,...members.map(x=>x.title)].join(" ")).catch(()=>[]);
     const sourceBadges=(story.sources||[]).map(x=>'<span class="badge">'+esc(x)+'</span>').join("");
+    const tagBadges=(story.aiTags||[]).map(x=>'<span class="badge">'+esc(x)+'</span>').join("");
     const timeline=(versions.length?versions:members).map(v=>'<div class="row"><div class="muted">'+esc(new Date(v.publishedAt||v.recordedAt||0).toLocaleString("zh-CN"))+'</div><div>'+esc(v.title||"")+'</div></div>').join("");
     const reports=members.map(m=>'<tr><td>'+esc(new Date(m.publishedAt||0).toLocaleString("zh-CN"))+'</td><td>'+esc(m.source||"")+'</td><td>'+(m.url?'<a href="'+esc(m.url)+'" target="_blank" rel="noopener">'+esc(m.title)+'</a>':esc(m.title))+'</td></tr>').join("");
     const contextHtml=context.map(c=>'<div class="card"><strong>'+esc(c.team)+'</strong><div class="muted">最近比赛 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].map(m=>'<div>'+esc(m.date)+' · '+esc(m.team1)+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(m.team2)+' · '+esc(m.leagueName||"")+'</div>').join("")+'</div>').join("");
-    let body='<div class="card"><div class="muted">'+esc(story.category||"综合")+' · '+(story.confirmations||0)+' 个来源 · 首次 '+esc(new Date(story.firstSeenAt||story.publishedAt||0).toLocaleString("zh-CN"))+'</div><div class="big">'+esc(story.title)+'</div><div>'+sourceBadges+'</div></div>';
+    let body='<div class="card"><div class="muted">'+esc(story.category||"综合")+' · '+(story.confirmations||0)+' 个来源 · 首次 '+esc(new Date(story.firstSeenAt||story.publishedAt||0).toLocaleString("zh-CN"))+'</div><div class="big">'+esc(story.title)+'</div><div>'+sourceBadges+tagBadges+'</div></div>';
     if(contextHtml)body+='<h2>比赛上下文</h2><div class="grid">'+contextHtml+'</div>';
     body+='<h2>事件时间线</h2><div class="card timeline">'+(timeline||'<div class="muted">暂无历史版本。</div>')+'</div>';
     body+='<h2>相关报道</h2><div class="card"><table><thead><tr><th>时间</th><th>来源</th><th>标题</th></tr></thead><tbody>'+(reports||'<tr><td colspan="3">暂无成员明细</td></tr>')+'</tbody></table></div>';
