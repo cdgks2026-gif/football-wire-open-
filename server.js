@@ -20,7 +20,9 @@ import { subscribeWebSubSources, webSubChallenge } from "./src/websub.js";
 const app=express();
 app.use(express.json({limit:"1mb"}));
 app.use(express.urlencoded({extended:false}));
+app.use((_req,res,next)=>{res.set({"X-Content-Type-Options":"nosniff","X-Frame-Options":"DENY","Referrer-Policy":"strict-origin-when-cross-origin","Permissions-Policy":"camera=(), microphone=(), geolocation=()"});next()});
 const PORT=Number(process.env.PORT||8088);
+const PUBLIC_URL=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\\\/$/,"");
 const sseClients=new Set();
 let sseSeen=new Set();
 const DATA_FILE=process.env.DATA_FILE||path.join(process.cwd(),"data","state.json");
@@ -1525,7 +1527,7 @@ app.get("/",(req,res)=>{
         <span>${escHtml(x.category)}</span>
         ${badges.join("")}
         <span>${escHtml(agoText(x.publishedAt))}</span>
-        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a><button type="button" class="saveStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">稍后读</button>`:""}
+        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a><button type="button" class="saveStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">稍后读</button><button type="button" class="shareStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">分享</button>`:""}
       </div>
       <div class="title">${x.url?`<a href="${escHtml(x.url)}" target="_blank" rel="noopener noreferrer">${escHtml(x.title)}</a>`:escHtml(x.title)}</div>
     </article>`;
@@ -1541,13 +1543,13 @@ app.get("/",(req,res)=>{
 <meta name="description" content="露白足球：开源足球新闻聚合器，聚合懂球帝、虎扑、官方及国际媒体，支持多源核实、独家首发识别、战报分栏、正文过滤和可选AI语义增强。">
 <meta name="keywords" content="足球新闻,懂球帝,虎扑,足球聚合器,开源足球,football news,news aggregator,RSSHub,Miniflux">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
-<link rel="canonical" href="https://football-wire-production.up.railway.app/">
+<link rel="canonical" href="${escHtml(PUBLIC_URL)}/">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#06100c">
 <meta property="og:type" content="website">
 <meta property="og:title" content="露白足球｜开源足球新闻聚合器">
 <meta property="og:description" content="多源核实、独家识别、战报分栏、正文过滤与可选AI语义增强。">
-<meta property="og:url" content="https://football-wire-production.up.railway.app/">
+<meta property="og:url" content="${escHtml(PUBLIC_URL)}/">
 <style>
 *{box-sizing:border-box}
 :root{--bg:#06100c;--panel:#0c1813;--line:#233b31;--text:#f3f8f5;--muted:#91a59c;--green:#63e7a1}
@@ -1602,6 +1604,9 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <a href="/search">历史/语义搜索</a>
 <a href="/archive">每日归档</a>
 <a href="/matches">赛程与积分榜</a>
+<a href="/digest">24小时摘要</a>
+<a href="/sources">来源健康</a>
+<a href="/feed.xml">RSS</a>
 <button type="button" id="managePrefs">个性化偏好</button>
 <button type="button" id="addLike">+关注词</button>
 <button type="button" id="addMute">+屏蔽词</button>
@@ -1646,7 +1651,7 @@ footer a{color:var(--muted);text-underline-offset:3px}
 });
 
 app.get("/robots.txt",(_req,res)=>{
-  res.type("text/plain").send("User-agent: *\nAllow: /\nSitemap: https://football-wire-production.up.railway.app/sitemap.xml\n");
+  res.type("text/plain").send(`User-agent: *\nAllow: /\nSitemap: ${PUBLIC_URL}/sitemap.xml\n`);
 });
 
 app.get("/sitemap.xml",(_req,res)=>{
@@ -1724,6 +1729,28 @@ app.get("/api/news",(req,res)=>{
   });
 });
 
+app.get("/feed.json",(_req,res)=>{
+  const items=(state.latest||[]).slice(0,80).map(x=>({id:x.storyId||x.id,url:x.storyId?`${PUBLIC_URL}/story/${encodeURIComponent(x.storyId)}`:x.url,external_url:x.url||undefined,title:x.title,date_published:x.publishedAt,tags:[x.category,...(x.aiTags||[])].filter(Boolean)}));
+  res.set("Cache-Control","public, max-age=60, stale-while-revalidate=180");
+  res.type("application/feed+json").send(JSON.stringify({version:"https://jsonfeed.org/version/1.1",title:"露白足球",home_page_url:PUBLIC_URL,feed_url:`${PUBLIC_URL}/feed.json`,description:"全球足球中文新闻聚合、多源核实与事件时间线",items}));
+});
+
+app.get("/feed.xml",(_req,res)=>{
+  const xml=(state.latest||[]).slice(0,80).map(x=>{
+    const link=x.storyId?`${PUBLIC_URL}/story/${encodeURIComponent(x.storyId)}`:(x.url||PUBLIC_URL);
+    const esc=v=>String(v??"").replace(/[<>&'"]/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;","\'":"&apos;",'"':"&quot;"}[ch]));
+    return `<item><title>${esc(x.title)}</title><link>${esc(link)}</link><guid isPermaLink="false">${esc(x.storyId||x.id)}</guid><pubDate>${new Date(x.publishedAt||Date.now()).toUTCString()}</pubDate><category>${esc(x.category||"综合")}</category></item>`;
+  }).join("");
+  res.set("Cache-Control","public, max-age=60, stale-while-revalidate=180");
+  res.type("application/rss+xml").send(`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>露白足球</title><link>${PUBLIC_URL}</link><description>全球足球中文新闻聚合、多源核实与事件时间线</description><language>zh-cn</language>${xml}</channel></rss>`);
+});
+
+app.get("/api/trending",(_req,res)=>{
+  const keys=["曼联","曼城","利物浦","阿森纳","切尔西","热刺","皇马","巴萨","马竞","拜仁","巴黎","姆巴佩","亚马尔","哈兰德","梅西","C罗","贝林厄姆","维尼修斯","萨拉赫","英超","西甲","欧冠","转会","伤停","VAR"];
+  const counts=keys.map(name=>({name,count:(state.latest||[]).filter(x=>(x.title||"").includes(name)||(x.aiTags||[]).includes(name)).length})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count).slice(0,14);
+  res.set("Cache-Control","public, max-age=30, stale-while-revalidate=120");
+  res.json({items:counts,updatedAt:state.metrics?.syncedAt||null});
+});
 app.get("/api/source-health",(_req,res)=>{
   res.set("Cache-Control","no-store");
   res.json({
@@ -1751,7 +1778,11 @@ app.get("/api/status",async(_req,res)=>{
   });
 });
 
+let lastManualRefreshAt=0;
 app.post("/api/refresh",async(_req,res)=>{
+  const now=Date.now();
+  if(now-lastManualRefreshAt<15000)return res.status(429).json({ok:false,error:"refresh-too-frequent",retryAfterMs:15000-(now-lastManualRefreshAt)});
+  lastManualRefreshAt=now;
   await refreshDue(true);
   setTimeout(()=>syncEntries(),5000);
   res.status(202).json({ok:true});
