@@ -270,5 +270,13 @@
     "type": "gnews",
     "query": "site:thesun.co.uk football when:2d -odds -betting -tips -prediction",
     "enabled": true
+  },
+  {
+    "name": "太阳报·足球RSS",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "rss",
+    "url": "https://www.thesun.co.uk/sport/football/feed/",
+    "enabled": true
   }
 ]
