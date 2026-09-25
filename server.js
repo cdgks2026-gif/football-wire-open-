@@ -157,7 +157,6 @@ const SOURCE_REPUTATION_RULES=[
   [/The Athletic|竞技体育网/i,96],
   [/Sky Sports|天空体育/i,95],
   [/The Guardian|卫报/i,93],
-  [/The Sun|太阳报/i,72],
   [/FIFA|国际足联|UEFA|欧足联/i,99],
   [/David Ornstein|奥恩斯坦/i,97],
   [/Fabrizio Romano|罗马诺/i,96],
@@ -186,13 +185,12 @@ function canonicalSourceName(name){
   if(!n)return "";
   const rules=[
     [/^懂球帝(?:[·｜|\s].*)?$/i,"懂球帝"],
-    [/^虎扑(?:足球)?$/i,"虎扑"],
+    [/虎扑|Hupu/i,"虎扑"],
     [/Reuters|路透/i,"Reuters"],
     [/BBC(?: Sport| Football)?|英国广播公司/i,"BBC"],
     [/Sky Sports|天空体育/i,"Sky Sports"],
     [/The Athletic|竞技体育网/i,"The Athletic"],
     [/The Guardian|卫报/i,"The Guardian"],
-    [/The Sun|太阳报/i,"The Sun"],
     [/Fabrizio Romano|罗马诺/i,"Fabrizio Romano"],
     [/David Ornstein|奥恩斯坦/i,"David Ornstein"],
     [/Gianluca Di Marzio|Di Marzio|迪马济奥/i,"Gianluca Di Marzio"],
@@ -323,12 +321,52 @@ function importanceScore(item){
   return score;
 }
 
+
+function isMatchReport(item){
+  const text=`${item?.title||""} ${item?.contentExcerpt||""}`;
+  return /(?:^|[【[])(?:战报|全场|半场|完场|赛果)(?:】|\]|[:：\s])/i.test(text)
+    || /\b\d{1,2}\s*[-:：]\s*\d{1,2}\b/.test(text)
+    || /(?:比分为|最终比分|全场比分|半场比分)/i.test(text);
+}
+
+async function fetchHupuDirect(){
+  try{
+    const res=await fetch("https://m.hupu.com/soccer",{headers:{"user-agent":"Mozilla/5.0"}});
+    if(!res.ok)return[];
+    const html=await res.text();
+    const out=[];
+    const seen=new Set();
+    const re=/<a[^>]+href=["']([^"']*\/bbs\/\d+\.html[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    let m;
+    while((m=re.exec(html)) && out.length<60){
+      let title=stripHtml(m[2])
+        .replace(/\d{1,7}\s*置顶\s*$/,"")
+        .replace(/\d{1,7}\s*$/,"")
+        .trim();
+      if(!title || title.length<6 || seen.has(title))continue;
+      seen.add(title);
+      const link=m[1].startsWith("http")?m[1]:`https://m.hupu.com${m[1]}`;
+      out.push({
+        id:`hupu-direct-${idFor(link)}`,
+        title,
+        content:title,
+        published_at:new Date().toISOString(),
+        created_at:new Date().toISOString(),
+        _meta:{name:"虎扑",tier:"中文媒体",group:"cn",type:"direct"},
+        _timeReliable:false,
+        url:link
+      });
+    }
+    return out;
+  }catch(err){
+    console.error("[hupu direct]",String(err));
+    return[];
+  }
+}
+
 function metaForEntry(entry){
-  return bootstrap?.sourceByFeedId?.[entry.feed?.id]||{
-    name:entry.feed?.title||"未知来源",
-    tier:"国际媒体",
-    group:"media"
-  };
+  if(entry?._meta)return entry._meta;
+  return bootstrap?.sourceByFeedId?.[entry.feed?.id]||null;
 }
 function makeItem(entry,title,meta,sourceInfo){
   const rawSource=sourceInfo?.source||meta.name;
@@ -340,8 +378,8 @@ function makeItem(entry,title,meta,sourceInfo){
     source,
     sourceVerified:sourceInfo?.verified!==false,
     sourceScore:sourceReputation(source,meta.tier),
-    isSun:source==="The Sun",
     exclusive:explicitExclusive(entry.title||"")||explicitExclusive(title),
+    timeReliable:entry?._timeReliable!==false,
     tier:meta.tier,
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
@@ -352,7 +390,7 @@ function makeItem(entry,title,meta,sourceInfo){
 function publishProcessed(processed,extraMetrics={}){
   const allClusters=clusterLatest(processed).map((x)=>{
     const exclusive=Boolean(x.platformExclusiveSource);
-    const base={...x,exclusive};
+    const base={...x,exclusive,isMatchReport:isMatchReport(x)};
     const credibility=credibilityFor(base);
     const heat=heatScore(base);
     return {
@@ -366,6 +404,7 @@ function publishProcessed(processed,extraMetrics={}){
 
   // 主新闻：多源可进；顶级权威单源可进；懂球帝/虎扑平台直发也直接进入。
   const eligible=allClusters.filter((x)=>{
+    if(x.isMatchReport)return false;
     const confirmations=x.confirmations||0;
     const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
     if(confirmations>=2)return true;
@@ -383,16 +422,15 @@ function publishProcessed(processed,extraMetrics={}){
 
   const clustered=rankedEligible.slice(0,MAX_VISIBLE);
 
-  // 太阳报专栏：只要事件里包含 The Sun，就进入专栏；作为花边，不冒充已核实硬新闻。
-  const sunLatest=allClusters
-    .filter((x)=>(x.sourceDetails||[]).some((src)=>src.name==="The Sun"))
-    .map((x)=>({...x,gossip:true,credibilityLabel:(x.confirmations||0)>=2?"交叉确认":"花边"}))
-    .sort((a,b)=>{
-      const rs=rankScore(b)-rankScore(a);
-      if(rs!==0)return rs;
-      return Date.parse(b.publishedAt)-Date.parse(a.publishedAt);
+  // 战报只进入战报栏，不进入全部/官方/独家/媒体等其他栏目。
+  const reportLatest=allClusters
+    .filter((x)=>x.isMatchReport)
+    .filter((x)=>{
+      const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
+      return (x.confirmations||0)>=2 || best>=92 || directPlatformSource(x) || (x.tiers||[]).includes("官方");
     })
-    .slice(0,120);
+    .sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt))
+    .slice(0,180);
 
   const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
   const exclusiveVisible=clustered.filter((x)=>x.exclusive).length;
@@ -400,7 +438,7 @@ function publishProcessed(processed,extraMetrics={}){
 
   state.latest=clustered;
   state.allEligible=rankedEligible.slice(0,800);
-  state.sunLatest=sunLatest;
+  state.reportLatest=reportLatest;
   state.metrics={
     ...(state.metrics||{}),
     rawEntries:extraMetrics.rawEntries??state.metrics?.rawEntries??0,
@@ -414,8 +452,8 @@ function publishProcessed(processed,extraMetrics={}){
     unconfirmedFiltered,
     exclusiveVisible,
     platformDirectVisible,
-    sunVisible:(state.sunLatest||[]).length,
-    confirmationRule:"主新闻：多源、顶级权威单源、懂球帝/虎扑直发均可进入；虎扑与懂球帝同事件按最早发布时间判独家",
+    reportVisible:(state.reportLatest||[]).length,
+    confirmationRule:"主新闻：多源、顶级权威单源、懂球帝/虎扑直发均可进入；战报独立隔离；虎扑与懂球帝同事件按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -453,7 +491,9 @@ async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
   try{
-    const entries=await getRecentEntries(ENTRY_DAYS,ENTRY_LIMIT);
+    const minifluxEntries=await getRecentEntries(ENTRY_DAYS,ENTRY_LIMIT);
+    const directHupu=await fetchHupuDirect();
+    const entries=[...minifluxEntries,...directHupu];
     const processed=[];
     const foreign=[];
     let junkFiltered=0;
@@ -463,6 +503,7 @@ async function syncEntries(){
     // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
       const meta=metaForEntry(entry);
+      if(!meta)continue;
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
       const lowInfo=lowInformationReason(normalized,entry);
@@ -499,9 +540,14 @@ async function syncEntries(){
     let translatedNow=0;
     let hiddenForeign=Math.max(0,foreign.length-FOREIGN_TRANSLATE_LIMIT);
     const prioritizedForeign=[...foreign].sort((a,b)=>{
-      const aSun=canonicalSourceName(a.sourceInfo?.source||a.meta?.name)==="The Sun"?1:0;
-      const bSun=canonicalSourceName(b.sourceInfo?.source||b.meta?.name)==="The Sun"?1:0;
-      if(aSun!==bSun)return bSun-aSun;
+      const weight=(x)=>{
+        if(x.meta?.tier==="官方")return 1000;
+        if(x.meta?.tier==="转会专家")return 900;
+        const source=canonicalSourceName(x.sourceInfo?.source||x.meta?.name);
+        return 500+sourceReputation(source,x.meta?.tier);
+      };
+      const diff=weight(b)-weight(a);
+      if(diff!==0)return diff;
       return Date.parse(b.entry?.published_at||b.entry?.created_at||0)-Date.parse(a.entry?.published_at||a.entry?.created_at||0);
     });
     for(const {entry,meta,sourceInfo} of prioritizedForeign.slice(0,FOREIGN_TRANSLATE_LIMIT)){
@@ -588,7 +634,7 @@ const CHANNELS=[
   {id:"expert",label:"转会专家"},
   {id:"dqd",label:"懂球帝"},
   {id:"hupu",label:"虎扑"},
-  {id:"sun",label:"太阳报花边"}
+  {id:"report",label:"战报"}
 ];
 
 function hasNamedSource(item,name){
@@ -606,13 +652,13 @@ function channelMatches(item,section){
   if(section==="expert")return tiers.includes("转会专家");
   if(section==="dqd")return hasNamedSource(item,"懂球帝");
   if(section==="hupu")return hasNamedSource(item,"虎扑");
-  if(section==="sun")return hasNamedSource(item,"The Sun") || item.gossip===true;
+  if(section==="report")return item.isMatchReport===true;
   return true;
 }
 
 function channelCount(section){
   if(section==="main")return (state.latest||[]).length;
-  if(section==="sun")return (state.sunLatest||[]).length;
+  if(section==="report")return (state.reportLatest||[]).length;
   return (state.allEligible||state.latest||[]).filter((x)=>channelMatches(x,section)).length;
 }
 
@@ -627,8 +673,8 @@ function filteredItems(req){
   let items;
   if(section==="main"){
     items=state.latest||[];
-  }else if(section==="sun"){
-    items=state.sunLatest||[];
+  }else if(section==="report"){
+    items=state.reportLatest||[];
   }else{
     items=(state.allEligible||state.latest||[]).filter((x)=>channelMatches(x,section));
   }
@@ -663,7 +709,6 @@ app.get("/",(req,res)=>{
     if(tiers.includes("官方"))badges.push('<span class="official">官方</span>');
     if(x.exclusive)badges.push('<span class="exclusive">独家</span>');
     if((x.confirmations||0)>=2)badges.push('<span class="verified">多源核实</span>');
-    else if(section==="sun")badges.push('<span class="gossip">花边</span>');
     else if((x.sourceDetails?.[0]?.score||x.sourceScore||0)>=92)badges.push('<span class="authority">权威单源</span>');
     else if(directPlatformSource(x))badges.push('<span class="platform">平台直发</span>');
     if(hot)badges.push('<span class="hot">热门</span>');
@@ -715,7 +760,6 @@ button{background:var(--green);color:#052014;font-weight:800}
 .platform{border-color:#5e685f!important;color:#c4d0c5!important}
 .exclusive{border-color:#9b7732!important;color:#ffd77f!important}
 .hot{border-color:#8b3b35!important;color:#ff9e91!important}
-.gossip{border-color:#8b6c9d!important;color:#deb6f0!important}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
 @media(max-width:700px){h1{font-size:30px}.title{font-size:16px}form{position:static}}
 </style>
@@ -724,7 +768,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 多重分栏 · 同一新闻可同时出现在官方、独家、多源、媒体等多个栏目</div>
+<div class="sub">纯足球 · 多重分栏 · 官方/独家/多源可重叠 · 战报单独隔离</div>
 <nav class="sections">${channelNav}</nav>
 </header>
 <form method="get" action="/">
@@ -766,7 +810,7 @@ app.get("/api/news",(req,res)=>{
 
   let items;
   if(section==="main")items=state.latest||[];
-  else if(section==="sun")items=state.sunLatest||[];
+  else if(section==="report")items=state.reportLatest||[];
   else items=(state.allEligible||state.latest||[]).filter((x)=>channelMatches(x,section));
   if(tier!=="全部")items=items.filter((x)=>{
     const tiers=x.tiers||[x.tier].filter(Boolean);
