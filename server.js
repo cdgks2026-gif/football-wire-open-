@@ -91,6 +91,8 @@ function commercialReason(title,entry){
 }
 
 const GENERIC_HEADLINE_RULES=[
+  /^足球\|足球资讯\|懂球帝/i,
+  /(?:懂球帝app\|足球专栏\|.*比赛详情)$/i,
   /^(?:国际足球|国际足坛|国际足坛新闻|国际足球新闻|国内足球|中国足球|足球|足球新闻|足坛|足坛新闻)$/i,
   /^(?:英超|西甲|意甲|德甲|法甲|欧冠|欧联|欧协联|世界杯|欧洲杯|美洲杯|国家队)$/i,
   /^(?:转会|转会新闻|足球转会|比赛|赛事|体育|体育新闻|国际体育|更多|最新|头条)$/i,
@@ -252,7 +254,22 @@ function canonicalSourceName(name){
 
 
 const OFFICIAL_PUBLISHER_RULES=[
-  /(?:Chelsea|切尔西)(?:\s+FC|\s+Football Club)?$/i,
+  /(?:chelseafc\.com|Chelsea|切尔西)(?:\s+FC|\s+Football Club)?$/i,
+  /manutd\.com/i,
+  /mancity\.com/i,
+  /liverpoolfc\.com/i,
+  /arsenal\.com/i,
+  /realmadrid\.com/i,
+  /fcbarcelona\.com/i,
+  /fcbayern\.com/i,
+  /psg\.fr/i,
+  /fifa\.com/i,
+  /uefa\.com/i,
+  /premierleague\.com/i,
+  /laliga\.com/i,
+  /legaseriea\.it/i,
+  /bundesliga\.com/i,
+  /ligue1\.com/i,
   /Manchester United|Man Utd|曼联/i,
   /Manchester City|Man City|曼城/i,
   /Liverpool FC|Liverpool Football Club|利物浦/i,
