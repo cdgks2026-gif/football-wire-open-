@@ -133,6 +133,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/matches",async(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const date=String(req.query.date||localDateKey()).slice(0,10);
     const league=String(req.query.league||"epl");
     const [matches,table]=await Promise.all([matchesAround(date,3),standings(league)]);
@@ -150,6 +152,8 @@ export function registerFeatureRoutes(app,ctx){
 
 
   app.get("/hot",(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const hours=Math.max(1,Math.min(168,Number(req.query.hours||24)));
     const cutoff=Date.now()-hours*3600_000;
@@ -162,11 +166,15 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/leagues",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const cards=leagueOptions().map(l=>'<a class="card" style="display:block;text-decoration:none" href="/league/'+esc(l.id)+'"><div class="big">'+esc(l.name)+'</div><div class="muted">积分榜 · 近期赛果 · 下一轮赛程</div></a>').join("");
     res.send(shell("五大联赛","<h1>五大联赛</h1><div class=\"grid\">"+cards+"</div>"));
   });
 
   app.get("/league/:id",async(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const data=await leaguePageData(String(req.params.id||"")).catch(()=>null);
     if(!data)return res.status(404).send(shell("未找到联赛",'<div class="card">暂不支持这个联赛。</div>'));
     const table=data.table.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><a href="/entity/'+encodeURIComponent(displayTeamName(r.team))+'">'+esc(displayTeamName(r.team))+'</a></td><td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td><td>'+r.gd+'</td><td><strong>'+r.pts+'</strong></td></tr>').join("");
@@ -177,6 +185,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/match/:key",async(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const m=await matchByKey(String(req.params.key||"")).catch(()=>null);
     if(!m)return res.status(404).send(shell("未找到比赛",'<div class="card">这场比赛不存在或暂未载入。</div>'));
     const state=getState(),needle=[m.team1,m.team2].join(" ").toLowerCase();
@@ -253,16 +263,22 @@ export function registerFeatureRoutes(app,ctx){
   }
 
   app.get("/transfers",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     res.send(centerPage(state,"转会中心","集中展示加盟、离队、租借、续约、报价、谈判、体检、合同等转会事件。",x=>x.category==="转会"||/(转会|加盟|离队|租借|续约|报价|谈判|体检|合同|签约|Here we go)/i.test(storyHay(x))));
   });
 
   app.get("/injuries",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     res.send(centerPage(state,"伤停中心","集中展示受伤、伤缺、复出、手术、停赛、禁赛等球队人员可用性事件。",x=>x.category==="伤停"||/(受伤|伤缺|缺席|复出|手术|停赛|禁赛|赛季报销|injur|suspend|ban)/i.test(storyHay(x))));
   });
 
   app.get("/topics",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const topics=new Map();
     for(const x of allStories(state).slice(0,500)){
@@ -280,6 +296,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/topic/:name",(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState(),name=decodeURIComponent(String(req.params.name||"")).slice(0,60);
     const q=name.toLowerCase();
     const items=allStories(state).filter(x=>storyHay(x).toLowerCase().includes(q)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,120);
@@ -288,12 +306,16 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/entities",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const rows=entityCandidates(state).slice(0,100).map(x=>'<a class="card" style="display:block;text-decoration:none" href="/entity/'+encodeURIComponent(x.name)+'"><div class="big">'+esc(x.name)+'</div><div class="muted">'+x.count+' 条新闻 · '+esc(x.categories.join(" / "))+'</div></a>').join("");
     res.send(shell("球队 / 球员实体",'<h1>球队 / 球员实体</h1><p class="muted">优先使用 AI 标签自动建立实体页；无需手工维护每一个球队和球员。</p><div class="grid">'+(rows||'<div class="card">实体索引正在生成。</div>')+'</div>'));
   });
 
   app.get("/entity/:name",async(req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState(),name=decodeURIComponent(String(req.params.name||"")).slice(0,60),q=name.toLowerCase();
     const items=allStories(state).filter(x=>storyHay(x).toLowerCase().includes(q)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,120);
     const team=await teamContext(name).catch(()=>[]);
@@ -303,6 +325,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/trends",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const snaps=Object.entries(state.snapshots||{}).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
     const cats=["转会","伤停","比赛","国家队","争议","趣闻","教练","球星","综合"];
@@ -316,6 +340,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/relations",(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const edges=new Map();
     for(const x of allStories(state).slice(0,500)){
@@ -341,6 +367,8 @@ export function registerFeatureRoutes(app,ctx){
   });
 
   app.get("/brief",async(_req,res)=>{
+    res.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Pragma","no-cache");
     const state=getState();
     const cutoff=Date.now()-24*3600_000;
     const items=allStories(state).filter(x=>Date.parse(x.publishedAt||0)>=cutoff).sort((a,b)=>(b.importance||0)-(a.importance||0)||(b.confirmations||0)-(a.confirmations||0)).slice(0,12);
