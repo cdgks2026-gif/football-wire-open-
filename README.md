@@ -54,25 +54,36 @@ AI **不会决定新闻真假**。真实性仍然由来源、发布时间和多�
 
 ---
 
-## 可选 AI：Groq + Qwen
+## 可选 AI：Groq / OpenRouter
 
-默认不开启 AI。没有 `GROQ_API_KEY` 时，网站完全使用现有规则运行。
+默认不开启 AI。没有任何 AI Key 时，网站完全使用现有规则运行。
 
-Groq API 使用 OpenAI-compatible Chat Completions 接口。默认模型：
+AI 层现在支持标准 OpenAI-compatible Chat Completions 接口。可直接使用 Groq，也可以使用 OpenRouter。Groq 默认模型：
 
 ```env
 GROQ_MODEL=qwen/qwen3.8-27b
 ```
 
-开启：
+Groq：
 
 ```env
+AI_PROVIDER=groq
 GROQ_API_KEY=你的密钥
 GROQ_MODEL=qwen/qwen3.8-27b
 AI_SYNC_LIMIT=10
 AI_DAILY_LIMIT=180
 AI_TIMEOUT_MS=9000
 ```
+
+OpenRouter 免费路由：
+
+```env
+AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=你的密钥
+OPENROUTER_MODEL=openrouter/free
+```
+
+也可以通过 `AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL` 接入其他 OpenAI-compatible 服务。
 
 设计原则：
 
@@ -452,3 +463,20 @@ POST /websub/callback
 
 AI 不决定新闻真假；真实性仍由来源、发布时间和多源确认决定。
 
+
+
+## V56 产品化增强
+
+- [x] Groq / OpenRouter 双 AI Provider，支持通用 OpenAI-compatible 配置
+- [x] OpenRouter `openrouter/free` 免费模型路由
+- [x] 24 小时足球摘要：`/digest`
+- [x] 来源健康看板：`/sources`
+- [x] RSS Feed：`/feed.xml`
+- [x] JSON Feed：`/feed.json`
+- [x] 热门话题 API：`/api/trending`
+- [x] 新闻卡片原生分享 / 复制链接
+- [x] 浏览器通知点击直达故事页
+- [x] 离线状态提示与 `/` 快捷搜索
+- [x] 安全响应头与手动刷新频率保护
+- [x] 官方源商品关键词进一步收紧
+- [x] 新增中国足协、欧战官方、英超官方、ESPN FC 等来源
