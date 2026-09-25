@@ -480,7 +480,7 @@ function publishProcessed(processed,extraMetrics={}){
     .slice(0,180);
 
   const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
-  const exclusiveVisible=clustered.filter((x)=>x.exclusive).length;
+  const exclusiveVisible=(state.exclusiveLatest||[]).length;
   const platformDirectVisible=clustered.filter((x)=>(x.confirmations||0)===1 && directPlatformSource(x)).length;
 
   state.latest=clustered;
@@ -541,14 +541,20 @@ async function syncEntries(){
   syncing=true;
   try{
     const categoryBudgets={cn:700,official:260,fast:320,media:520};
-    const grouped=await Promise.all(Object.entries(categoryBudgets).map(async([group,limit])=>{
+    const groupedPromise=Promise.all(Object.entries(categoryBudgets).map(async([group,limit])=>{
       const cat=bootstrap?.categories?.[group];
       if(!cat)return[];
       try{return await getRecentEntriesByCategory(cat.id,ENTRY_DAYS,limit)}
       catch(err){console.error("[entries]",group,String(err));return[]}
     }));
+    const historyPromise=(async()=>{
+      const cat=bootstrap?.categories?.cn;
+      if(!cat)return[];
+      try{return await getRecentEntriesByCategory(cat.id,30,1000)}
+      catch(err){console.error("[exclusive history]",String(err));return[]}
+    })();
+    const [grouped,historyEntries,directHupu]=await Promise.all([groupedPromise,historyPromise,fetchHupuDirect()]);
     const minifluxEntries=grouped.flat();
-    const directHupu=await fetchHupuDirect();
     const entries=[...minifluxEntries,...directHupu];
     const processed=[];
     const foreign=[];
@@ -559,7 +565,7 @@ async function syncEntries(){
     // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
       const meta=metaForEntry(entry);
-      if(!meta)continue;
+      if(!meta || meta.historyOnly)continue;
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
       const lowInfo=lowInformationReason(normalized,entry);
@@ -581,6 +587,28 @@ async function syncEntries(){
         foreign.push({entry,meta,sourceInfo});
       }
     }
+
+    const exclusiveProcessed=[];
+    for(const entry of historyEntries){
+      const meta=metaForEntry(entry);
+      if(!meta?.historyOnly)continue;
+      const sourceInfo=extractPublisher(entry.title||"",meta);
+      const normalized=normalizeTerms(sourceInfo.title);
+      if(lowInformationReason(normalized,entry))continue;
+      if(footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta))continue;
+      if(junkTitleReason(normalized))continue;
+      if(chineseRatio(normalized)<0.48)continue;
+      exclusiveProcessed.push(makeItem(entry,normalized,meta,sourceInfo));
+    }
+    state.exclusiveLatest=clusterLatest(exclusiveProcessed)
+      .map((x)=>({
+        ...x,
+        exclusive:Boolean(x.platformExclusiveSource),
+        isMatchReport:isMatchReport(x)
+      }))
+      .filter((x)=>x.exclusive && !x.isMatchReport)
+      .sort((a,b)=>Date.parse(b.platformExclusiveAt||b.publishedAt)-Date.parse(a.platformExclusiveAt||a.publishedAt))
+      .slice(0,160);
 
     publishProcessed(processed,{
       rawEntries:entries.length,
@@ -714,6 +742,7 @@ function channelMatches(item,section){
 
 function channelCount(section){
   if(section==="main")return (state.latest||[]).length;
+  if(section==="exclusive")return (state.exclusiveLatest||[]).length;
   if(section==="report")return (state.reportLatest||[]).length;
   return (state.allEligible||state.latest||[]).filter((x)=>channelMatches(x,section)).length;
 }
@@ -729,6 +758,8 @@ function filteredItems(req){
   let items;
   if(section==="main"){
     items=state.latest||[];
+  }else if(section==="exclusive"){
+    items=state.exclusiveLatest||[];
   }else if(section==="report"){
     items=state.reportLatest||[];
   }else{
@@ -866,6 +897,7 @@ app.get("/api/news",(req,res)=>{
 
   let items;
   if(section==="main")items=state.latest||[];
+  else if(section==="exclusive")items=state.exclusiveLatest||[];
   else if(section==="report")items=state.reportLatest||[];
   else items=(state.allEligible||state.latest||[]).filter((x)=>channelMatches(x,section));
   if(tier!=="全部")items=items.filter((x)=>{
