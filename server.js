@@ -1166,25 +1166,68 @@ async function syncEntries(){
         stat(meta.name,"translateFail",sourceInfo.title||entry.title||"");
         continue;
       }
+      const junk=junkTitleReason(title);
+      if(junk){
+        junkFiltered++;
+        stat(meta.name,"junk",title||entry.title||"");
+        continue;
+      }
+
       const commercial=commercialReason(title,entry);
       if(commercial){
         commercialFiltered++;
-        if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
+        stat(meta.name,"commercial",title||entry.title||"");
+        if(commercialSamples.length<8)commercialSamples.push(title||entry.title||"");
         continue;
       }
+
       const lowInfo=lowInformationReason(title,entry,meta);
-      if(lowInfo){
-        lowInformationFiltered++;
-        continue;
+      const footballReason=footballOnlyReason(`${title} ${entryBodyText(entry)}`,meta);
+      const commercialHint=COMMERCIAL_HINT_RULES.some((r)=>r.test(`${title} ${entryBodyText(entry)}`));
+      let rescuedByAi=false;
+
+      if(lowInfo || footballReason || commercialHint || !eventKey(title)){
+        const review=await aiReviewIfNeeded(entry,meta,title,{
+          lowInfo,
+          footballReason,
+          commercialHint,
+          budget:aiBudget
+        });
+
+        if(review.reviewed){
+          if(review.pass){
+            rescuedByAi=true;
+            aiBudget.rescued++;
+          }else{
+            aiBudget.rejected++;
+            if(lowInfo){
+              lowInformationFiltered++;
+              stat(meta.name,"lowInfo",title);
+            }else if(footballReason){
+              nonFootballFiltered++;
+              stat(meta.name,"nonFootball",title);
+            }else if(commercialHint){
+              commercialFiltered++;
+              stat(meta.name,"commercial",title);
+            }
+            continue;
+          }
+        }
       }
-      if(footballOnlyReason(`${title} ${entryBodyText(entry)}`,meta)){
-        nonFootballFiltered++;
-        continue;
+
+      if(!rescuedByAi){
+        if(lowInfo){
+          lowInformationFiltered++;
+          stat(meta.name,"lowInfo",title);
+          continue;
+        }
+        if(footballReason){
+          nonFootballFiltered++;
+          stat(meta.name,"nonFootball",title);
+          continue;
+        }
       }
-      if(junkTitleReason(title)){
-        junkFiltered++;
-        continue;
-      }
+
       processed.push(makeItem(entry,title,meta,sourceInfo));
       stat(meta.name,"accepted",title);
 
