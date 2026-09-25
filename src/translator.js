@@ -43,7 +43,7 @@ function key(text) {
   return crypto.createHash("sha1").update(String(text)).digest("hex");
 }
 
-async function libreTranslate(text) {
+async function libreTranslate(text, source="auto") {
   const url = (process.env.LIBRETRANSLATE_URL || "http://libretranslate:5000").replace(/\/$/, "");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), Number(process.env.TRANSLATE_TIMEOUT_MS || 12000));
@@ -51,7 +51,7 @@ async function libreTranslate(text) {
     const res = await fetch(`${url}/translate`, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({q:text,source:"auto",target:"zh",format:"text"}),
+      body: JSON.stringify({q:text,source,target:"zh",format:"text"}),
       signal: controller.signal
     });
     if (!res.ok) throw new Error(`翻译服务 ${res.status}`);
@@ -62,7 +62,7 @@ async function libreTranslate(text) {
   }
 }
 
-export async function toChineseTitle(rawTitle, cache) {
+export async function toChineseTitle(rawTitle, cache, options={}) {
   const raw = String(rawTitle || "").trim();
   if (!raw) return "";
   const cacheKey = key(raw);
@@ -74,12 +74,19 @@ export async function toChineseTitle(rawTitle, cache) {
     return pre;
   }
 
-  try {
-    const translated = normalizeTerms(await libreTranslate(pre));
-    if (translated && chineseRatio(translated) >= 0.48) {
-      cache[cacheKey] = translated;
-      return translated;
-    }
-  } catch {}
+  for (const source of ["auto","en"]) {
+    try {
+      const translated = normalizeTerms(await libreTranslate(pre,source));
+      if (translated && chineseRatio(translated) >= 0.42) {
+        cache[cacheKey] = translated;
+        return translated;
+      }
+    } catch {}
+  }
+
+  // 高价值来源翻译失败时不丢新闻；不缓存原文，下一轮仍会继续尝试翻译。
+  if(options.allowOriginal){
+    return pre;
+  }
   return "";
 }
