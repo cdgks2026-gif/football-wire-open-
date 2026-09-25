@@ -1567,8 +1567,20 @@ app.get("/",(req,res)=>{
 <meta property="og:url" content="${escHtml(PUBLIC_URL)}/">
 <style>
 *{box-sizing:border-box}
-:root{--bg:#06100c;--panel:#0c1813;--line:#233b31;--text:#f3f8f5;--muted:#91a59c;--green:#63e7a1}
-body{margin:0;background:#06100c;color:var(--text);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+:root{
+  --bg:#06100c;--panel:#0c1813;--panel-2:#102019;--line:#233b31;--text:#f3f8f5;--muted:#91a59c;
+  --accent:#63e7a1;--accent-ink:#052014;--header-bg:#06100cf2;
+}
+html[data-theme="light"]{
+  --bg:#f5f7f6;--panel:#ffffff;--panel-2:#eef3f0;--line:#d5dfd9;--text:#132018;--muted:#66746d;
+  --accent-ink:#ffffff;--header-bg:#f5f7f6f2;
+}
+html[data-accent="green"]{--accent:#22a868}
+html[data-accent="blue"]{--accent:#2f7de1}
+html[data-accent="red"]{--accent:#d94b4b}
+html[data-accent="purple"]{--accent:#8257d6}
+html[data-accent="orange"]{--accent:#d97706}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;transition:background .18s ease,color .18s ease}
 .wrap{width:min(980px,calc(100% - 24px));margin:auto;padding-bottom:36px}
 header{padding:24px 0 14px}
 h1{margin:0;font-size:36px;letter-spacing:-1px}
@@ -1576,21 +1588,21 @@ h1{margin:0;font-size:36px;letter-spacing:-1px}
 .sections{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .sections a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px}
 .sections a small{font-size:10px;opacity:.8}
-.sections a.active{color:#052014;background:var(--green);border-color:var(--green);font-weight:800}
+.sections a.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:800}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-.toolbar a,.toolbar button,.toolbar select{font-size:12px;padding:6px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--muted);text-decoration:none}
+.toolbar a,.toolbar button,.toolbar select{font-size:12px;padding:6px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--text);text-decoration:none}
 .toolbar button{cursor:pointer}
-.storylink{color:var(--green)!important;text-decoration:none;border-color:#315b46!important}
+.storylink{color:var(--accent)!important;text-decoration:none;border-color:#315b46!important}
 .item.preferred{border-color:#4f9e72;box-shadow:0 0 0 1px #4f9e7233}
-form{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:#06100cf2;padding:10px 0;border-bottom:1px solid #14251e;z-index:5}
+form{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--header-bg);padding:10px 0;border-bottom:1px solid #14251e;z-index:5}
 input,select,button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 10px;font:inherit}
 input{flex:1;min-width:180px}
 .important{display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;font-size:13px;white-space:nowrap}
 .important input{min-width:0;flex:none}
-button{background:var(--green);color:#052014;font-weight:800}
+button{background:var(--accent);color:var(--accent-ink);font-weight:800}
 .status{padding:12px 0;color:var(--muted);font-size:12px}
 .list{display:flex;flex-direction:column;gap:8px}
-.item{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:13px 14px}
+.item{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:13px 14px;transition:background .18s ease,border-color .18s ease}
 .meta{display:flex;gap:7px;flex-wrap:wrap;color:var(--muted);font-size:10.5px;margin-bottom:6px}
 .meta span{border:1px solid #345546;border-radius:999px;padding:3px 6px}
 .title{font-size:17px;line-height:1.5;font-weight:800}
@@ -1608,6 +1620,14 @@ footer{padding:24px 0 8px;color:var(--muted);font-size:12px}
 footer a{color:var(--muted);text-underline-offset:3px}
 @media(max-width:700px){h1{font-size:30px}.title{font-size:16px}form{position:static}}
 </style>
+<script>
+(()=>{try{
+  const theme=localStorage.getItem("lubai:theme")||"dark";
+  const accent=localStorage.getItem("lubai:accent")||"green";
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.dataset.accent=accent;
+}catch{}})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -1621,6 +1641,14 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <a href="/feed.xml">RSS</a>
 <button type="button" id="notifyToggle">新闻通知</button>
 <button type="button" id="showBookmarks">收藏 <span id="bookmarkCount">0</span></button>
+<button type="button" id="themeModeToggle">日间模式</button>
+<select id="accentPicker" aria-label="主页颜色">
+  <option value="green">绿色</option>
+  <option value="blue">蓝色</option>
+  <option value="red">红色</option>
+  <option value="purple">紫色</option>
+  <option value="orange">橙色</option>
+</select>
 </div>
 </header>
 <form method="get" action="/">
