@@ -162,6 +162,7 @@ export function clusterLatest(items) {
       sources:sourceDetails.map((x)=>x.name).slice(0,6),
       sourceDetails:sourceDetails.slice(0,6),
       primarySource:sourceDetails[0]?.name||g.head.source,
+      tiers:[...g.tiers],
       hupuDongqiudiMatched:Boolean(dongqiudi&&hupu),
       platformExclusiveSource,
       platformExclusiveAt,
