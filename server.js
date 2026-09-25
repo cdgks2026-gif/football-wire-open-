@@ -22,7 +22,7 @@ app.use(express.json({limit:"1mb"}));
 app.use(express.urlencoded({extended:false}));
 app.use((_req,res,next)=>{res.set({"X-Content-Type-Options":"nosniff","X-Frame-Options":"DENY","Referrer-Policy":"strict-origin-when-cross-origin","Permissions-Policy":"camera=(), microphone=(), geolocation=()"});next()});
 const PORT=Number(process.env.PORT||8088);
-const PUBLIC_URL=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\\\/$/,"");
+const PUBLIC_URL=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\/$/,"");
 const sseClients=new Set();
 let sseSeen=new Set();
 const DATA_FILE=process.env.DATA_FILE||path.join(process.cwd(),"data","state.json");
