@@ -722,6 +722,7 @@ function makeItem(entry,title,meta,sourceInfo){
     articleExtracted:Boolean(entry?._articleText),
     aiEventKey:String(entry?._ai?.eventKey||""),
     aiCategory:String(entry?._ai?.category||""),
+    aiTags:Array.isArray(entry?._ai?.tags)?entry._ai.tags:[],
     aiReviewed:Boolean(entry?._ai)
   };
 }
@@ -1032,6 +1033,7 @@ async function aiReviewIfNeeded(entry,meta,title,{lowInfo="",footballReason="",c
     entry._ai={
       eventKey:result.eventKey||"",
       category:result.category||"综合",
+      tags:result.tags||[],
       confidence:result.confidence
     };
   }
