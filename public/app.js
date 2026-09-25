@@ -75,6 +75,25 @@ async function checkNews(initial=false){
     write("lubai:notified",[...set].slice(-100));
   }catch{}
 }
+let stream=null;
+try{
+  stream=new EventSource("/api/stream");
+  stream.onmessage=(e)=>{
+    try{
+      const msg=JSON.parse(e.data||"{}");
+      const x=msg.item;
+      if(msg.type!=="story"||!x)return;
+      if(localStorage.getItem("lubai:notify")==="1"&&Notification.permission==="granted"){
+        const seen=read("lubai:notified",[]);
+        const set=new Set(seen),id=x.storyId||x.id;
+        if(!set.has(id)){
+          new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url:x.storyId?"/story/"+x.storyId:"/"}});
+          set.add(id);write("lubai:notified",[...set].slice(-100));
+        }
+      }
+    }catch{}
+  };
+}catch{}
 setInterval(()=>checkNews(false),60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
 applyPrefs();renderPrefText();renderSaved();
