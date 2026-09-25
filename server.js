@@ -1006,6 +1006,13 @@ async function syncEntries(){
       stat(meta.name,"raw",String(entry.title||"").slice(0,160));
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
+      const junk=junkTitleReason(normalized);
+      if(junk){
+        junkFiltered++;
+        stat(meta.name,"junk",normalized||entry.title||"");
+        continue;
+      }
+
       const commercial=commercialReason(normalized,entry);
       if(commercial){
         commercialFiltered++;
@@ -1013,22 +1020,54 @@ async function syncEntries(){
         if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
+
       const lowInfo=lowInformationReason(normalized,entry,meta);
-      if(lowInfo){
-        lowInformationFiltered++;
-        stat(meta.name,"lowInfo",normalized||entry.title||"");
-        continue;
+      const footballReason=footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta);
+      const commercialHint=COMMERCIAL_HINT_RULES.some((r)=>r.test(`${normalized} ${entryBodyText(entry)}`));
+      let rescuedByAi=false;
+
+      if(lowInfo || footballReason || commercialHint || !eventKey(normalized)){
+        const review=await aiReviewIfNeeded(entry,meta,normalized,{
+          lowInfo,
+          footballReason,
+          commercialHint,
+          budget:aiBudget
+        });
+
+        if(review.reviewed){
+          if(review.pass){
+            rescuedByAi=true;
+            aiBudget.rescued++;
+          }else{
+            aiBudget.rejected++;
+            if(lowInfo){
+              lowInformationFiltered++;
+              stat(meta.name,"lowInfo",normalized||entry.title||"");
+            }else if(footballReason){
+              nonFootballFiltered++;
+              stat(meta.name,"nonFootball",normalized||entry.title||"");
+            }else if(commercialHint){
+              commercialFiltered++;
+              stat(meta.name,"commercial",normalized||entry.title||"");
+            }
+            continue;
+          }
+        }
       }
-      if(footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta)){
-        nonFootballFiltered++;
-        stat(meta.name,"nonFootball",normalized||entry.title||"");
-        continue;
+
+      if(!rescuedByAi){
+        if(lowInfo){
+          lowInformationFiltered++;
+          stat(meta.name,"lowInfo",normalized||entry.title||"");
+          continue;
+        }
+        if(footballReason){
+          nonFootballFiltered++;
+          stat(meta.name,"nonFootball",normalized||entry.title||"");
+          continue;
+        }
       }
-      if(junkTitleReason(normalized)){
-        junkFiltered++;
-        stat(meta.name,"junk",normalized||entry.title||"");
-        continue;
-      }
+
       if(chineseRatio(normalized)>=0.48){
         processed.push(makeItem(entry,normalized,meta,sourceInfo));
         stat(meta.name,"accepted",normalized);
