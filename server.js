@@ -354,6 +354,70 @@ function parseHupuPublishedAt(html){
   return "";
 }
 
+
+async function fetchDongqiudiHistory(days=30){
+  const cutoff=Date.now()-days*86400000;
+  const categoryIds=[1,120,3,5,4,6,55,37,56];
+  const seen=new Set();
+  const out=[];
+
+  for(const categoryId of categoryIds){
+    let url=`https://api.dongqiudi.com/app/tabs/iphone/${categoryId}.json`;
+    for(let page=0;page<12 && url;page++){
+      try{
+        const res=await fetch(url,{headers:{
+          "user-agent":"Dongqiudi/8.0 (iPhone; iOS 18.0)",
+          "accept":"application/json"
+        }});
+        if(!res.ok)break;
+        const data=await res.json();
+        const articles=Array.isArray(data?.articles)?data.articles:[];
+        let oldest=Date.now();
+
+        for(const a of articles){
+          const title=normalizeTerms(a?.title||"").trim();
+          if(!title)continue;
+          const rawTime=a?.published_at||a?.show_time||a?.created_at||0;
+          let ms=0;
+          if(typeof rawTime==="number" || /^\d{10,13}$/.test(String(rawTime))){
+            ms=Number(rawTime);
+            if(ms<1e12)ms*=1000;
+          }else{
+            ms=Date.parse(rawTime||"");
+          }
+          if(!Number.isFinite(ms)||ms<=0)continue;
+          oldest=Math.min(oldest,ms);
+          if(ms<cutoff)continue;
+          const articleId=a?.id||a?.aid||`${categoryId}-${ms}-${title}`;
+          const key=String(articleId);
+          if(seen.has(key))continue;
+          seen.add(key);
+          out.push({
+            id:`dqd-direct-${key}`,
+            title,
+            content:title,
+            published_at:new Date(ms).toISOString(),
+            created_at:new Date(ms).toISOString(),
+            _meta:{name:"懂球帝",tier:"中文媒体",group:"cn",type:"direct-history",historyOnly:true},
+            _timeReliable:true,
+            url:a?.id?`https://www.dongqiudi.com/articles/${a.id}.html`:""
+          });
+        }
+
+        if(articles.length && oldest<cutoff)break;
+        const next=data?.next;
+        if(!next)break;
+        url=String(next).startsWith("http")?String(next):`https://api.dongqiudi.com${next}`;
+      }catch(err){
+        console.error("[dqd history]",categoryId,page,String(err));
+        break;
+      }
+    }
+  }
+
+  return out.sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at));
+}
+
 async function fetchHupuDirect(){
   try{
     const res=await fetch("https://m.hupu.com/soccer",{headers:{"user-agent":"Mozilla/5.0"}});
@@ -431,7 +495,8 @@ function makeItem(entry,title,meta,sourceInfo){
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
     category:category(title),
-    contentExcerpt:entryBodyText(entry).slice(0,600)
+    contentExcerpt:entryBodyText(entry).slice(0,600),
+    url:entry?.url||entry?.link||""
   };
 }
 
@@ -625,12 +690,14 @@ async function syncEntries(){
       const feedIds=Object.entries(bootstrap?.sourceByFeedId||{})
         .filter(([,meta])=>meta?.historyOnly)
         .map(([id])=>Number(id));
-      if(!feedIds.length)return[];
-      const batches=await Promise.all(feedIds.map(async(id)=>{
-        try{return await getRecentEntriesByFeed(id,30,500)}
-        catch(err){console.error("[exclusive history feed]",id,String(err));return[]}
-      }));
-      return batches.flat();
+      const [feedBatches,dqdDirect]=await Promise.all([
+        Promise.all(feedIds.map(async(id)=>{
+          try{return await getRecentEntriesByFeed(id,30,500)}
+          catch(err){console.error("[exclusive history feed]",id,String(err));return[]}
+        })),
+        fetchDongqiudiHistory(30)
+      ]);
+      return [...feedBatches.flat(),...dqdDirect];
     })();
     const [grouped,historyEntries,directHupu]=await Promise.all([groupedPromise,historyPromise,fetchHupuDirect()]);
     const minifluxEntries=grouped.flat();
@@ -709,6 +776,7 @@ async function syncEntries(){
       hupuSamples:hupuHist.slice(0,5).map((x)=>x.title),
       dqdSamples:dqdHist.slice(0,5).map((x)=>x.title),
       nearest:nearest.slice(0,5),
+      dqdDirect:historyEntries.filter((x)=>x?._meta?.type==="direct-history").length,
       exclusivePairs:exclusiveMatches.length
     };
     state.exclusiveLatest=exclusiveMatches.slice(0,160);
