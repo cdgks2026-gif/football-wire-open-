@@ -82,7 +82,9 @@ export function clusterLatest(items) {
         if(g.eventKey!==eKey)return false;
         return similar(g.head.title,item.title,0.42);
       }
-      return similar(g.head.title,item.title,0.60);
+      const crossPlatform=(item.source==="虎扑" && g.sources.has("懂球帝"))
+        || (item.source==="懂球帝" && g.sources.has("虎扑"));
+      return similar(g.head.title,item.title,crossPlatform?0.46:0.60);
     });
     if (!group) {
       const sources=new Map();
