@@ -136,6 +136,20 @@ export async function getRecentEntriesByCategory(categoryId, days = 5, limit = 3
   return result.entries || [];
 }
 
+
+export async function getRecentEntriesByFeed(feedId, days = 30, limit = 500) {
+  const after = Math.floor((Date.now() - days * 86400000) / 1000);
+  const qs = new URLSearchParams({
+    limit: String(Math.min(1000, Math.max(1, limit))),
+    order: "published_at",
+    direction: "desc",
+    published_after: String(after),
+    feed_id: String(feedId)
+  });
+  const result = await api(`/v1/entries?${qs.toString()}`);
+  return result.entries || [];
+}
+
 export async function minifluxHealth() {
   try {
     const res = await fetch(`${base()}/readyz`);
