@@ -10,7 +10,7 @@ const TERMS = [
   [/\bBrighton(?: & Hove Albion)?(?: FC)?\b/gi,"布莱顿"],[/\bEverton(?: FC)?\b/gi,"埃弗顿"],[/\bWolverhampton Wanderers(?: FC)?\b/gi,"狼队"],
   [/\bCrystal Palace(?: FC)?\b/gi,"水晶宫"],[/\bFulham(?: FC)?\b/gi,"富勒姆"],[/\bNottingham Forest(?: FC)?\b/gi,"诺丁汉森林"],
   [/\bBrentford(?: FC)?\b/gi,"布伦特福德"],[/\bAFC Bournemouth\b/gi,"伯恩茅斯"],[/\bLeeds United(?: FC)?\b/gi,"利兹联"],
-  [/\bBurnley(?: FC)?\b/gi,"伯恩利"],[/\bSunderland(?: AFC)?\b/gi,"桑德兰"],
+  [/\bBurnley(?: FC)?\b/gi,"伯恩利"],[/\bSunderland(?: AFC)?\b/gi,"桑德兰"],[/\bHull City(?: AFC)?\b/gi,"赫尔城"],[/\bIpswich Town(?: FC)?\b/gi,"伊普斯维奇"],[/\bCoventry City(?: FC)?\b/gi,"考文垂"],
 
   [/\bReal Madrid(?: CF)?\b/gi,"皇马"],[/\bFC Barcelona\b/gi,"巴萨"],[/\bBarcelona\b/gi,"巴萨"],
   [/\bAtl[eé]tico Madrid\b/gi,"马竞"],[/\bAtletico Madrid\b/gi,"马竞"],
