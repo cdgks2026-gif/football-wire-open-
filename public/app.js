@@ -1,6 +1,27 @@
 (()=>{
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const modeBtn=$("#themeModeToggle"),accentPicker=$("#accentPicker");
+function applyThemeControls(){
+  const theme=localStorage.getItem("lubai:theme")||"dark";
+  const accent=localStorage.getItem("lubai:accent")||"green";
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.dataset.accent=accent;
+  if(modeBtn)modeBtn.textContent=theme==="dark"?"日间模式":"夜间模式";
+  if(accentPicker)accentPicker.value=accent;
+}
+modeBtn?.addEventListener("click",()=>{
+  const current=document.documentElement.dataset.theme||"dark";
+  const next=current==="dark"?"light":"dark";
+  localStorage.setItem("lubai:theme",next);
+  applyThemeControls();
+});
+accentPicker?.addEventListener("change",()=>{
+  localStorage.setItem("lubai:accent",accentPicker.value||"green");
+  applyThemeControls();
+});
+applyThemeControls();
+
 const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 
 async function enableNotifications(){
