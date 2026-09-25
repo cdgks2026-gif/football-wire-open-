@@ -86,12 +86,32 @@ export function clusterLatest(items) {
     });
     if (!group) {
       const sources=new Map();
-      if (item.sourceVerified!==false && item.source) sources.set(item.source, item.sourceScore||0);
+      if (item.sourceVerified!==false && item.source) {
+        sources.set(item.source,{
+          score:item.sourceScore||0,
+          firstPublishedAt:item.publishedAt,
+          firstTitle:item.title
+        });
+      }
       groups.push({eventKey:eKey,head:item,sources,tiers:new Set([item.tier])});
     } else {
       if (item.sourceVerified!==false && item.source) {
-        const old=group.sources.get(item.source)||0;
-        group.sources.set(item.source,Math.max(old,item.sourceScore||0));
+        const old=group.sources.get(item.source);
+        if(!old){
+          group.sources.set(item.source,{
+            score:item.sourceScore||0,
+            firstPublishedAt:item.publishedAt,
+            firstTitle:item.title
+          });
+        }else{
+          const oldTime=Date.parse(old.firstPublishedAt);
+          const newTime=Date.parse(item.publishedAt);
+          group.sources.set(item.source,{
+            score:Math.max(old.score||0,item.sourceScore||0),
+            firstPublishedAt:newTime<oldTime?item.publishedAt:old.firstPublishedAt,
+            firstTitle:newTime<oldTime?item.title:old.firstTitle
+          });
+        }
       }
       group.tiers.add(item.tier);
       const a=Date.parse(item.publishedAt),b=Date.parse(group.head.publishedAt);
@@ -102,15 +122,49 @@ export function clusterLatest(items) {
   }
   return groups.map((g)=>{
     const sourceDetails=[...g.sources.entries()]
-      .map(([name,score])=>({name,score}))
+      .map(([name,data])=>({
+        name,
+        score:data.score||0,
+        firstPublishedAt:data.firstPublishedAt,
+        firstTitle:data.firstTitle
+      }))
       .sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name));
+
+    const dongqiudi=sourceDetails.find((x)=>x.name==="懂球帝");
+    const hupu=sourceDetails.find((x)=>x.name==="虎扑");
+    let platformExclusiveSource="";
+    let platformExclusiveTitle="";
+    let platformExclusiveAt="";
+    if(dongqiudi && hupu){
+      const dt=Date.parse(dongqiudi.firstPublishedAt);
+      const ht=Date.parse(hupu.firstPublishedAt);
+      if(Number.isFinite(dt) && Number.isFinite(ht)){
+        if(dt<ht){
+          platformExclusiveSource="懂球帝";
+          platformExclusiveTitle=dongqiudi.firstTitle;
+          platformExclusiveAt=dongqiudi.firstPublishedAt;
+        }else if(ht<dt){
+          platformExclusiveSource="虎扑";
+          platformExclusiveTitle=hupu.firstTitle;
+          platformExclusiveAt=hupu.firstPublishedAt;
+        }
+      }
+    }
+
+    const baseTitle=platformExclusiveTitle||g.head.title;
+    const basePublishedAt=platformExclusiveAt||g.head.publishedAt;
     return {
       ...g.head,
-      category:category(g.head.title),
+      title:baseTitle,
+      publishedAt:basePublishedAt,
+      category:category(baseTitle),
       confirmations:sourceDetails.length,
       sources:sourceDetails.map((x)=>x.name).slice(0,6),
       sourceDetails:sourceDetails.slice(0,6),
       primarySource:sourceDetails[0]?.name||g.head.source,
+      hupuDongqiudiMatched:Boolean(dongqiudi&&hupu),
+      platformExclusiveSource,
+      platformExclusiveAt,
       eventKey:g.eventKey
     };
   });
