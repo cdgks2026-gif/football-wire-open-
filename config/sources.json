@@ -196,7 +196,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:hupu.com 足球 when:1d",
+    "query": "site:hupu.com 足球 when:5d",
     "enabled": true
   },
   {
@@ -276,7 +276,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:m.hupu.com/soccer 足球 when:1d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:m.hupu.com/soccer 足球 when:5d -预测 -彩票 -竞彩 -足彩",
     "enabled": true
   },
   {
@@ -284,7 +284,7 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:1d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:5d -预测 -彩票 -竞彩 -足彩",
     "enabled": true
   },
   {
@@ -293,6 +293,14 @@
     "group": "fast",
     "type": "gnews",
     "query": "(\"Fabrizio Romano\" OR \"David Ornstein\" OR \"Florian Plettenberg\" OR \"Gianluca Di Marzio\" OR \"Matteo Moretto\" OR \"Ben Jacobs\") when:5d",
+    "enabled": true
+  },
+  {
+    "name": "懂球帝·历史补充",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "site:dongqiudi.com 足球 when:5d -预测 -彩票 -竞彩 -足彩",
     "enabled": true
   }
 ]
