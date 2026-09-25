@@ -776,6 +776,7 @@ function publishProcessed(processed,extraMetrics={}){
     rawByGroup:extraMetrics.rawByGroup??state.metrics?.rawByGroup??{},
     rawBySource:extraMetrics.rawBySource??state.metrics?.rawBySource??{},
     articleExtraction:extraMetrics.articleExtraction??state.metrics?.articleExtraction??{},
+    filterStatsBySource:extraMetrics.filterStatsBySource??state.metrics?.filterStatsBySource??{},
     commercialSamples:extraMetrics.commercialSamples??state.metrics?.commercialSamples??[],
     unconfirmedFiltered,
     exclusiveVisible,
@@ -930,6 +931,13 @@ async function syncEntries(){
     const articleExtraction=await enrichArticleBodies(entries);
     const processed=[];
     const foreign=[];
+    const filterStatsBySource={};
+    const stat=(name,key,title="")=>{
+      const n=name||"unknown";
+      filterStatsBySource[n]=filterStatsBySource[n]||{raw:0,accepted:0,foreign:0,commercial:0,lowInfo:0,nonFootball:0,junk:0,translateFail:0,samples:[]};
+      filterStatsBySource[n][key]=(filterStatsBySource[n][key]||0)+1;
+      if(title && filterStatsBySource[n].samples.length<4)filterStatsBySource[n].samples.push(title);
+    };
     let junkFiltered=0;
     let nonFootballFiltered=0;
     let lowInformationFiltered=0;
@@ -940,31 +948,38 @@ async function syncEntries(){
     for(const entry of entries){
       const meta=metaForEntry(entry);
       if(!meta || meta.historyOnly)continue;
+      stat(meta.name,"raw",String(entry.title||"").slice(0,160));
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
       const commercial=commercialReason(normalized,entry);
       if(commercial){
         commercialFiltered++;
+        stat(meta.name,"commercial",normalized||entry.title||"");
         if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
       const lowInfo=lowInformationReason(normalized,entry,meta);
       if(lowInfo){
         lowInformationFiltered++;
+        stat(meta.name,"lowInfo",normalized||entry.title||"");
         continue;
       }
       if(footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta)){
         nonFootballFiltered++;
+        stat(meta.name,"nonFootball",normalized||entry.title||"");
         continue;
       }
       if(junkTitleReason(normalized)){
         junkFiltered++;
+        stat(meta.name,"junk",normalized||entry.title||"");
         continue;
       }
       if(chineseRatio(normalized)>=0.48){
         processed.push(makeItem(entry,normalized,meta,sourceInfo));
+        stat(meta.name,"accepted",normalized);
       }else{
         foreign.push({entry,meta,sourceInfo});
+        stat(meta.name,"foreign",normalized);
       }
     }
 
@@ -1027,6 +1042,7 @@ async function syncEntries(){
       rawByGroup,
       rawBySource,
       articleExtraction,
+      filterStatsBySource,
       commercialSamples,
       phase:"中文标题已就绪"
     });
@@ -1053,6 +1069,7 @@ async function syncEntries(){
       if(Object.keys(state.translations).length>before)translatedNow++;
       if(!title){
         hiddenForeign++;
+        stat(meta.name,"translateFail",sourceInfo.title||entry.title||"");
         continue;
       }
       const commercial=commercialReason(title,entry);
@@ -1075,6 +1092,7 @@ async function syncEntries(){
         continue;
       }
       processed.push(makeItem(entry,title,meta,sourceInfo));
+      stat(meta.name,"accepted",title);
 
       // 每翻译 4 条就增量发布一次，用户不用等完整批次。
       if(translatedNow>0 && translatedNow%4===0){
@@ -1113,6 +1131,7 @@ async function syncEntries(){
       rawByGroup,
       rawBySource,
       articleExtraction,
+      filterStatsBySource,
       commercialSamples,
       phase:"完成"
     });
