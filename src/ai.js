@@ -197,3 +197,59 @@ export function aiStatus(state){
     lastError:ai.lastError||null
   };
 }
+
+
+export async function summarizeDailyBrief(state,items=[]){
+  const ai=ensureAiState(state);
+  const top=items.slice(0,12).map((x,i)=>`${i+1}. [${x.category||"综合"}] ${x.title}（${x.confirmations||0}源）`);
+  const fallback={
+    ai:false,
+    title:"过去24小时足球简报",
+    summary:top.slice(0,5).map(x=>x.replace(/^\d+\.\s*/,"")).join("；"),
+    bullets:top.slice(0,8).map(x=>x.replace(/^\d+\.\s*/,""))
+  };
+  if(!aiEnabled()||!top.length)return fallback;
+  const cacheKey=keyFor("daily-brief\n"+top.join("\n"));
+  ai.briefCache=ai.briefCache||{};
+  if(ai.briefCache[cacheKey])return ai.briefCache[cacheKey];
+  if((ai.callsToday||0)>=DAILY_LIMIT)return fallback;
+  ai.callsToday=(ai.callsToday||0)+1;
+  try{
+    const prompt=[
+      "你是足球新闻编辑。根据下面已经筛选和聚类的新闻，生成一份简体中文24小时简报。",
+      "禁止补充输入之外的事实，不判断新闻真假，不猜测未来。",
+      "输出JSON：title、summary、bullets。summary 80-180字；bullets 4-8条，每条不超过45字。",
+      ...top
+    ].join("\n");
+    const payload={
+      model:DEFAULT_MODEL,
+      messages:[
+        {role:"system",content:"Return valid JSON only. No markdown."},
+        {role:"user",content:prompt}
+      ],
+      temperature:0.2,
+      max_tokens:650
+    };
+    if(PROVIDER==="groq")payload.response_format={type:"json_object"};
+    const res=await fetch(`${BASE_URL}/chat/completions`,{
+      method:"POST",headers:requestHeaders(),body:JSON.stringify(payload),signal:AbortSignal.timeout(TIMEOUT_MS)
+    });
+    if(!res.ok)return fallback;
+    const data=await res.json(),obj=cleanJson(data?.choices?.[0]?.message?.content);
+    if(!obj||typeof obj!=="object")return fallback;
+    const result={
+      ai:true,
+      title:String(obj.title||"过去24小时足球简报").slice(0,80),
+      summary:String(obj.summary||fallback.summary).slice(0,500),
+      bullets:Array.isArray(obj.bullets)?obj.bullets.map(x=>String(x).slice(0,120)).filter(Boolean).slice(0,8):fallback.bullets,
+      provider:PROVIDER,model:DEFAULT_MODEL,at:new Date().toISOString()
+    };
+    ai.briefCache[cacheKey]=result;
+    const entries=Object.entries(ai.briefCache);
+    if(entries.length>40){
+      entries.sort((a,b)=>Date.parse(b[1]?.at||0)-Date.parse(a[1]?.at||0));
+      ai.briefCache=Object.fromEntries(entries.slice(0,40));
+    }
+    return result;
+  }catch{return fallback}
+}
