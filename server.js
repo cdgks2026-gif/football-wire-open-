@@ -5,8 +5,9 @@ import crypto from "node:crypto";
 import { loadSources, GROUP_META } from "./src/sources.js";
 import { bootstrapSources, getRecentEntriesByCategory, getRecentEntriesByFeed, refreshCategory, minifluxHealth } from "./src/miniflux.js";
 import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.js";
-import { clusterLatest, category } from "./src/events.js";
+import { clusterLatest, category, eventKey } from "./src/events.js";
 import { extractReadableArticle, compactArticleCache } from "./src/article.js";
+import { aiEnabled, aiStatus, newAiBudget, judgeWithBudget } from "./src/ai.js";
 
 const app=express();
 const PORT=Number(process.env.PORT||8088);
@@ -648,10 +649,13 @@ function makeItem(entry,title,meta,sourceInfo){
     tier:effectiveTier,
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
-    category:category(title),
+    category:entry?._ai?.category||category(title),
     contentExcerpt:entryBodyText(entry).slice(0,600),
     url:entry?._articleUrl||entry?.url||entry?.link||"",
-    articleExtracted:Boolean(entry?._articleText)
+    articleExtracted:Boolean(entry?._articleText),
+    aiEventKey:String(entry?._ai?.eventKey||""),
+    aiCategory:String(entry?._ai?.category||""),
+    aiReviewed:Boolean(entry?._ai)
   };
 }
 
@@ -899,6 +903,37 @@ async function enrichArticleBodies(entries){
   return {attempted,succeeded,failures,cacheSize:Object.keys(state.articleCache||{}).length};
 }
 
+
+async function aiReviewIfNeeded(entry,meta,title,{lowInfo="",footballReason="",commercialHint=false,budget}={}){
+  if(!aiEnabled())return {reviewed:false,pass:false,reason:"disabled"};
+  if(String(footballReason||"").startsWith("非足球:"))return {reviewed:false,pass:false,reason:"hard-non-football"};
+
+  const shouldReview=Boolean(lowInfo || footballReason || commercialHint || !eventKey(title));
+  if(!shouldReview)return {reviewed:false,pass:true,reason:"rules-pass"};
+
+  const result=await judgeWithBudget(state,{
+    title,
+    body:entryBodyText(entry),
+    source:meta?.name||""
+  },budget);
+
+  if(result?.skipped)return {reviewed:false,pass:false,reason:result.reason||"skipped"};
+
+  const pass=result.confidence>=0.76
+    && result.isFootballNews===true
+    && result.isSpecificEvent===true
+    && result.isCommercial!==true;
+
+  if(pass){
+    entry._ai={
+      eventKey:result.eventKey||"",
+      category:result.category||"综合",
+      confidence:result.confidence
+    };
+  }
+  return {reviewed:true,pass,result};
+}
+
 async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
@@ -950,6 +985,7 @@ async function syncEntries(){
     const articleExtraction=await enrichArticleBodies(entries);
     const processed=[];
     const foreign=[];
+    const aiBudget=newAiBudget();
     const filterStatsBySource={};
     const stat=(name,key,title="")=>{
       const n=name||"unknown";
