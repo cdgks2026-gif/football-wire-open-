@@ -13,6 +13,10 @@ export function feedUrl(source) {
     return `https://news.google.com/rss/search?${qs.toString()}`;
   }
   if (source.type === "rss") return source.url;
+  if (source.type === "json" || source.type === "xpath") {
+    const base=(process.env.SELF_FEED_BASE||process.env.PUBLIC_URL||"http://app:8088").replace(/\/$/,"");
+    return `${base}/internal/source/${encodeURIComponent(source.name)}`;
+  }
   throw new Error(`未知来源类型: ${source.type}`);
 }
 export const GROUP_META = {
