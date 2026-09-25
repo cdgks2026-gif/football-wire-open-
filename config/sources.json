@@ -212,7 +212,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(Mbappe OR Yamal OR Haaland OR Messi OR Ronaldo OR Bellingham OR Vinicius OR Salah) football when:1d",
+    "query": "(Mbappe OR Yamal OR Haaland OR Messi OR Ronaldo OR Bellingham OR Vinicius OR Salah) (transfer OR injury OR contract OR coach OR interview OR official OR suspended) football when:2d -odds -betting -prediction -fixtures -scores",
     "enabled": true
   },
   {
@@ -236,7 +236,7 @@
     "tier": "国际媒体",
     "group": "media",
     "type": "gnews",
-    "query": "(football OR soccer) (breaking OR exclusive OR official OR confirmed OR agreement OR injured OR suspended OR sacked) when:1d -prediction -odds -betting",
+    "query": "(site:reuters.com/sports/soccer OR site:bbc.com/sport/football OR site:skysports.com/football OR site:theguardian.com/football) (breaking OR official OR confirmed OR injury OR suspended OR sacked OR transfer) when:2d -odds -betting -prediction",
     "enabled": true
   },
   {
@@ -292,7 +292,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "(\"Fabrizio Romano\" OR \"David Ornstein\" OR \"Florian Plettenberg\" OR \"Gianluca Di Marzio\" OR \"Matteo Moretto\" OR \"Ben Jacobs\") when:5d",
+    "query": "(\"Fabrizio Romano:\" OR \"David Ornstein:\" OR \"Florian Plettenberg:\" OR \"Gianluca Di Marzio:\" OR \"Matteo Moretto:\" OR \"Ben Jacobs:\") football when:5d",
     "enabled": true
   },
   {
