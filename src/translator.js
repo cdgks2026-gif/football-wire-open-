@@ -12,10 +12,27 @@ const TERMS = [
   [/\bBrentford(?: FC)?\b/gi,"布伦特福德"],[/\bAFC Bournemouth\b/gi,"伯恩茅斯"],[/\bLeeds United(?: FC)?\b/gi,"利兹联"],
   [/\bBurnley(?: FC)?\b/gi,"伯恩利"],[/\bSunderland(?: AFC)?\b/gi,"桑德兰"],[/\bHull City(?: AFC)?\b/gi,"赫尔城"],[/\bIpswich Town(?: FC)?\b/gi,"伊普斯维奇"],[/\bCoventry City(?: FC)?\b/gi,"考文垂"],
 
+  // 五大联赛完整俱乐部映射：西甲
+  [/\bCA Osasuna\b/gi,"奥萨苏纳"],[/\bDeportivo Alav[eé]s\b/gi,"阿拉维斯"],[/\bElche CF\b/gi,"埃尔切"],[/\bGetafe CF\b/gi,"赫塔费"],
+  [/\bLevante UD\b/gi,"莱万特"],[/\bM[aá]laga CF\b/gi,"马拉加"],[/\bRC Celta de Vigo\b/gi,"塞尔塔"],[/\bRC Deportivo La Coru[nñ]a\b/gi,"拉科鲁尼亚"],
+  [/\bRCD Espanyol de Barcelona\b/gi,"西班牙人"],[/\bRayo Vallecano de Madrid\b/gi,"巴列卡诺"],[/\bReal Betis Balompi[eé]\b/gi,"贝蒂斯"],
+  [/\bReal Racing Club de Santander\b/gi,"桑坦德竞技"],[/\bReal Sociedad de F[uú]tbol\b/gi,"皇家社会"],
+
   [/\bReal Madrid(?: CF)?\b/gi,"皇马"],[/\bFC Barcelona\b/gi,"巴萨"],[/\bBarcelona\b/gi,"巴萨"],
   [/\bAtl[eé]tico Madrid\b/gi,"马竞"],[/\bAtletico Madrid\b/gi,"马竞"],
   [/\bAthletic Club\b/gi,"毕尔巴鄂竞技"],[/\bReal Sociedad\b/gi,"皇家社会"],[/\bSevilla FC\b/gi,"塞维利亚"],[/\bVillarreal CF\b/gi,"比利亚雷亚尔"],
   [/\bReal Betis\b/gi,"贝蒂斯"],[/\bValencia CF\b/gi,"瓦伦西亚"],
+
+  // 五大联赛完整俱乐部映射：意甲
+  [/\bAC Monza\b/gi,"蒙扎"],[/\bACF Fiorentina\b/gi,"佛罗伦萨"],[/\bBologna FC 1909\b/gi,"博洛尼亚"],[/\bCagliari Calcio\b/gi,"卡利亚里"],
+  [/\bComo 1907\b/gi,"科莫"],[/\bFrosinone Calcio\b/gi,"弗罗西诺内"],[/\bGenoa CFC\b/gi,"热那亚"],[/\bParma Calcio 1913\b/gi,"帕尔马"],
+  [/\bTorino FC\b/gi,"都灵"],[/\bUS Lecce\b/gi,"莱切"],[/\bUS Sassuolo Calcio\b/gi,"萨索洛"],[/\bUdinese Calcio\b/gi,"乌迪内斯"],[/\bVenezia FC\b/gi,"威尼斯"],
+
+  // 五大联赛完整俱乐部映射：德甲
+  [/\b1\. FC K[oö]ln\b/gi,"科隆"],[/\b1\. FC Union Berlin\b/gi,"柏林联合"],[/\b1\. FSV Mainz 05\b/gi,"美因茨"],
+  [/\bBorussia M[oö]nchengladbach\b/gi,"门兴"],[/\bFC Augsburg\b/gi,"奥格斯堡"],[/\bFC Schalke 04\b/gi,"沙尔克04"],
+  [/\bHamburger SV\b/gi,"汉堡"],[/\bSC Freiburg\b/gi,"弗赖堡"],[/\bSC Paderborn 07\b/gi,"帕德博恩"],[/\bSV 07 Elversberg\b/gi,"埃弗斯堡"],
+  [/\bSV Werder Bremen\b/gi,"不莱梅"],[/\bTSG 1899 Hoffenheim\b/gi,"霍芬海姆"],[/\bVfB Stuttgart\b/gi,"斯图加特"],
 
   [/\bFC Bayern M(?:ü|u)nchen\b/gi,"拜仁"],[/\bBayern Munich\b/gi,"拜仁"],[/\bBayern\b/gi,"拜仁"],
   [/\bBorussia Dortmund\b/gi,"多特"],[/\bBayer 04 Leverkusen\b/gi,"勒沃库森"],[/\bRB Leipzig\b/gi,"莱比锡"],
@@ -24,6 +41,12 @@ const TERMS = [
   [/\bFC Internazionale Milano\b/gi,"国米"],[/\bInternazionale\b/gi,"国米"],[/\bInter Milan\b/gi,"国米"],
   [/\bAC Milan\b/gi,"AC米兰"],[/\bJuventus(?: FC)?\b/gi,"尤文"],[/\bSSC Napoli\b/gi,"那不勒斯"],[/\bNapoli\b/gi,"那不勒斯"],
   [/\bAS Roma\b/gi,"罗马"],[/\bSS Lazio\b/gi,"拉齐奥"],[/\bAtalanta BC\b/gi,"亚特兰大"],
+
+  // 五大联赛完整俱乐部映射：法甲
+  [/\bAJ Auxerre\b/gi,"欧塞尔"],[/\bAS Monaco FC\b/gi,"摩纳哥"],[/\bAngers SCO\b/gi,"昂热"],[/\bES Troyes AC\b/gi,"特鲁瓦"],
+  [/\bFC Lorient\b/gi,"洛里昂"],[/\bLe Havre AC\b/gi,"勒阿弗尔"],[/\bLe Mans FC\b/gi,"勒芒"],[/\bLille OSC\b/gi,"里尔"],
+  [/\bOGC Nice\b/gi,"尼斯"],[/\bParis FC\b/gi,"巴黎FC"],[/\bRC Strasbourg Alsace\b/gi,"斯特拉斯堡"],[/\bRacing Club de Lens\b/gi,"朗斯"],
+  [/\bStade Brestois 29\b/gi,"布雷斯特"],[/\bStade Rennais FC 1901\b/gi,"雷恩"],[/\bToulouse FC\b/gi,"图卢兹"],
 
   [/\bParis Saint-Germain(?: FC)?\b/gi,"巴黎"],[/\bPSG\b/gi,"巴黎"],[/\bOlympique de Marseille\b/gi,"马赛"],
   [/\bOlympique Lyonnais\b/gi,"里昂"],[/\bAS Monaco\b/gi,"摩纳哥"],[/\bLOSC Lille\b/gi,"里尔"],
