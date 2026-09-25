@@ -785,21 +785,28 @@ function buildExclusiveHistory(items){
 }
 
 function publishProcessed(processed,extraMetrics={}){
-  const allClusters=clusterLatest(processed).map((x)=>{
+  let allClusters=assignStoryIds(clusterLatest(processed).map((x)=>{
     const exclusive=Boolean(x.platformExclusiveSource);
     const base={...x,exclusive,isMatchReport:isMatchReport(x)};
     const credibility=credibilityFor(base);
     const heat=heatScore(base);
-    return {
+    const decorated={
       ...base,
       credibilityScore:credibility.score,
       credibilityLabel:credibility.label,
       heat,
       importance:importanceScore(base)
     };
+    return {...decorated,_rankScore:rankScore(decorated)};
+  }));
+
+  allClusters=applyEditorial(allClusters,state).map((x)=>{
+    const credibility=credibilityFor(x);
+    const heat=heatScore(x);
+    const item={...x,credibilityScore:credibility.score,credibilityLabel:credibility.label,heat,importance:importanceScore(x)};
+    return {...item,_rankScore:rankScore(item)};
   });
 
-  // 主新闻：多源可进；顶级权威单源可进；懂球帝/虎扑平台直发也直接进入。
   const eligible=allClusters.filter((x)=>{
     if(x.isMatchReport)return false;
     const confirmations=x.confirmations||0;
@@ -810,16 +817,16 @@ function publishProcessed(processed,extraMetrics={}){
     return false;
   });
 
-  const rankedEligible=[...eligible]
-    .sort((a,b)=>{
-      const rs=rankScore(b)-rankScore(a);
-      if(rs!==0)return rs;
-      return Date.parse(b.publishedAt)-Date.parse(a.publishedAt);
-    });
+  const editor=ensureEditor(state);
+  const rankedEligible=[...eligible].sort((a,b)=>{
+    const pa=editor.pinned[a.storyId]?1:0,pb=editor.pinned[b.storyId]?1:0;
+    if(pa!==pb)return pb-pa;
+    const rs=(b._rankScore||rankScore(b))-(a._rankScore||rankScore(a));
+    if(rs!==0)return rs;
+    return Date.parse(b.publishedAt)-Date.parse(a.publishedAt);
+  });
 
   const clustered=rankedEligible.slice(0,MAX_VISIBLE);
-
-  // 战报只进入战报栏，不进入全部/官方/独家/媒体等其他栏目。
   const reportLatest=allClusters
     .filter((x)=>x.isMatchReport)
     .filter((x)=>{
@@ -836,6 +843,18 @@ function publishProcessed(processed,extraMetrics={}){
   state.latest=clustered;
   state.allEligible=rankedEligible.slice(0,800);
   state.reportLatest=reportLatest;
+
+  rememberStories([...allClusters,...(state.exclusiveLatest||[])]);
+  const snapshotDate=snapshotLocal(clustered);
+  const snapshotItems=state.snapshots?.[snapshotDate]||[];
+
+  void persistStories([...allClusters,...(state.exclusiveLatest||[])].filter(x=>x.storyId)).catch((err)=>console.error("[store persist async]",String(err)));
+  void saveSnapshot(snapshotDate,snapshotItems).catch((err)=>console.error("[snapshot db]",String(err)));
+  void notifyNewImportant(state,clustered).then((result)=>{
+    state.metrics={...(state.metrics||{}),notifications:result};
+    saveState();
+  }).catch(()=>{});
+
   const channelCounts=Object.fromEntries(CHANNELS.map((ch)=>[ch.id,channelCount(ch.id)]));
   state.metrics={
     ...(state.metrics||{}),
@@ -855,6 +874,8 @@ function publishProcessed(processed,extraMetrics={}){
     aiBudget:extraMetrics.aiBudget??state.metrics?.aiBudget??{},
     filterStatsBySource:extraMetrics.filterStatsBySource??state.metrics?.filterStatsBySource??{},
     commercialSamples:extraMetrics.commercialSamples??state.metrics?.commercialSamples??[],
+    store:storeStatus(),
+    snapshotDate,
     unconfirmedFiltered,
     exclusiveVisible,
     platformDirectVisible,
