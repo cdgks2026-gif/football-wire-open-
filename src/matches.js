@@ -114,7 +114,9 @@ export async function leaguePageData(leagueId){
 export async function matchByKey(key){
   const data=await loadFootballData();
   const all=Object.values(data).flatMap(x=>x.matches||[]);
-  return all.find(m=>encodeURIComponent([m.league,m.date,m.team1,m.team2].join("|"))===key)||null;
+  let raw=String(key||"");
+  try{raw=decodeURIComponent(raw)}catch{}
+  return all.find(m=>[m.league,m.date,m.team1,m.team2].join("|")===raw)||null;
 }
 export function matchKey(m){
   return encodeURIComponent([m.league,m.date,m.team1,m.team2].join("|"));
