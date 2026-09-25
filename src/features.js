@@ -225,7 +225,7 @@ export function registerFeatureRoutes(app,ctx){
     }
     const rows=[...topics.values()].filter(x=>x.count>=2).sort((a,b)=>b.count-a.count||b.importance-a.importance).slice(0,80)
       .map(x=>'<a class="card" style="display:block;text-decoration:none" href="/topic/'+encodeURIComponent(x.name)+'"><div class="big">'+esc(x.name)+'</div><div class="muted">'+x.count+' 条相关事件</div></a>').join("");
-    res.send(shell("自动专题","<h1>自动专题</h1><p class=\"muted\">根据新闻分类和 AI 标签自动生成专题入口，随新闻库变化更新。</p><div class=\"grid\">'+(rows||'<div class="card">专题正在生成。</div>')+'</div>'));
+    res.send(shell("自动专题",'<h1>自动专题</h1><p class="muted">根据新闻分类和 AI 标签自动生成专题入口，随新闻库变化更新。</p><div class="grid">'+(rows||'<div class="card">专题正在生成。</div>')+'</div>'));
   });
 
   app.get("/topic/:name",(req,res)=>{
@@ -239,7 +239,7 @@ export function registerFeatureRoutes(app,ctx){
   app.get("/entities",(_req,res)=>{
     const state=getState();
     const rows=entityCandidates(state).slice(0,100).map(x=>'<a class="card" style="display:block;text-decoration:none" href="/entity/'+encodeURIComponent(x.name)+'"><div class="big">'+esc(x.name)+'</div><div class="muted">'+x.count+' 条新闻 · '+esc(x.categories.join(" / "))+'</div></a>').join("");
-    res.send(shell("球队 / 球员实体","<h1>球队 / 球员实体</h1><p class=\"muted\">优先使用 AI 标签自动建立实体页；无需手工维护每一个球队和球员。</p><div class=\"grid\">'+(rows||'<div class="card">实体索引正在生成。</div>')+'</div>'));
+    res.send(shell("球队 / 球员实体",'<h1>球队 / 球员实体</h1><p class="muted">优先使用 AI 标签自动建立实体页；无需手工维护每一个球队和球员。</p><div class="grid">'+(rows||'<div class="card">实体索引正在生成。</div>')+'</div>'));
   });
 
   app.get("/entity/:name",async(req,res)=>{
@@ -261,7 +261,7 @@ export function registerFeatureRoutes(app,ctx){
       const bars=vals.map(v=>'<span title="'+esc(v.date)+' '+v.count+'" style="display:inline-block;width:14px;height:'+Math.max(3,Math.round(v.count/max*70))+'px;background:currentColor;opacity:.65;margin-right:3px;vertical-align:bottom"></span>').join("");
       return '<div class="card"><strong>'+esc(cat)+'</strong><div style="height:82px;display:flex;align-items:flex-end;margin-top:8px">'+bars+'</div><div class="muted">最近 '+vals.length+' 天快照</div></div>';
     }).join("");
-    res.send(shell("新闻趋势","<h1>新闻趋势</h1><p class=\"muted\">基于每日快照统计各类新闻变化，不依赖第三方分析平台。</p><div class=\"grid\">'+rows+'</div>'));
+    res.send(shell("新闻趋势",'<h1>新闻趋势</h1><p class="muted">基于每日快照统计各类新闻变化，不依赖第三方分析平台。</p><div class="grid">'+rows+'</div>'));
   });
 
   app.get("/relations",(_req,res)=>{
@@ -277,7 +277,7 @@ export function registerFeatureRoutes(app,ctx){
     }
     const top=[...edges.entries()].map(([key,count])=>({pair:key.split("||"),count})).filter(x=>x.count>=2).sort((a,b)=>b.count-a.count).slice(0,60);
     const cards=top.map(x=>'<div class="card"><a href="/entity/'+encodeURIComponent(x.pair[0])+'">'+esc(x.pair[0])+'</a> <strong>↔</strong> <a href="/entity/'+encodeURIComponent(x.pair[1])+'">'+esc(x.pair[1])+'</a><div class="muted">共同出现在 '+x.count+' 个事件中</div></div>').join("");
-    res.send(shell("新闻关系图","<h1>新闻关系图</h1><p class=\"muted\">根据同一事件中的球队、球员和赛事标签共现自动计算关系强度。</p><div class=\"grid\">'+(cards||'<div class="card">关系数据正在积累。</div>')+'</div>'));
+    res.send(shell("新闻关系图",'<h1>新闻关系图</h1><p class="muted">根据同一事件中的球队、球员和赛事标签共现自动计算关系强度。</p><div class="grid">'+(cards||'<div class="card">关系数据正在积累。</div>')+'</div>'));
   });
 
   app.get("/brief",async(_req,res)=>{
@@ -288,7 +288,7 @@ export function registerFeatureRoutes(app,ctx){
     const lead=brief?'<div class="card"><div class="muted">'+(brief.ai?'AI生成':'规则摘要')+'</div><div class="big">'+esc(brief.title||"过去24小时足球简报")+'</div><p>'+esc(brief.summary||"")+'</p>'+(brief.bullets||[]).map(x=>'<div>• '+esc(x)+'</div>').join("")+'</div>':"";
     const lines=items.map((x,i)=>'<div class="card"><div class="muted">#'+(i+1)+' · '+esc(x.category||"综合")+' · '+(x.confirmations||0)+'源</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
     res.set("Cache-Control","public, max-age=120, stale-while-revalidate=300");
-    res.send(shell("每日简报","<h1>每日简报</h1><p class=\"muted\">有 AI Key 时自动生成摘要；无 Key 或额度不足时使用规则摘要，不影响页面可用性。</p>"+lead+lines));
+    res.send(shell("每日简报",'<h1>每日简报</h1><p class="muted">有 AI Key 时自动生成摘要；无 Key 或额度不足时使用规则摘要，不影响页面可用性。</p>'+lead+lines));
   });
 
   app.get("/admin",(req,res)=>{
