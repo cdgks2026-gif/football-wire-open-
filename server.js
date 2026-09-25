@@ -57,6 +57,59 @@ function junkTitleReason(title){
   return "";
 }
 
+const NON_FOOTBALL_RULES=[
+  /(?:篮球|NBA|CBA|WNBA|EuroLeague|欧篮|男篮|女篮)/i,
+  /(?:网球|ATP|WTA|温网|美网|法网|澳网|tennis)/i,
+  /(?:F1|Formula\s*1|一级方程式|MotoGP|赛车)/i,
+  /(?:棒球|MLB|baseball)/i,
+  /(?:美式橄榄球|NFL|rugby|橄榄球)/i,
+  /(?:板球|cricket)/i,
+  /(?:高尔夫|golf)/i,
+  /(?:斯诺克|snooker)/i,
+  /(?:排球|volleyball)/i,
+  /(?:羽毛球|badminton)/i,
+  /(?:乒乓球|table\s*tennis)/i,
+  /(?:冰球|NHL|hockey)/i,
+  /(?:电竞|电子竞技|League\s+of\s+Legends|Valorant|Dota\s*2|CS2)/i
+];
+
+const FOOTBALL_ANCHORS=[
+  /(?:足球|英超|西甲|意甲|德甲|法甲|欧冠|欧联|欧协联|世界杯|欧洲杯|欧国联|美洲杯|世俱杯|足总杯|联赛杯|国王杯|意大利杯|德国杯)/i,
+  /(?:转会|加盟|租借|续约|签约|报价|体检|主帅|教练|门将|后卫|中场|前锋|进球|助攻|红牌|黄牌|点球|越位|VAR|伤停|复出|首发|替补|阵容|国家队|俱乐部)/i,
+  /\b(?:football|soccer|premier\s+league|la\s*liga|serie\s*a|bundesliga|ligue\s*1|champions\s+league|europa\s+league|world\s+cup|uefa|fifa|goal|transfer|manager|coach|striker|midfielder|defender|goalkeeper)\b/i,
+  /(?:曼联|曼城|利物浦|阿森纳|切尔西|热刺|皇家马德里|皇马|巴塞罗那|巴萨|马德里竞技|马竞|拜仁|多特蒙德|巴黎圣日耳曼|巴黎|国际米兰|国米|AC米兰|尤文图斯|那不勒斯)/i,
+  /(?:姆巴佩|亚马尔|哈兰德|梅西|C罗|罗纳尔多|贝林厄姆|维尼修斯|萨拉赫|凯恩|帕尔默|赖斯|拉什福德|梅努|图赫尔|瓜迪奥拉|阿尔特塔|斯洛特|德泽尔比)/i
+];
+
+function isExplicitFootballSource(meta){
+  const n=String(meta?.name||"");
+  return /懂球帝|足球|罗马诺|奥恩斯坦|迪马济奥|普莱滕贝格|莫雷托|雅各布斯|国际足联|欧足联|豪门官方|五大联赛官方|路透社足球|天空体育足球|广播公司足球/.test(n);
+}
+
+function footballOnlyReason(title,meta){
+  const t=String(title||"").replace(/\s+/g," ").trim();
+  if(!t)return "空标题";
+  for(const rule of NON_FOOTBALL_RULES){
+    if(rule.test(t))return "非足球:"+rule.source;
+  }
+  if(isExplicitFootballSource(meta))return "";
+  if(FOOTBALL_ANCHORS.some((rule)=>rule.test(t)))return "";
+  return "缺少足球锚点";
+}
+
+function importanceScore(item){
+  let score=0;
+  if(item.tier==="官方")score+=5;
+  if(item.tier==="转会专家")score+=4;
+  if(item.tier==="国际媒体")score+=2;
+  if((item.confirmations||0)>=2)score+=3;
+  const t=item.title||"";
+  if(/官宣|官方确认|Here we go|达成协议|加盟|转会|续约|解约|下课|任命/.test(t))score+=3;
+  if(/伤停|手术|重伤|赛季报销|复出|禁赛|红牌|处罚/.test(t))score+=2;
+  if(/世界杯|欧冠|英超|西甲|意甲|德甲|法甲|国家队/.test(t))score+=1;
+  return score;
+}
+
 function metaForEntry(entry){
   return bootstrap?.sourceByFeedId?.[entry.feed?.id]||{
     name:entry.feed?.title||"未知来源",
@@ -81,7 +134,7 @@ function publishProcessed(processed,extraMetrics={}){
     .sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt))
     .slice(0,MAX_VISIBLE);
 
-  state.latest=clustered;
+  state.latest=clustered.map((x)=>({...x,importance:importanceScore(x)}));
   state.metrics={
     ...(state.metrics||{}),
     rawEntries:extraMetrics.rawEntries??state.metrics?.rawEntries??0,
@@ -90,6 +143,7 @@ function publishProcessed(processed,extraMetrics={}){
     hiddenForeign:extraMetrics.hiddenForeign??0,
     translationCache:Object.keys(state.translations||{}).length,
     junkFiltered:extraMetrics.junkFiltered??state.metrics?.junkFiltered??0,
+    nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -131,11 +185,16 @@ async function syncEntries(){
     const processed=[];
     const foreign=[];
     let junkFiltered=0;
+    let nonFootballFiltered=0;
 
-    // 第一阶段：先做质量过滤；预测、博彩、赔率、推荐单等不进入新闻流。
+    // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
       const meta=metaForEntry(entry);
       const normalized=normalizeTerms(entry.title||"");
+      if(footballOnlyReason(normalized,meta)){
+        nonFootballFiltered++;
+        continue;
+      }
       if(junkTitleReason(normalized)){
         junkFiltered++;
         continue;
@@ -152,6 +211,7 @@ async function syncEntries(){
       translatedNow:0,
       hiddenForeign:foreign.length,
       junkFiltered,
+      nonFootballFiltered,
       phase:"中文标题已就绪"
     });
 
@@ -164,6 +224,10 @@ async function syncEntries(){
       if(Object.keys(state.translations).length>before)translatedNow++;
       if(!title){
         hiddenForeign++;
+        continue;
+      }
+      if(footballOnlyReason(title,meta)){
+        nonFootballFiltered++;
         continue;
       }
       if(junkTitleReason(title)){
@@ -179,6 +243,7 @@ async function syncEntries(){
           translatedNow,
           hiddenForeign,
           junkFiltered,
+          nonFootballFiltered,
           phase:"外文标题增量翻译中"
         });
       }
@@ -189,6 +254,7 @@ async function syncEntries(){
       translatedNow,
       hiddenForeign,
       junkFiltered,
+      nonFootballFiltered,
       phase:"完成"
     });
   }catch(err){
@@ -225,11 +291,13 @@ function filteredItems(req){
   const tier=String(req.query.tier||"全部");
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
+  const important=String(req.query.important||"0")==="1";
   let items=state.latest||[];
   if(tier!=="全部")items=items.filter((x)=>x.tier===tier);
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
   if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
+  if(important)items=items.filter((x)=>(x.importance||0)>=4);
   return items;
 }
 
@@ -239,6 +307,7 @@ app.get("/",(req,res)=>{
   const tier=String(req.query.tier||"全部");
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
+  const important=String(req.query.important||"0")==="1";
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
   const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
 
@@ -272,6 +341,8 @@ h1{margin:0;font-size:36px;letter-spacing:-1px}
 form{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:#06100cf2;padding:10px 0;border-bottom:1px solid #14251e;z-index:5}
 input,select,button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 10px;font:inherit}
 input{flex:1;min-width:180px}
+.important{display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;font-size:13px;white-space:nowrap}
+.important input{min-width:0;flex:none}
 button{background:var(--green);color:#052014;font-weight:800}
 .status{padding:12px 0;color:var(--muted);font-size:12px}
 .list{display:flex;flex-direction:column;gap:8px}
@@ -296,10 +367,14 @@ button{background:var(--green);color:#052014;font-weight:800}
 <select name="hours">
 <option value="0" ${hours? "":"selected"}>全部时间</option>
 <option value="1" ${hours===1?"selected":""}>最近1小时</option>
+<option value="3" ${hours===3?"selected":""}>最近3小时</option>
+<option value="6" ${hours===6?"selected":""}>最近6小时</option>
+<option value="24" ${hours===24?"selected":""}>最近24小时</option>
 </select>
+<label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前 ${items.length} 条 · 后台共 ${(state.latest||[]).length} 个事件 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<div class="status">当前 ${items.length} 条 · 足球事件 ${(state.latest||[]).length} 条 · 已拦截非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
@@ -318,12 +393,14 @@ app.get("/api/news",(req,res)=>{
   const tier=String(req.query.tier||"全部");
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
+  const important=String(req.query.important||"0")==="1";
 
   let items=state.latest||[];
   if(tier!=="全部")items=items.filter((x)=>x.tier===tier);
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
   if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
+  if(important)items=items.filter((x)=>(x.importance||0)>=4);
 
   res.set("Cache-Control","no-store");
   res.json({
