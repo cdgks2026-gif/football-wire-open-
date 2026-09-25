@@ -84,6 +84,20 @@ function tokens(title) {
   out.push(...latin);
   return out;
 }
+
+function itemText(item){
+  return `${item?.title||""} ${String(item?.contentExcerpt||"").slice(0,700)}`;
+}
+
+function similarItems(a,b,titleThreshold=0.48,bodyThreshold=0.36){
+  const titleA=a?.title||"",titleB=b?.title||"";
+  const titleScore=similarityScore(titleA,titleB);
+  if(titleScore>=titleThreshold)return true;
+
+  const combinedScore=similarityScore(itemText(a),itemText(b));
+  return combinedScore>=bodyThreshold;
+}
+
 function actionTokens(title){
   const t=normalizeEntities(title);
   const rules=[
@@ -131,11 +145,16 @@ export function clusterLatest(items) {
       if(eKey && g.eventKey){
         if(g.eventKey!==eKey)return false;
         if(!actionCompatible(g.head.title,item.title))return false;
-        return similar(g.head.title,item.title,0.38);
+        return similarItems(g.head,item,0.38,0.31);
       }
       const crossPlatform=(item.source==="虎扑" && g.sources.has("懂球帝"))
         || (item.source==="懂球帝" && g.sources.has("虎扑"));
-      return similar(g.head.title,item.title,crossPlatform?0.46:0.60);
+      return similarItems(
+        g.head,
+        item,
+        crossPlatform?0.46:0.60,
+        crossPlatform?0.36:0.48
+      );
     });
     if (!group) {
       const sources=new Map();
