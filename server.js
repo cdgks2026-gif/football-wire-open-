@@ -747,6 +747,8 @@ function publishProcessed(processed,extraMetrics={}){
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     lowInformationFiltered:extraMetrics.lowInformationFiltered??state.metrics?.lowInformationFiltered??0,
     commercialFiltered:extraMetrics.commercialFiltered??state.metrics?.commercialFiltered??0,
+    rawByGroup:extraMetrics.rawByGroup??state.metrics?.rawByGroup??{},
+    commercialSamples:extraMetrics.commercialSamples??state.metrics?.commercialSamples??[],
     unconfirmedFiltered,
     exclusiveVisible,
     platformDirectVisible,
@@ -814,12 +816,19 @@ async function syncEntries(){
     const [grouped,historyEntries,directHupu]=await Promise.all([groupedPromise,historyPromise,fetchHupuDirect()]);
     const minifluxEntries=grouped.flat();
     const entries=[...minifluxEntries,...directHupu];
+    const rawByGroup={};
+    for(const entry of entries){
+      const m=metaForEntry(entry);
+      const key=m?.group||"unknown";
+      rawByGroup[key]=(rawByGroup[key]||0)+1;
+    }
     const processed=[];
     const foreign=[];
     let junkFiltered=0;
     let nonFootballFiltered=0;
     let lowInformationFiltered=0;
     let commercialFiltered=0;
+    const commercialSamples=[];
 
     // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
@@ -830,6 +839,7 @@ async function syncEntries(){
       const commercial=commercialReason(normalized,entry);
       if(commercial){
         commercialFiltered++;
+        if(commercialSamples.length<8)commercialSamples.push(normalized||title||entry.title||"");
         continue;
       }
       const lowInfo=lowInformationReason(normalized,entry);
@@ -908,6 +918,8 @@ async function syncEntries(){
       nonFootballFiltered,
       lowInformationFiltered,
       commercialFiltered,
+      rawByGroup,
+      commercialSamples,
       phase:"中文标题已就绪"
     });
 
@@ -936,6 +948,7 @@ async function syncEntries(){
       const commercial=commercialReason(title,entry);
       if(commercial){
         commercialFiltered++;
+        if(commercialSamples.length<8)commercialSamples.push(normalized||title||entry.title||"");
         continue;
       }
       const lowInfo=lowInformationReason(title,entry);
@@ -976,6 +989,8 @@ async function syncEntries(){
       nonFootballFiltered,
       lowInformationFiltered,
       commercialFiltered,
+      rawByGroup,
+      commercialSamples,
       phase:"完成"
     });
   }catch(err){
