@@ -118,7 +118,7 @@ try{
   };
 }catch{}
 setInterval(()=>checkNews(false),60000);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(r=>{r.update().catch(()=>{});setInterval(()=>r.update().catch(()=>{}),5*60*1000)}).catch(()=>{});
 
 let bookmarks=read("lubai:bookmarks",[]);
 function renderBookmarkCount(){const el=$("#bookmarkCount");if(el)el.textContent=String(bookmarks.length)}
