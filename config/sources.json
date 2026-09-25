@@ -262,5 +262,13 @@
     "type": "gnews",
     "query": "site:thesun.co.uk (footballer OR football) (girlfriend OR wife OR WAG OR relationship OR party OR nightclub OR holiday OR mansion OR car OR fashion OR lifestyle OR dressing room) when:2d -odds -betting -tips -prediction",
     "enabled": true
+  },
+  {
+    "name": "太阳报·全量足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:thesun.co.uk football when:2d -odds -betting -tips -prediction",
+    "enabled": true
   }
 ]
