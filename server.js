@@ -1607,6 +1607,13 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <a href="/digest">24小时摘要</a>
 <a href="/sources">来源健康</a>
 <a href="/feed.xml">RSS</a>
+<a href="/topics">专题</a>
+<a href="/transfers">转会</a>
+<a href="/injuries">伤停</a>
+<a href="/entities">球队/球员</a>
+<a href="/trends">趋势</a>
+<a href="/brief">每日简报</a>
+<button type="button" id="mineToggle">只看我的关注</button>
 <button type="button" id="managePrefs">个性化偏好</button>
 <button type="button" id="addLike">+关注词</button>
 <button type="button" id="addMute">+屏蔽词</button>
