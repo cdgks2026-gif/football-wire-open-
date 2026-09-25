@@ -1,15 +1,37 @@
 import crypto from "node:crypto";
 
 const TERMS = [
-  [/\bManchester United\b/gi,"曼联"],[/\bMan Utd\b/gi,"曼联"],
-  [/\bReal Madrid\b/gi,"皇家马德里"],[/\bBarcelona\b/gi,"巴塞罗那"],
-  [/\bManchester City\b/gi,"曼城"],[/\bLiverpool\b/gi,"利物浦"],
-  [/\bArsenal\b/gi,"阿森纳"],[/\bChelsea\b/gi,"切尔西"],
-  [/\bTottenham Hotspur\b/gi,"托特纳姆热刺"],[/\bTottenham\b/gi,"热刺"],
-  [/\bBayern Munich\b/gi,"拜仁慕尼黑"],[/\bParis Saint-Germain\b/gi,"巴黎圣日耳曼"],
-  [/\bPSG\b/gi,"巴黎圣日耳曼"],[/\bInter Milan\b/gi,"国际米兰"],
-  [/\bAC Milan\b/gi,"AC米兰"],[/\bJuventus\b/gi,"尤文图斯"],
-  [/\bAtletico Madrid\b/gi,"马德里竞技"],[/\bBorussia Dortmund\b/gi,"多特蒙德"],
+  // 俱乐部统一使用中文足球社区最常见的简称，避免“皇家马德里/巴塞罗那/托特纳姆热刺”等机械全称。
+  [/\bManchester United(?: FC)?\b/gi,"曼联"],[/\bMan Utd\b/gi,"曼联"],
+  [/\bManchester City(?: FC)?\b/gi,"曼城"],[/\bMan City\b/gi,"曼城"],
+  [/\bLiverpool(?: FC)?\b/gi,"利物浦"],[/\bArsenal(?: FC)?\b/gi,"阿森纳"],
+  [/\bChelsea(?: FC)?\b/gi,"切尔西"],[/\bTottenham Hotspur(?: FC)?\b/gi,"热刺"],[/\bTottenham\b/gi,"热刺"],[/\bSpurs\b/gi,"热刺"],
+  [/\bNewcastle United(?: FC)?\b/gi,"纽卡"],[/\bAston Villa(?: FC)?\b/gi,"维拉"],[/\bWest Ham United(?: FC)?\b/gi,"西汉姆"],
+  [/\bBrighton(?: & Hove Albion)?(?: FC)?\b/gi,"布莱顿"],[/\bEverton(?: FC)?\b/gi,"埃弗顿"],[/\bWolverhampton Wanderers(?: FC)?\b/gi,"狼队"],
+  [/\bCrystal Palace(?: FC)?\b/gi,"水晶宫"],[/\bFulham(?: FC)?\b/gi,"富勒姆"],[/\bNottingham Forest(?: FC)?\b/gi,"诺丁汉森林"],
+  [/\bBrentford(?: FC)?\b/gi,"布伦特福德"],[/\bAFC Bournemouth\b/gi,"伯恩茅斯"],[/\bLeeds United(?: FC)?\b/gi,"利兹联"],
+  [/\bBurnley(?: FC)?\b/gi,"伯恩利"],[/\bSunderland(?: AFC)?\b/gi,"桑德兰"],
+
+  [/\bReal Madrid(?: CF)?\b/gi,"皇马"],[/\bFC Barcelona\b/gi,"巴萨"],[/\bBarcelona\b/gi,"巴萨"],
+  [/\bAtl[eé]tico Madrid\b/gi,"马竞"],[/\bAtletico Madrid\b/gi,"马竞"],
+  [/\bAthletic Club\b/gi,"毕尔巴鄂竞技"],[/\bReal Sociedad\b/gi,"皇家社会"],[/\bSevilla FC\b/gi,"塞维利亚"],[/\bVillarreal CF\b/gi,"比利亚雷亚尔"],
+  [/\bReal Betis\b/gi,"贝蒂斯"],[/\bValencia CF\b/gi,"瓦伦西亚"],
+
+  [/\bFC Bayern M(?:ü|u)nchen\b/gi,"拜仁"],[/\bBayern Munich\b/gi,"拜仁"],[/\bBayern\b/gi,"拜仁"],
+  [/\bBorussia Dortmund\b/gi,"多特"],[/\bBayer 04 Leverkusen\b/gi,"勒沃库森"],[/\bRB Leipzig\b/gi,"莱比锡"],
+  [/\bEintracht Frankfurt\b/gi,"法兰克福"],
+
+  [/\bFC Internazionale Milano\b/gi,"国米"],[/\bInternazionale\b/gi,"国米"],[/\bInter Milan\b/gi,"国米"],
+  [/\bAC Milan\b/gi,"AC米兰"],[/\bJuventus(?: FC)?\b/gi,"尤文"],[/\bSSC Napoli\b/gi,"那不勒斯"],[/\bNapoli\b/gi,"那不勒斯"],
+  [/\bAS Roma\b/gi,"罗马"],[/\bSS Lazio\b/gi,"拉齐奥"],[/\bAtalanta BC\b/gi,"亚特兰大"],
+
+  [/\bParis Saint-Germain(?: FC)?\b/gi,"巴黎"],[/\bPSG\b/gi,"巴黎"],[/\bOlympique de Marseille\b/gi,"马赛"],
+  [/\bOlympique Lyonnais\b/gi,"里昂"],[/\bAS Monaco\b/gi,"摩纳哥"],[/\bLOSC Lille\b/gi,"里尔"],
+
+  // 已经是中文全称时也归一为常用叫法。
+  [/皇家马德里/g,"皇马"],[/巴塞罗那/g,"巴萨"],[/托特纳姆热刺/g,"热刺"],[/拜仁慕尼黑/g,"拜仁"],
+  [/巴黎圣日耳曼/g,"巴黎"],[/国际米兰/g,"国米"],[/尤文图斯/g,"尤文"],[/马德里竞技/g,"马竞"],[/多特蒙德/g,"多特"],
+
   [/\bKylian Mbapp[eé]\b/gi,"基利安·姆巴佩"],[/\bMbapp[eé]\b/gi,"姆巴佩"],
   [/\bLamine Yamal\b/gi,"拉明·亚马尔"],[/\bErling Haaland\b/gi,"埃尔林·哈兰德"],
   [/\bLionel Messi\b/gi,"利昂内尔·梅西"],[/\bCristiano Ronaldo\b/gi,"克里斯蒂亚诺·罗纳尔多"],
@@ -24,7 +46,7 @@ const TERMS = [
   [/\bHere we go\b/gi,"交易确认"],[/\bBreaking\b/gi,"突发"],[/\bOfficial\b/gi,"官方确认"],
   [/\bPremier League\b/gi,"英超"],[/\bChampions League\b/gi,"欧冠"],
   [/\bLa Liga\b/gi,"西甲"],[/\bWorld Cup\b/gi,"世界杯"],[/\bVAR\b/gi,"视频助理裁判"]
-];
+]
 
 export function normalizeTerms(text) {
   let out = String(text || "").replace(/\s+/g, " ").trim();
