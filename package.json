@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check src/miniflux.js && node --check src/translator.js && node --check src/events.js && node --check src/sources.js && node --check src/article.js && node --check src/ai.js && node --check src/store.js && node --check src/editor.js && node --check src/matches.js && node --check src/notify.js"
+    "check": "node --check server.js && node --check src/miniflux.js && node --check src/translator.js && node --check src/events.js && node --check src/sources.js && node --check src/article.js && node --check src/ai.js && node --check src/store.js && node --check src/editor.js && node --check src/matches.js && node --check src/notify.js && node --check src/features.js"
   },
   "dependencies": {
     "express": "^5.1.0",
