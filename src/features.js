@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { getStory as getStoredStory, searchStories, getSnapshot, listSnapshots, storeStatus, saveOverride } from "./store.js";
 import { teamContext, matchesAround, standings, leagueOptions } from "./matches.js";
 import { ensureEditor, editStory, applyEditorial } from "./editor.js";
+import { summarizeDailyBrief } from "./ai.js";
 
 function esc(value){
   return String(value??"").replace(/[&<>"']/g,(ch)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -35,7 +36,7 @@ function shell(title,body,description=""){
     +'table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #233b31;padding:8px;text-align:left}'
     +'input,select,button{background:#0c1813;color:#f3f8f5;border:1px solid #345546;border-radius:8px;padding:8px}button{cursor:pointer}.danger{border-color:#8a3e3e;color:#ffaaa0}.good{border-color:#2f7656;color:#8cf0b8}'
     +'.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}@media(max-width:650px){.big{font-size:20px}table{font-size:11px}}</style>'
-    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a><a href="/topics">专题</a><a href="/transfers">转会中心</a><a href="/injuries">伤停中心</a><a href="/entities">球队/球员</a><a href="/trends">趋势</a></div>'
+    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a><a href="/topics">专题</a><a href="/transfers">转会中心</a><a href="/injuries">伤停中心</a><a href="/entities">球队/球员</a><a href="/trends">趋势</a><a href="/relations">关系图</a></div>'
     +body+'<script src="/app.js" defer></script></main></body></html>';
 }
 function adminAllowed(req){
@@ -263,12 +264,31 @@ export function registerFeatureRoutes(app,ctx){
     res.send(shell("新闻趋势","<h1>新闻趋势</h1><p class=\"muted\">基于每日快照统计各类新闻变化，不依赖第三方分析平台。</p><div class=\"grid\">'+rows+'</div>'));
   });
 
-  app.get("/brief",(_req,res)=>{
+  app.get("/relations",(_req,res)=>{
+    const state=getState();
+    const edges=new Map();
+    for(const x of allStories(state).slice(0,500)){
+      const tags=[...new Set((x.aiTags||[]).map(v=>String(v).trim()).filter(v=>v&&v.length<=24))].slice(0,6);
+      for(let i=0;i<tags.length;i++)for(let j=i+1;j<tags.length;j++){
+        const pair=[tags[i],tags[j]].sort((a,b)=>a.localeCompare(b,"zh-CN"));
+        const key=pair.join("||");
+        edges.set(key,(edges.get(key)||0)+1);
+      }
+    }
+    const top=[...edges.entries()].map(([key,count])=>({pair:key.split("||"),count})).filter(x=>x.count>=2).sort((a,b)=>b.count-a.count).slice(0,60);
+    const cards=top.map(x=>'<div class="card"><a href="/entity/'+encodeURIComponent(x.pair[0])+'">'+esc(x.pair[0])+'</a> <strong>↔</strong> <a href="/entity/'+encodeURIComponent(x.pair[1])+'">'+esc(x.pair[1])+'</a><div class="muted">共同出现在 '+x.count+' 个事件中</div></div>').join("");
+    res.send(shell("新闻关系图","<h1>新闻关系图</h1><p class=\"muted\">根据同一事件中的球队、球员和赛事标签共现自动计算关系强度。</p><div class=\"grid\">'+(cards||'<div class="card">关系数据正在积累。</div>')+'</div>'));
+  });
+
+  app.get("/brief",async(_req,res)=>{
     const state=getState();
     const cutoff=Date.now()-24*3600_000;
     const items=allStories(state).filter(x=>Date.parse(x.publishedAt||0)>=cutoff).sort((a,b)=>(b.importance||0)-(a.importance||0)||(b.confirmations||0)-(a.confirmations||0)).slice(0,12);
+    const brief=await summarizeDailyBrief(state,items).catch(()=>null);
+    const lead=brief?'<div class="card"><div class="muted">'+(brief.ai?'AI生成':'规则摘要')+'</div><div class="big">'+esc(brief.title||"过去24小时足球简报")+'</div><p>'+esc(brief.summary||"")+'</p>'+(brief.bullets||[]).map(x=>'<div>• '+esc(x)+'</div>').join("")+'</div>':"";
     const lines=items.map((x,i)=>'<div class="card"><div class="muted">#'+(i+1)+' · '+esc(x.category||"综合")+' · '+(x.confirmations||0)+'源</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
-    res.send(shell("每日简报","<h1>每日简报</h1><p class=\"muted\">根据重要度、多源确认和时间自动生成；即使没有配置 AI，也可以稳定工作。</p>"+(lines||'<div class="card">最近24小时暂无可展示事件。</div>')));
+    res.set("Cache-Control","public, max-age=120, stale-while-revalidate=300");
+    res.send(shell("每日简报","<h1>每日简报</h1><p class=\"muted\">有 AI Key 时自动生成摘要；无 Key 或额度不足时使用规则摘要，不影响页面可用性。</p>"+lead+lines));
   });
 
   app.get("/admin",(req,res)=>{
