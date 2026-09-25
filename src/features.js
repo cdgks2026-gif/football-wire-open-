@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { getStory as getStoredStory, searchStories, getSnapshot, listSnapshots, storeStatus, saveOverride } from "./store.js";
-import { teamContext, matchesAround, standings, leagueOptions, leaguePageData, matchByKey, matchKey } from "./matches.js";
+import { teamContext, matchesAround, standings, leagueOptions, leaguePageData, matchByKey, matchKey, displayTeamName } from "./matches.js";
 import { ensureEditor, editStory, applyEditorial } from "./editor.js";
 import { summarizeDailyBrief } from "./ai.js";
 
@@ -65,7 +65,7 @@ export function registerFeatureRoutes(app,ctx){
     const tagBadges=(story.aiTags||[]).map(x=>'<span class="badge">'+esc(x)+'</span>').join("");
     const timeline=(versions.length?versions:members).map(v=>'<div class="row"><div class="muted">'+esc(new Date(v.publishedAt||v.recordedAt||0).toLocaleString("zh-CN"))+'</div><div>'+esc(v.title||"")+'</div></div>').join("");
     const reports=members.map(m=>'<tr><td>'+esc(new Date(m.publishedAt||0).toLocaleString("zh-CN"))+'</td><td>'+esc(m.source||"")+'</td><td>'+(m.url?'<a href="'+esc(m.url)+'" target="_blank" rel="noopener">'+esc(m.title)+'</a>':esc(m.title))+'</td></tr>').join("");
-    const contextHtml=context.map(c=>'<div class="card"><strong>'+esc(c.team)+'</strong><div class="muted">最近比赛 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].map(m=>'<div>'+esc(m.date)+' · '+esc(m.team1)+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(m.team2)+' · '+esc(m.leagueName||"")+'</div>').join("")+'</div>').join("");
+    const contextHtml=context.map(c=>'<div class="card"><strong>'+esc(displayTeamName(c.team))+'</strong><div class="muted">最近比赛 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].map(m=>'<div>'+esc(m.date)+' · '+esc(displayTeamName(m.team1))+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(displayTeamName(m.team2))+' · '+esc(m.leagueName||"")+'</div>').join("")+'</div>').join("");
     let body='<div class="card"><div class="muted">'+esc(story.category||"综合")+' · '+(story.confirmations||0)+' 个来源 · 首次 '+esc(new Date(story.firstSeenAt||story.publishedAt||0).toLocaleString("zh-CN"))+'</div><div class="big">'+esc(story.title)+'</div><div>'+sourceBadges+tagBadges+'</div></div>';
     const publicUrl=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\/$/,"");
     const structured={
@@ -137,8 +137,8 @@ export function registerFeatureRoutes(app,ctx){
     const league=String(req.query.league||"epl");
     const [matches,table]=await Promise.all([matchesAround(date,3),standings(league)]);
     const leagues=leagueOptions();
-    const matchRows=matches.map(m=>'<tr><td>'+esc(m.date)+'</td><td><a href="/league/'+esc(m.league)+'">'+esc(m.leagueName)+'</a></td><td>'+esc(m.team1)+'</td><td><a href="/match/'+matchKey(m)+'">'+(m.ft?esc(m.ft.join("-")):"vs")+'</a></td><td>'+esc(m.team2)+'</td></tr>').join("");
-    const tableRows=table.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.team)+'</td><td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td><td>'+r.gd+'</td><td><strong>'+r.pts+'</strong></td></tr>').join("");
+    const matchRows=matches.map(m=>'<tr><td>'+esc(m.date)+'</td><td><a href="/league/'+esc(m.league)+'">'+esc(m.leagueName)+'</a></td><td>'+esc(displayTeamName(m.team1))+'</td><td><a href="/match/'+matchKey(m)+'">'+(m.ft?esc(m.ft.join("-")):"vs")+'</a></td><td>'+esc(displayTeamName(m.team2))+'</td></tr>').join("");
+    const tableRows=table.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(displayTeamName(r.team))+'</td><td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td><td>'+r.gd+'</td><td><strong>'+r.pts+'</strong></td></tr>').join("");
     const opts=leagues.map(l=>'<option value="'+l.id+'" '+(l.id===league?"selected":"")+'>'+l.name+'</option>').join("");
     const body='<h1>赛程与积分榜</h1><form method="get"><input type="date" name="date" value="'+esc(date)+'"><select name="league">'+opts+'</select><button>查看</button></form>'
       +'<p class="muted">比赛数据来自 OpenFootball 公共数据集；用于新闻上下文和历史查询，不作为官方实时比分源。</p>'
@@ -169,9 +169,9 @@ export function registerFeatureRoutes(app,ctx){
   app.get("/league/:id",async(req,res)=>{
     const data=await leaguePageData(String(req.params.id||"")).catch(()=>null);
     if(!data)return res.status(404).send(shell("未找到联赛",'<div class="card">暂不支持这个联赛。</div>'));
-    const table=data.table.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><a href="/entity/'+encodeURIComponent(r.team)+'">'+esc(r.team)+'</a></td><td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td><td>'+r.gd+'</td><td><strong>'+r.pts+'</strong></td></tr>').join("");
-    const recent=data.recent.map(m=>'<div class="card"><div class="muted">'+esc(m.date)+'</div><a href="/match/'+matchKey(m)+'">'+esc(m.team1)+' '+esc((m.ft||["",""]).join("-"))+' '+esc(m.team2)+'</a></div>').join("");
-    const next=data.upcoming.map(m=>'<div class="card"><div class="muted">'+esc(m.date)+'</div><a href="/match/'+matchKey(m)+'">'+esc(m.team1)+' vs '+esc(m.team2)+'</a></div>').join("");
+    const table=data.table.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><a href="/entity/'+encodeURIComponent(displayTeamName(r.team))+'">'+esc(displayTeamName(r.team))+'</a></td><td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td><td>'+r.gd+'</td><td><strong>'+r.pts+'</strong></td></tr>').join("");
+    const recent=data.recent.map(m=>'<div class="card"><div class="muted">'+esc(m.date)+'</div><a href="/match/'+matchKey(m)+'">'+esc(displayTeamName(m.team1))+' '+esc((m.ft||["",""]).join("-"))+' '+esc(displayTeamName(m.team2))+'</a></div>').join("");
+    const next=data.upcoming.map(m=>'<div class="card"><div class="muted">'+esc(m.date)+'</div><a href="/match/'+matchKey(m)+'">'+esc(displayTeamName(m.team1))+' vs '+esc(displayTeamName(m.team2))+'</a></div>').join("");
     const body='<h1>'+esc(data.name)+'</h1><p class="muted">'+esc(data.title||"")+'</p><div class="grid"><div><h2>近期赛果</h2>'+recent+'</div><div><h2>下一轮赛程</h2>'+next+'</div></div><h2>积分榜</h2><div class="card"><table><tr><th>#</th><th>球队</th><th>场</th><th>胜</th><th>平</th><th>负</th><th>净胜</th><th>分</th></tr>'+table+'</table></div>';
     res.send(shell(data.name,body,data.name+"赛程、赛果与积分榜"));
   });
@@ -185,7 +185,7 @@ export function registerFeatureRoutes(app,ctx){
     }).slice(0,16);
     const newsHtml=news.map(x=>'<div class="card"><div class="muted">'+esc(x.category||"综合")+' · '+esc(ago(x.publishedAt))+'</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
     const score=m.ft?esc(m.ft.join(" - ")):"vs";
-    res.send(shell(m.team1+" "+score+" "+m.team2,'<h1>'+esc(m.team1)+' '+score+' '+esc(m.team2)+'</h1><div class="card"><div>'+esc(m.date)+' · <a href="/league/'+esc(m.league)+'">'+esc(m.leagueName)+'</a></div></div><h2>相关新闻</h2>'+(newsHtml||'<div class="card">暂无相关报道。</div>')));
+    res.send(shell(m.team1+" "+score+" "+m.team2,'<h1>'+esc(displayTeamName(m.team1))+' '+score+' '+esc(displayTeamName(m.team2))+'</h1><div class="card"><div>'+esc(m.date)+' · <a href="/league/'+esc(m.league)+'">'+esc(m.leagueName)+'</a></div></div><h2>相关新闻</h2>'+(newsHtml||'<div class="card">暂无相关报道。</div>')));
   });
 
   app.get("/digest",async(_req,res)=>{
@@ -297,7 +297,7 @@ export function registerFeatureRoutes(app,ctx){
     const state=getState(),name=decodeURIComponent(String(req.params.name||"")).slice(0,60),q=name.toLowerCase();
     const items=allStories(state).filter(x=>storyHay(x).toLowerCase().includes(q)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,120);
     const team=await teamContext(name).catch(()=>[]);
-    const match=team.map(c=>'<div class="card"><div class="big">'+esc(c.team)+'</div><div class="muted">最近 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].slice(0,6).map(m=>'<div>'+esc(m.date)+' · '+esc(m.team1)+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(m.team2)+'</div>').join("")+'</div>').join("");
+    const match=team.map(c=>'<div class="card"><div class="big">'+esc(displayTeamName(c.team))+'</div><div class="muted">最近 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].slice(0,6).map(m=>'<div>'+esc(m.date)+' · '+esc(displayTeamName(m.team1))+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(displayTeamName(m.team2))+'</div>').join("")+'</div>').join("");
     const cards=items.map(x=>'<div class="card"><div class="muted">'+esc(x.category||"")+' · '+esc(ago(x.publishedAt))+'</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
     res.send(shell(name,'<h1>'+esc(name)+'</h1><p class="muted">自动实体页 · '+items.length+' 条新闻</p>'+(match?'<h2>比赛上下文</h2>'+match:"")+'<h2>相关新闻</h2>'+(cards||'<div class="card">暂无相关事件。</div>'),name+" 足球新闻"));
   });
