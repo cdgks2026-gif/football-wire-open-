@@ -1490,11 +1490,12 @@ app.get("/",(req,res)=>{
     else if(directPlatformSource(x))badges.push('<span class="platform">平台直发</span>');
     if(hot)badges.push('<span class="hot">热门</span>');
     return `
-    <article class="item">
+    <article class="item" data-title="${escHtml(x.title)}">
       <div class="meta">
         <span>${escHtml(x.category)}</span>
         ${badges.join("")}
         <span>${escHtml(agoText(x.publishedAt))}</span>
+        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a>`:""}
       </div>
       <div class="title">${x.url?`<a href="${escHtml(x.url)}" target="_blank" rel="noopener noreferrer">${escHtml(x.title)}</a>`:escHtml(x.title)}</div>
     </article>`;
@@ -1511,6 +1512,8 @@ app.get("/",(req,res)=>{
 <meta name="keywords" content="足球新闻,懂球帝,虎扑,足球聚合器,开源足球,football news,news aggregator,RSSHub,Miniflux">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 <link rel="canonical" href="https://football-wire-production.up.railway.app/">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#06100c">
 <meta property="og:type" content="website">
 <meta property="og:title" content="露白足球｜开源足球新闻聚合器">
 <meta property="og:description" content="多源核实、独家识别、战报分栏、正文过滤与可选AI语义增强。">
@@ -1527,6 +1530,11 @@ h1{margin:0;font-size:36px;letter-spacing:-1px}
 .sections a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px}
 .sections a small{font-size:10px;opacity:.8}
 .sections a.active{color:#052014;background:var(--green);border-color:var(--green);font-weight:800}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.toolbar a,.toolbar button,.toolbar select{font-size:12px;padding:6px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--muted);text-decoration:none}
+.toolbar button{cursor:pointer}
+.storylink{color:var(--green)!important;text-decoration:none;border-color:#315b46!important}
+.item.preferred{border-color:#4f9e72;box-shadow:0 0 0 1px #4f9e7233}
 form{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:#06100cf2;padding:10px 0;border-bottom:1px solid #14251e;z-index:5}
 input,select,button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 10px;font:inherit}
 input{flex:1;min-width:180px}
@@ -1560,6 +1568,18 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <h1>露白足球</h1>
 <div class="sub">纯足球 · 多重分栏 · 官方/独家/多源可重叠 · 战报单独隔离${aiEnabled()?" · AI语义增强":""}</div>
 <nav class="sections">${channelNav}</nav>
+<div class="toolbar">
+<a href="/search">历史/语义搜索</a>
+<a href="/archive">每日归档</a>
+<a href="/matches">赛程与积分榜</a>
+<button type="button" id="managePrefs">个性化偏好</button>
+<button type="button" id="addLike">+关注词</button>
+<button type="button" id="addMute">+屏蔽词</button>
+<span id="prefState"></span>
+<button type="button" id="saveSearch">保存当前筛选</button>
+<select id="savedSearches"><option value="">已保存筛选</option></select>
+<button type="button" id="notifyToggle">开启浏览器通知</button>
+</div>
 </header>
 <form method="get" action="/">
 <input type="hidden" name="section" value="${escHtml(section)}">
@@ -1585,6 +1605,7 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 <footer>露白足球 Open · <a href="https://github.com/cdgks2026-gif/football-wire-open-" target="_blank" rel="noopener noreferrer">GitHub 开源代码</a></footer>
 </div>
+<script src="/app.js" defer></script>
 </body>
 </html>`;
   res.set("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
