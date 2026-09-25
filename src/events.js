@@ -137,7 +137,7 @@ export function clusterLatest(items) {
   const sorted=[...items].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
   const groups=[];
   for (const item of sorted) {
-    const eKey=eventKey(item.title);
+    const eKey=String(item.aiEventKey||"").trim()||eventKey(item.title);
     const itemTime=Date.parse(item.publishedAt);
     let group=groups.find((g)=>{
       const within36h=Math.abs(Date.parse(g.head.publishedAt)-itemTime)<36*3600_000;
