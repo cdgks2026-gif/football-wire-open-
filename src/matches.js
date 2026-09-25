@@ -98,3 +98,24 @@ export async function standings(leagueId){
   return [...table.values()].sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.team.localeCompare(b.team));
 }
 export function leagueOptions(){return Object.entries(LEAGUES).map(([id,x])=>({id,name:x.name}))}
+
+
+export async function leaguePageData(leagueId){
+  const data=await loadFootballData();
+  const league=data[leagueId];
+  if(!league)return null;
+  const table=await standings(leagueId);
+  const now=Date.now();
+  const matches=[...(league.matches||[])].sort((a,b)=>matchDate(a)-matchDate(b));
+  const recent=matches.filter(m=>matchDate(m)<=now&&m.ft).slice(-10).reverse();
+  const upcoming=matches.filter(m=>matchDate(m)>now).slice(0,12);
+  return {id:leagueId,name:league.name,title:league.title,table,recent,upcoming};
+}
+export async function matchByKey(key){
+  const data=await loadFootballData();
+  const all=Object.values(data).flatMap(x=>x.matches||[]);
+  return all.find(m=>encodeURIComponent([m.league,m.date,m.team1,m.team2].join("|"))===key)||null;
+}
+export function matchKey(m){
+  return encodeURIComponent([m.league,m.date,m.team1,m.team2].join("|"));
+}
