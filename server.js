@@ -395,7 +395,7 @@ function rankScore(item){
 
   // 硬优先级：官方/顶级权威 > 多源确认 > 权威单源 > 懂球帝/虎扑直发。
   let band=0;
-  if(item.tier==="官方" || best>=98) band=4;
+  if(isOfficialNews(item) || best>=98) band=4;
   else if(confirmations>=2) band=3;
   else if(best>=92) band=2;
   else if(platform) band=1;
@@ -410,7 +410,7 @@ function importanceScore(item){
   if(bestSourceScore>=95)score+=3;
   else if(bestSourceScore>=88)score+=2;
   else if(bestSourceScore>=78)score+=1;
-  if(item.tier==="官方")score+=5;
+  if(isOfficialNews(item))score+=5;
   if(item.tier==="转会专家")score+=4;
   if(item.tier==="国际媒体")score+=2;
   if((item.confirmations||0)>=2)score+=3;
@@ -1177,6 +1177,15 @@ const CHANNELS=[
   {id:"report",label:"战报"}
 ];
 
+
+function isOfficialNews(item){
+  const tiers=item?.tiers||[item?.tier].filter(Boolean);
+  if(tiers.includes("官方") || item?.tier==="官方")return true;
+  const t=String(item?.title||"");
+  return /(?:^|[【[])(?:官方|官宣|官方确认|官方宣布)(?:[】\]:：\s]|$)/i.test(t)
+    || /(?:官方宣布|官方确认|正式官宣|正式宣布)/i.test(t);
+}
+
 function hasNamedSource(item,name){
   return (item.sourceDetails||[]).some((x)=>x.name===name);
 }
@@ -1185,10 +1194,10 @@ function channelMatches(item,section){
   const tiers=item.tiers||[item.tier].filter(Boolean);
   const best=item.sourceDetails?.[0]?.score||item.sourceScore||0;
   if(section==="main")return true;
-  if(section==="official")return tiers.includes("官方") || item.tier==="官方";
+  if(section==="official")return isOfficialNews(item);
   if(section==="exclusive")return item.exclusive===true;
   if(section==="verified")return (item.confirmations||0)>=2;
-  if(section==="authority")return best>=92 || tiers.includes("官方");
+  if(section==="authority")return best>=92 || isOfficialNews(item);
   if(section==="expert")return tiers.includes("转会专家");
   if(section==="dqd")return hasNamedSource(item,"懂球帝");
   if(section==="hupu")return hasNamedSource(item,"虎扑");
@@ -1256,7 +1265,7 @@ app.get("/",(req,res)=>{
     const hot=x.heat>=58;
     const tiers=x.tiers||[x.tier].filter(Boolean);
     const badges=[];
-    if(tiers.includes("官方"))badges.push('<span class="official">官方</span>');
+    if(isOfficialNews(x))badges.push('<span class="official">官方</span>');
     if(x.exclusive)badges.push('<span class="exclusive">独家</span>');
     if((x.confirmations||0)>=2)badges.push('<span class="verified">多源核实</span>');
     else if((x.sourceDetails?.[0]?.score||x.sourceScore||0)>=92)badges.push('<span class="authority">权威单源</span>');
