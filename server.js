@@ -120,10 +120,10 @@ const SOURCE_REPUTATION_RULES=[
   [/Plettenberg|普莱滕贝格/i,90],
   [/Moretto|莫雷托/i,89],
   [/Ben Jacobs|雅各布斯/i,85],
-  [/懂球帝/i,78],
+  [/懂球帝/i,83],
   [/腾讯|Tencent/i,74],
   [/新浪|Sina/i,72],
-  [/虎扑|Hupu/i,70],
+  [/虎扑|Hupu/i,81],
   [/搜狐|Sohu/i,65]
 ];
 
@@ -200,6 +200,14 @@ function explicitExclusive(title){
   return /(?:^|[：:\s【[(])(?:独家|独家消息|独家报道|EXCLUSIVE|EXCL|SCOOP)(?:[：:\s】)\]]|$)/i.test(t);
 }
 
+
+function directPlatformSource(item){
+  const names=(item.sourceDetails||[]).map((x)=>x.name);
+  if(names.includes("懂球帝"))return "懂球帝";
+  if(names.includes("虎扑"))return "虎扑";
+  return "";
+}
+
 function credibilityFor(item){
   const details=item.sourceDetails||[];
   const best=details[0]?.score||item.sourceScore||0;
@@ -210,6 +218,7 @@ function credibilityFor(item){
   if((item.confirmations||0)>=2 && best>=85) return {score:91,label:"交叉确认"};
   if((item.confirmations||0)>=2) return {score:86,label:"交叉确认"};
   if((item.confirmations||0)===1 && best>=92) return {score:84,label:"权威单源"};
+  if((item.confirmations||0)===1 && directPlatformSource(item)) return {score:82,label:"平台直发"};
   return {score:0,label:""};
 }
 
@@ -229,7 +238,9 @@ function heatScore(item){
 }
 
 function rankScore(item){
-  return (item.credibilityScore||0)*1.2+(item.heat||0);
+  const platform=directPlatformSource(item);
+  const platformBoost=platform==="懂球帝"?7:platform==="虎扑"?6:0;
+  return (item.credibilityScore||0)*1.2+(item.heat||0)+platformBoost;
 }
 
 function importanceScore(item){
@@ -289,12 +300,13 @@ function publishProcessed(processed,extraMetrics={}){
     };
   });
 
-  // 主新闻放宽：两家独立媒体即可；单一顶级权威来源也可进入。
+  // 主新闻：多源可进；顶级权威单源可进；懂球帝/虎扑平台直发也直接进入。
   const eligible=allClusters.filter((x)=>{
     const confirmations=x.confirmations||0;
     const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
     if(confirmations>=2)return true;
     if(confirmations===1 && best>=92)return true;
+    if(confirmations===1 && directPlatformSource(x))return true;
     return false;
   });
 
@@ -319,6 +331,7 @@ function publishProcessed(processed,extraMetrics={}){
 
   const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
   const exclusiveVisible=clustered.filter((x)=>x.exclusive).length;
+  const platformDirectVisible=clustered.filter((x)=>(x.confirmations||0)===1 && directPlatformSource(x)).length;
 
   state.latest=clustered;
   state.sunLatest=sunLatest;
@@ -333,8 +346,9 @@ function publishProcessed(processed,extraMetrics={}){
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     unconfirmedFiltered,
     exclusiveVisible,
+    platformDirectVisible,
     sunVisible:(state.sunLatest||[]).length,
-    confirmationRule:"主新闻：双源或顶级权威单源；太阳报专栏：花边单列；虎扑与懂球帝按最早发布时间判独家",
+    confirmationRule:"主新闻：多源、顶级权威单源、懂球帝/虎扑直发均可进入；虎扑与懂球帝同事件按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -570,7 +584,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 主新闻放宽核查 · 虎扑×懂球帝首发判定 · 太阳报专栏收录足球花边</div>
+<div class="sub">纯足球 · 懂球帝/虎扑直发直接收录 · 多源自动提权 · 太阳报专栏收录足球花边</div>
 <nav class="sections">
 <a class="${section==="main"?"active":""}" href="/">主新闻</a>
 <a class="${section==="sun"?"active":""}" href="/?section=sun">太阳报</a>
@@ -593,7 +607,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 </form>
 <div class="status">${section==="sun"
   ? `太阳报足球花边 ${items.length} 条 · 单源花边可收录 · 多源一致则标交叉确认`
-  : `当前 ${items.length} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 放宽后仅隐藏低可信单源 ${state.metrics?.unconfirmedFiltered||0} 条`}
+  : `当前 ${items.length} 条 · 平台直发 ${state.metrics?.platformDirectVisible||0} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 仅隐藏其他低可信单源 ${state.metrics?.unconfirmedFiltered||0} 条`}
  · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
