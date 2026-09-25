@@ -26,6 +26,42 @@ export function applyEditorial(items,state){
   let out=assignStoryIds(items).filter(x=>!e.killed[x.storyId]);
   out=out.map(x=>e.categories[x.storyId]?{...x,category:e.categories[x.storyId]}:x);
 
+  const splitOut=[];
+  for(const item of out){
+    const splitMap=e.splits[item.storyId]||{};
+    const splitIds=new Set(Object.keys(splitMap).filter(k=>splitMap[k]));
+    if(!splitIds.size||!(item.members||[]).length){splitOut.push(item);continue}
+    const kept=(item.members||[]).filter(m=>!splitIds.has(String(m.id)));
+    if(kept.length){
+      splitOut.push({...item,members:kept});
+    }
+    for(const m of (item.members||[])){
+      if(!splitIds.has(String(m.id)))continue;
+      splitOut.push({
+        ...item,
+        storyId:sid(`split|${item.storyId}|${m.id}`),
+        id:m.id,
+        title:m.title,
+        source:m.source,
+        tier:m.tier,
+        publishedAt:m.publishedAt,
+        category:m.category||item.category,
+        url:m.url||"",
+        contentExcerpt:m.contentExcerpt||"",
+        confirmations:1,
+        sources:[m.source],
+        sourceDetails:[{name:m.source,score:m.sourceScore||0,firstPublishedAt:m.publishedAt,firstTitle:m.title,timeReliable:true}],
+        members:[m],
+        firstSeenAt:m.publishedAt,
+        lastSeenAt:m.publishedAt,
+        exclusive:false,
+        platformExclusiveSource:"",
+        platformExclusiveAt:""
+      });
+    }
+  }
+  out=splitOut;
+
   const byId=new Map(out.map(x=>[x.storyId,x]));
   for(const [from,to] of Object.entries(e.merges)){
     const a=byId.get(from),b=byId.get(to);
@@ -66,6 +102,14 @@ export function editStory(state,{action,storyId,value}){
     if(value)e.categories[storyId]=String(value);else delete e.categories[storyId];
   }else if(action==="merge"){
     if(value)e.merges[storyId]=String(value);else delete e.merges[storyId];
+  }else if(action==="split"){
+    const memberId=String(value||"");
+    if(!memberId)return false;
+    e.splits[storyId]=e.splits[storyId]||{};
+    e.splits[storyId][memberId]=true;
+  }else if(action==="unsplit"){
+    const memberId=String(value||"");
+    if(e.splits[storyId])delete e.splits[storyId][memberId];
   }else return false;
   return true;
 }
