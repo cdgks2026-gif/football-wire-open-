@@ -68,7 +68,7 @@ async function checkNews(initial=false){
       for(const x of items.slice(0,5).reverse()){
         const id=x.storyId||x.id;if(set.has(id))continue;
         const url=x.storyId?`/story/${x.storyId}`:"/";
-        new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url}});
+        const n=new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url}}); n.onclick=()=>{window.focus();location.href=url};
         set.add(id);
       }
     }else items.slice(0,8).forEach(x=>set.add(x.storyId||x.id));
@@ -87,7 +87,7 @@ try{
         const seen=read("lubai:notified",[]);
         const set=new Set(seen),id=x.storyId||x.id;
         if(!set.has(id)){
-          new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url:x.storyId?"/story/"+x.storyId:"/"}});
+          const url=x.storyId?"/story/"+x.storyId:"/"; const n=new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url}}); n.onclick=()=>{window.focus();location.href=url};
           set.add(id);write("lubai:notified",[...set].slice(-100));
         }
       }
@@ -114,6 +114,25 @@ $("#showBookmarks")?.addEventListener("click",()=>{
   alert(html.slice(0,12000));
 });
 renderBookmarkCount();
+
+$(".shareStory").forEach(btn=>btn.addEventListener("click",async()=>{
+  const id=btn.dataset.storyId,title=btn.dataset.storyTitle||"露白足球";
+  const url=id?location.origin+"/story/"+encodeURIComponent(id):location.href;
+  try{
+    if(navigator.share)await navigator.share({title,text:title,url});
+    else if(navigator.clipboard){await navigator.clipboard.writeText(title+"\n"+url);btn.textContent="已复制";setTimeout(()=>btn.textContent="分享",1200)}
+  }catch{}
+}));
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="/"&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"")){
+    const q=document.querySelector('input[name="q"],#q');if(q){e.preventDefault();q.focus()}
+  }
+});
+const net=document.createElement("div");
+net.id="networkState";net.style.cssText="position:fixed;right:10px;bottom:10px;z-index:99;padding:5px 8px;border-radius:8px;font:12px system-ui;background:#0c1813;color:#91a59c;border:1px solid #233b31;display:none";
+document.body.appendChild(net);
+function renderNetwork(){net.style.display=navigator.onLine?"none":"block";net.textContent="离线模式：显示已缓存页面";}
+addEventListener("online",renderNetwork);addEventListener("offline",renderNetwork);renderNetwork();
 
 applyPrefs();renderPrefText();renderSaved();
 })();
