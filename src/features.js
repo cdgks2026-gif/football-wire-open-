@@ -66,6 +66,19 @@ export function registerFeatureRoutes(app,ctx){
     const reports=members.map(m=>'<tr><td>'+esc(new Date(m.publishedAt||0).toLocaleString("zh-CN"))+'</td><td>'+esc(m.source||"")+'</td><td>'+(m.url?'<a href="'+esc(m.url)+'" target="_blank" rel="noopener">'+esc(m.title)+'</a>':esc(m.title))+'</td></tr>').join("");
     const contextHtml=context.map(c=>'<div class="card"><strong>'+esc(c.team)+'</strong><div class="muted">最近比赛 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].map(m=>'<div>'+esc(m.date)+' · '+esc(m.team1)+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(m.team2)+' · '+esc(m.leagueName||"")+'</div>').join("")+'</div>').join("");
     let body='<div class="card"><div class="muted">'+esc(story.category||"综合")+' · '+(story.confirmations||0)+' 个来源 · 首次 '+esc(new Date(story.firstSeenAt||story.publishedAt||0).toLocaleString("zh-CN"))+'</div><div class="big">'+esc(story.title)+'</div><div>'+sourceBadges+tagBadges+'</div></div>';
+    const publicUrl=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\/$/,"");
+    const structured={
+      "@context":"https://schema.org",
+      "@type":"NewsArticle",
+      headline:String(story.title||"").slice(0,110),
+      datePublished:story.firstSeenAt||story.publishedAt||undefined,
+      dateModified:story.lastSeenAt||story.publishedAt||undefined,
+      mainEntityOfPage:publicUrl+"/story/"+encodeURIComponent(id),
+      publisher:{"@type":"Organization",name:"露白足球",url:publicUrl},
+      about:(story.aiTags||[]).slice(0,8).map(name=>({"@type":"Thing",name}))
+    };
+    body+='<script type="application/ld+json">'+JSON.stringify(structured).replace(/<\//g,"<\\/")+'</script>';
+
     if(contextHtml)body+='<h2>比赛上下文</h2><div class="grid">'+contextHtml+'</div>';
     body+='<h2>事件时间线</h2><div class="card timeline">'+(timeline||'<div class="muted">暂无历史版本。</div>')+'</div>';
     body+='<h2>相关报道</h2><div class="card"><table><thead><tr><th>时间</th><th>来源</th><th>标题</th></tr></thead><tbody>'+(reports||'<tr><td colspan="3">暂无成员明细</td></tr>')+'</tbody></table></div>';
