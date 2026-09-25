@@ -30,6 +30,33 @@ function saveState(){
 }
 function idFor(v){return crypto.createHash("sha1").update(String(v)).digest("hex").slice(0,16)}
 
+const JUNK_TITLE_RULES=[
+  // 中文：比分/赛果预测、博彩、盘口、赔率、投注技巧、所谓专家推荐。
+  /(?:比分|赛果|胜负|比赛|赛事|足球).{0,6}(?:预测|推荐)/i,
+  /(?:预测|推荐).{0,6}(?:比分|赛果|胜负|结果)/i,
+  /(?:竞彩|足彩|博彩|投注|下注|盘口|赔率|让球|大小球|串关|稳胆|红单|心水|投注技巧|投注建议|比分推荐|专家推荐)/i,
+  /(?:AI|人工智能).{0,6}(?:预测|推荐)/i,
+  /(?:预测首发|首发预测|预计首发|模拟首发)/i,
+
+  // 英文：预测、投注、赔率、推荐单、预测首发。
+  /\b(?:score|match|football|soccer)\s+predictions?\b/i,
+  /\bpredicted\s+(?:score|result|line-?up|xi)\b/i,
+  /\b(?:betting\s+tips?|best\s+bets?|betting\s+predictions?|odds|moneyline|parlay|over\s*\/\s*under)\b/i,
+  /\b(?:tips?\s+and\s+predictions?|prediction\s+and\s+odds)\b/i,
+
+  // 西/葡/意/法/德常见博彩与预测词。
+  /\b(?:pron[oó]stic(?:o|os|i)|apuestas?|apostas?|palpites?|scommesse|pronostics?|paris?\s+sportifs?|wett(?:en|tipps?)|quoten)\b/i
+];
+
+function junkTitleReason(title){
+  const t=String(title||"").replace(/\s+/g," ").trim();
+  if(!t)return "空标题";
+  for(const rule of JUNK_TITLE_RULES){
+    if(rule.test(t))return rule.source;
+  }
+  return "";
+}
+
 function metaForEntry(entry){
   return bootstrap?.sourceByFeedId?.[entry.feed?.id]||{
     name:entry.feed?.title||"未知来源",
@@ -62,6 +89,7 @@ function publishProcessed(processed,extraMetrics={}){
     translatedNow:extraMetrics.translatedNow??0,
     hiddenForeign:extraMetrics.hiddenForeign??0,
     translationCache:Object.keys(state.translations||{}).length,
+    junkFiltered:extraMetrics.junkFiltered??state.metrics?.junkFiltered??0,
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -102,11 +130,16 @@ async function syncEntries(){
     const entries=await getRecentEntries(ENTRY_DAYS,ENTRY_LIMIT);
     const processed=[];
     const foreign=[];
+    let junkFiltered=0;
 
-    // 第一阶段：中文标题立即发布，不等待翻译服务。
+    // 第一阶段：先做质量过滤；预测、博彩、赔率、推荐单等不进入新闻流。
     for(const entry of entries){
       const meta=metaForEntry(entry);
       const normalized=normalizeTerms(entry.title||"");
+      if(junkTitleReason(normalized)){
+        junkFiltered++;
+        continue;
+      }
       if(chineseRatio(normalized)>=0.48){
         processed.push(makeItem(entry,normalized,meta));
       }else{
@@ -118,6 +151,7 @@ async function syncEntries(){
       rawEntries:entries.length,
       translatedNow:0,
       hiddenForeign:foreign.length,
+      junkFiltered,
       phase:"中文标题已就绪"
     });
 
@@ -132,6 +166,10 @@ async function syncEntries(){
         hiddenForeign++;
         continue;
       }
+      if(junkTitleReason(title)){
+        junkFiltered++;
+        continue;
+      }
       processed.push(makeItem(entry,title,meta));
 
       // 每翻译 4 条就增量发布一次，用户不用等完整批次。
@@ -140,6 +178,7 @@ async function syncEntries(){
           rawEntries:entries.length,
           translatedNow,
           hiddenForeign,
+          junkFiltered,
           phase:"外文标题增量翻译中"
         });
       }
@@ -149,6 +188,7 @@ async function syncEntries(){
       rawEntries:entries.length,
       translatedNow,
       hiddenForeign,
+      junkFiltered,
       phase:"完成"
     });
   }catch(err){
