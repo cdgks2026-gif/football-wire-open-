@@ -6,6 +6,7 @@ import { loadSources, GROUP_META } from "./src/sources.js";
 import { bootstrapSources, getRecentEntriesByCategory, getRecentEntriesByFeed, refreshCategory, minifluxHealth } from "./src/miniflux.js";
 import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.js";
 import { clusterLatest, category } from "./src/events.js";
+import { extractReadableArticle, compactArticleCache } from "./src/article.js";
 
 const app=express();
 const PORT=Number(process.env.PORT||8088);
@@ -14,6 +15,7 @@ const MAX_VISIBLE=Number(process.env.MAX_VISIBLE||250);
 const ENTRY_DAYS=Number(process.env.ENTRY_DAYS||5);
 const ENTRY_LIMIT=Number(process.env.ENTRY_LIMIT||240);
 const FOREIGN_TRANSLATE_LIMIT=Number(process.env.FOREIGN_TRANSLATE_LIMIT||24);
+const ARTICLE_ENRICH_LIMIT=Number(process.env.ARTICLE_ENRICH_LIMIT||18);
 
 fs.mkdirSync(path.dirname(DATA_FILE),{recursive:true});
 
@@ -143,7 +145,7 @@ function stripHtml(value){
 }
 
 function entryBodyText(entry){
-  return stripHtml(entry?.content||entry?.summary||entry?.description||"").slice(0,3500);
+  return stripHtml(entry?._articleText||entry?.content||entry?.summary||entry?.description||"").slice(0,5000);
 }
 
 function lowInformationReason(title,entry){
@@ -625,7 +627,8 @@ function makeItem(entry,title,meta,sourceInfo){
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
     category:category(title),
     contentExcerpt:entryBodyText(entry).slice(0,600),
-    url:entry?.url||entry?.link||""
+    url:entry?._articleUrl||entry?.url||entry?.link||"",
+    articleExtracted:Boolean(entry?._articleText)
   };
 }
 
@@ -766,6 +769,8 @@ function publishProcessed(processed,extraMetrics={}){
     lowInformationFiltered:extraMetrics.lowInformationFiltered??state.metrics?.lowInformationFiltered??0,
     commercialFiltered:extraMetrics.commercialFiltered??state.metrics?.commercialFiltered??0,
     rawByGroup:extraMetrics.rawByGroup??state.metrics?.rawByGroup??{},
+    rawBySource:extraMetrics.rawBySource??state.metrics?.rawBySource??{},
+    articleExtraction:extraMetrics.articleExtraction??state.metrics?.articleExtraction??{},
     commercialSamples:extraMetrics.commercialSamples??state.metrics?.commercialSamples??[],
     unconfirmedFiltered,
     exclusiveVisible,
@@ -807,6 +812,68 @@ async function refreshDue(force=false){
   saveState();
 }
 
+
+function articlePriority(entry,meta){
+  if(!meta || meta.historyOnly)return -1;
+  const url=String(entry?.url||entry?.link||"");
+  if(!/^https?:\/\//i.test(url))return -1;
+  const title=normalizeTerms(extractPublisher(entry.title||"",meta).title||"");
+  let score=0;
+  if(meta.tier==="官方")score+=100;
+  else if(meta.tier==="转会专家")score+=80;
+  else if(meta.tier==="国际媒体")score+=50;
+  if(productTitleReason(title) || COMMERCIAL_HINT_RULES.some((r)=>r.test(title)))score+=120;
+  if(GENERIC_HEADLINE_RULES.some((r)=>r.test(title)))score+=100;
+  if(title.length<18)score+=25;
+  const age=Math.max(0,(Date.now()-Date.parse(entry.published_at||entry.created_at||0))/3600000);
+  score+=Math.max(0,24-Math.min(24,age));
+  return score;
+}
+
+async function enrichArticleBodies(entries){
+  state.articleCache=state.articleCache||{};
+  const candidates=entries
+    .map((entry)=>({entry,meta:metaForEntry(entry)}))
+    .map((x)=>({...x,priority:articlePriority(x.entry,x.meta)}))
+    .filter((x)=>x.priority>=0)
+    .sort((a,b)=>b.priority-a.priority);
+
+  const unique=[];
+  const seen=new Set();
+  for(const x of candidates){
+    const url=String(x.entry?.url||x.entry?.link||"");
+    if(!url || seen.has(url))continue;
+    seen.add(url);
+    unique.push(x);
+    if(unique.length>=ARTICLE_ENRICH_LIMIT)break;
+  }
+
+  let attempted=0,succeeded=0;
+  const failures={};
+  for(let i=0;i<unique.length;i+=4){
+    const batch=unique.slice(i,i+4);
+    const results=await Promise.all(batch.map(async({entry})=>{
+      attempted++;
+      const url=String(entry?.url||entry?.link||"");
+      const result=await extractReadableArticle(url,state.articleCache,{timeout:5500});
+      return {entry,result};
+    }));
+    for(const {entry,result} of results){
+      if(result?.ok){
+        succeeded++;
+        entry._articleText=result.text;
+        entry._articleUrl=result.finalUrl||entry.url;
+        entry._articleTitle=result.title||"";
+      }else{
+        const reason=result?.reason||"unknown";
+        failures[reason]=(failures[reason]||0)+1;
+      }
+    }
+  }
+  state.articleCache=compactArticleCache(state.articleCache,320);
+  return {attempted,succeeded,failures,cacheSize:Object.keys(state.articleCache||{}).length};
+}
+
 async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
@@ -835,11 +902,15 @@ async function syncEntries(){
     const minifluxEntries=grouped.flat();
     const entries=[...minifluxEntries,...directHupu];
     const rawByGroup={};
+    const rawBySource={};
     for(const entry of entries){
       const m=metaForEntry(entry);
       const key=m?.group||"unknown";
       rawByGroup[key]=(rawByGroup[key]||0)+1;
+      const sourceName=m?.name||"unknown";
+      rawBySource[sourceName]=(rawBySource[sourceName]||0)+1;
     }
+    const articleExtraction=await enrichArticleBodies(entries);
     const processed=[];
     const foreign=[];
     let junkFiltered=0;
@@ -857,7 +928,7 @@ async function syncEntries(){
       const commercial=commercialReason(normalized,entry);
       if(commercial){
         commercialFiltered++;
-        if(commercialSamples.length<8)commercialSamples.push(normalized||title||entry.title||"");
+        if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
       const lowInfo=lowInformationReason(normalized,entry);
@@ -937,6 +1008,8 @@ async function syncEntries(){
       lowInformationFiltered,
       commercialFiltered,
       rawByGroup,
+      rawBySource,
+      articleExtraction,
       commercialSamples,
       phase:"中文标题已就绪"
     });
@@ -966,7 +1039,7 @@ async function syncEntries(){
       const commercial=commercialReason(title,entry);
       if(commercial){
         commercialFiltered++;
-        if(commercialSamples.length<8)commercialSamples.push(normalized||title||entry.title||"");
+        if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
       const lowInfo=lowInformationReason(title,entry);
@@ -999,6 +1072,17 @@ async function syncEntries(){
       }
     }
 
+    const acceptedBySource={};
+    for(const item of processed){
+      const key=item.source||"unknown";
+      acceptedBySource[key]=(acceptedBySource[key]||0)+1;
+    }
+    state.sourceHealth={
+      updatedAt:new Date().toISOString(),
+      rawBySource,
+      acceptedBySource
+    };
+
     publishProcessed(processed,{
       rawEntries:entries.length,
       translatedNow,
@@ -1008,6 +1092,8 @@ async function syncEntries(){
       lowInformationFiltered,
       commercialFiltered,
       rawByGroup,
+      rawBySource,
+      articleExtraction,
       commercialSamples,
       phase:"完成"
     });
@@ -1264,6 +1350,16 @@ app.get("/api/news",(req,res)=>{
     count:items.length,
     metrics:state.metrics||{},
     serverTime:new Date().toISOString()
+  });
+});
+
+app.get("/api/source-health",(_req,res)=>{
+  res.set("Cache-Control","no-store");
+  res.json({
+    updatedAt:state.sourceHealth?.updatedAt||null,
+    rawBySource:state.sourceHealth?.rawBySource||{},
+    acceptedBySource:state.sourceHealth?.acceptedBySource||{},
+    articleExtraction:state.metrics?.articleExtraction||{}
   });
 });
 
