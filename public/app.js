@@ -32,9 +32,21 @@ function renderPrefText(){
   const el=$("#prefState");if(!el)return;
   el.textContent=`关注 ${prefs.like.length} · 屏蔽 ${prefs.mute.length}`;
 }
+function applyMineMode(){
+  const on=localStorage.getItem("lubai:mine")==="1";
+  $(".item[data-title]").forEach(el=>{
+    if(el.style.display==="none")return;
+    if(!on)return;
+    const t=(el.dataset.title||"").toLowerCase();
+    const liked=(prefs.like||[]).some(k=>k&&t.includes(k.toLowerCase()));
+    if(!liked)el.style.display="none";
+  });
+  const btn=$("#mineToggle");if(btn){btn.textContent=on?"查看全部新闻":"只看我的关注";btn.classList.toggle("active",on)}
+}
 $("#addLike")?.addEventListener("click",()=>addPref("like"));
 $("#addMute")?.addEventListener("click",()=>addPref("mute"));
-$("#managePrefs")?.addEventListener("click",managePrefs);
+$("#managePrefs")?.addEventListener("click",()=>{managePrefs();applyMineMode()});
+$("#mineToggle")?.addEventListener("click",()=>{localStorage.setItem("lubai:mine",localStorage.getItem("lubai:mine")==="1"?"0":"1");applyPrefs();applyMineMode()});
 
 
 async function loadTrending(){
@@ -145,5 +157,5 @@ document.body.appendChild(net);
 function renderNetwork(){net.style.display=navigator.onLine?"none":"block";net.textContent="离线模式：显示已缓存页面";}
 addEventListener("online",renderNetwork);addEventListener("offline",renderNetwork);renderNetwork();
 
-applyPrefs();renderPrefText();renderSaved();loadTrending();
+applyPrefs();applyMineMode();renderPrefText();renderSaved();loadTrending();
 })();
