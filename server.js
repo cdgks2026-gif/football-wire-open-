@@ -1047,7 +1047,9 @@ async function syncEntries(){
     });
     for(const {entry,meta,sourceInfo} of prioritizedForeign.slice(0,FOREIGN_TRANSLATE_LIMIT)){
       const before=Object.keys(state.translations).length;
-      const title=await toChineseTitle(sourceInfo.title,state.translations);
+      const title=await toChineseTitle(sourceInfo.title,state.translations,{
+        allowOriginal:meta?.tier==="官方" || meta?.tier==="转会专家"
+      });
       if(Object.keys(state.translations).length>before)translatedNow++;
       if(!title){
         hiddenForeign++;
