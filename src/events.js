@@ -90,7 +90,8 @@ export function clusterLatest(items) {
         sources.set(item.source,{
           score:item.sourceScore||0,
           firstPublishedAt:item.publishedAt,
-          firstTitle:item.title
+          firstTitle:item.title,
+          timeReliable:item.timeReliable!==false
         });
       }
       groups.push({eventKey:eKey,head:item,sources,tiers:new Set([item.tier])});
@@ -106,10 +107,14 @@ export function clusterLatest(items) {
         }else{
           const oldTime=Date.parse(old.firstPublishedAt);
           const newTime=Date.parse(item.publishedAt);
+          const incomingReliable=item.timeReliable!==false;
+          const shouldReplaceTime=(incomingReliable && !old.timeReliable)
+            || (incomingReliable===Boolean(old.timeReliable) && newTime<oldTime);
           group.sources.set(item.source,{
             score:Math.max(old.score||0,item.sourceScore||0),
-            firstPublishedAt:newTime<oldTime?item.publishedAt:old.firstPublishedAt,
-            firstTitle:newTime<oldTime?item.title:old.firstTitle
+            firstPublishedAt:shouldReplaceTime?item.publishedAt:old.firstPublishedAt,
+            firstTitle:shouldReplaceTime?item.title:old.firstTitle,
+            timeReliable:shouldReplaceTime?incomingReliable:Boolean(old.timeReliable)
           });
         }
       }
@@ -126,7 +131,8 @@ export function clusterLatest(items) {
         name,
         score:data.score||0,
         firstPublishedAt:data.firstPublishedAt,
-        firstTitle:data.firstTitle
+        firstTitle:data.firstTitle,
+        timeReliable:Boolean(data.timeReliable)
       }))
       .sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name));
 
@@ -135,7 +141,7 @@ export function clusterLatest(items) {
     let platformExclusiveSource="";
     let platformExclusiveTitle="";
     let platformExclusiveAt="";
-    if(dongqiudi && hupu){
+    if(dongqiudi && hupu && dongqiudi.timeReliable && hupu.timeReliable){
       const dt=Date.parse(dongqiudi.firstPublishedAt);
       const ht=Date.parse(hupu.firstPublishedAt);
       if(Number.isFinite(dt) && Number.isFinite(ht)){
