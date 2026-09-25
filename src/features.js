@@ -35,7 +35,7 @@ function shell(title,body,description=""){
     +'table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #233b31;padding:8px;text-align:left}'
     +'input,select,button{background:#0c1813;color:#f3f8f5;border:1px solid #345546;border-radius:8px;padding:8px}button{cursor:pointer}.danger{border-color:#8a3e3e;color:#ffaaa0}.good{border-color:#2f7656;color:#8cf0b8}'
     +'.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}@media(max-width:650px){.big{font-size:20px}table{font-size:11px}}</style>'
-    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a></div>'
+    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a></div>'
     +body+'<script src="/app.js" defer></script></main></body></html>';
 }
 function adminAllowed(req){
@@ -120,6 +120,44 @@ export function registerFeatureRoutes(app,ctx){
       +'<h2>前后 3 天比赛</h2><div class="card"><table><thead><tr><th>日期</th><th>联赛</th><th>主队</th><th>比分</th><th>客队</th></tr></thead><tbody>'+(matchRows||'<tr><td colspan="5">暂无比赛</td></tr>')+'</tbody></table></div>'
       +'<h2>'+esc(leagues.find(x=>x.id===league)?.name||league)+'积分榜</h2><div class="card"><table><thead><tr><th>#</th><th>球队</th><th>场</th><th>胜</th><th>平</th><th>负</th><th>净胜</th><th>分</th></tr></thead><tbody>'+tableRows+'</tbody></table></div>';
     res.send(shell("赛程与积分榜",body));
+  });
+
+
+  app.get("/digest",async(_req,res)=>{
+    const state=getState();
+    const cutoff=Date.now()-24*3600_000;
+    const items=(state.allEligible||state.latest||[])
+      .filter(x=>Date.parse(x.publishedAt||0)>=cutoff)
+      .sort((a,b)=>(b.importance||0)-(a.importance||0) || (b.confirmations||0)-(a.confirmations||0) || Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0))
+      .slice(0,40);
+    const groups=new Map();
+    for(const x of items){
+      const key=x.category||"综合";
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(x);
+    }
+    const body=[...groups.entries()].map(([cat,list])=>'<h2>'+esc(cat)+'</h2>'+list.map(x=>'<div class="card"><div class="muted">'+esc(ago(x.publishedAt))+' · '+(x.confirmations||0)+'源 · 重要度 '+(x.importance||0)+'</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a><div class="muted">'+esc((x.sources||[x.source]).filter(Boolean).join(" · "))+'</div></div>').join("")).join("");
+    res.set("Cache-Control","public, max-age=60, stale-while-revalidate=180");
+    res.send(shell("24小时足球摘要",'<h1>24小时足球摘要</h1><p class="muted">按重要度、多源确认和时间排序，自动汇总最近24小时的主要足球事件。</p>'+(body||'<div class="card">最近24小时暂无可展示新闻。</div>')));
+  });
+
+  app.get("/sources",async(_req,res)=>{
+    const state=getState();
+    const stats=state.metrics?.filterStatsBySource||{};
+    const raw=state.sourceHealth?.rawBySource||{};
+    const accepted=state.sourceHealth?.acceptedBySource||{};
+    const names=[...new Set([...Object.keys(raw),...Object.keys(stats),...Object.keys(accepted)])].sort((a,b)=>(raw[b]||0)-(raw[a]||0)||a.localeCompare(b,"zh-CN"));
+    const rows=names.map(name=>{
+      const st=stats[name]||{};
+      const r=raw[name]||st.raw||0,a=accepted[name]||st.accepted||0;
+      const rate=r?Math.round(a/r*100):0;
+      return '<tr><td>'+esc(name)+'</td><td>'+r+'</td><td>'+a+'</td><td>'+rate+'%</td><td>'+(st.commercial||0)+'</td><td>'+(st.lowInfo||0)+'</td><td>'+(st.nonFootball||0)+'</td><td>'+(st.junk||0)+'</td></tr>';
+    }).join("");
+    const m=state.metrics||{};
+    const summary='<div class="grid"><div class="card"><div class="muted">当前主新闻</div><div class="big">'+(m.visibleEvents||0)+'</div></div><div class="card"><div class="muted">商业过滤</div><div class="big">'+(m.commercialFiltered||0)+'</div></div><div class="card"><div class="muted">非足球过滤</div><div class="big">'+(m.nonFootballFiltered||0)+'</div></div><div class="card"><div class="muted">空泛/栏目过滤</div><div class="big">'+(m.lowInformationFiltered||0)+'</div></div></div>';
+    const table='<div class="card"><table><thead><tr><th>来源</th><th>原始</th><th>收录</th><th>收录率</th><th>商业</th><th>低信息</th><th>非足球</th><th>垃圾</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    res.set("Cache-Control","public, max-age=30, stale-while-revalidate=120");
+    res.send(shell("来源健康",'<h1>来源健康</h1><p class="muted">用于检查哪些来源有内容、哪些来源被商品页或非足球噪音污染，以及各来源实际收录率。</p>'+summary+table));
   });
 
   app.get("/admin",(req,res)=>{
