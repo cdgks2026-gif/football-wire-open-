@@ -328,7 +328,16 @@ export function registerFeatureRoutes(app,ctx){
     }
     const top=[...edges.entries()].map(([key,count])=>({pair:key.split("||"),count})).filter(x=>x.count>=2).sort((a,b)=>b.count-a.count).slice(0,60);
     const cards=top.map(x=>'<div class="card"><a href="/entity/'+encodeURIComponent(x.pair[0])+'">'+esc(x.pair[0])+'</a> <strong>↔</strong> <a href="/entity/'+encodeURIComponent(x.pair[1])+'">'+esc(x.pair[1])+'</a><div class="muted">共同出现在 '+x.count+' 个事件中</div></div>').join("");
-    res.send(shell("新闻关系图",'<h1>新闻关系图</h1><p class="muted">根据同一事件中的球队、球员和赛事标签共现自动计算关系强度。</p><div class="grid">'+(cards||'<div class="card">关系数据正在积累。</div>')+'</div>'));
+    const visualEdges=top.slice(0,24);
+    const nodes=[...new Set(visualEdges.flatMap(x=>x.pair))].slice(0,18);
+    const pos=new Map(nodes.map((name,i)=>{
+      const a=Math.PI*2*i/Math.max(1,nodes.length),r=190;
+      return [name,{x:260+Math.cos(a)*r,y:240+Math.sin(a)*r}];
+    }));
+    const lines=visualEdges.map(e=>{const a=pos.get(e.pair[0]),b=pos.get(e.pair[1]);if(!a||!b)return"";return '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#355848" stroke-width="'+Math.min(6,1+e.count)+'" opacity=".65"/>'}).join("");
+    const dots=nodes.map(name=>{const p=pos.get(name);return '<a href="/entity/'+encodeURIComponent(name)+'"><circle cx="'+p.x+'" cy="'+p.y+'" r="9" fill="#63e7a1"/><text x="'+p.x+'" y="'+(p.y-14)+'" text-anchor="middle" fill="#f3f8f5" font-size="11">'+esc(name.slice(0,12))+'</text></a>'}).join("");
+    const graph=nodes.length?'<div class="card" style="overflow:auto"><svg viewBox="0 0 520 480" width="100%" style="min-width:520px;max-height:520px">'+lines+dots+'</svg></div>':'';
+    res.send(shell("新闻关系图",'<h1>新闻关系图</h1><p class="muted">根据同一事件中的球队、球员和赛事标签共现自动计算关系强度。节点可点击进入实体页。</p>'+graph+'<div class="grid">'+(cards||'<div class="card">关系数据正在积累。</div>')+'</div>'));
   });
 
   app.get("/brief",async(_req,res)=>{
