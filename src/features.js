@@ -35,7 +35,7 @@ function shell(title,body,description=""){
     +'table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #233b31;padding:8px;text-align:left}'
     +'input,select,button{background:#0c1813;color:#f3f8f5;border:1px solid #345546;border-radius:8px;padding:8px}button{cursor:pointer}.danger{border-color:#8a3e3e;color:#ffaaa0}.good{border-color:#2f7656;color:#8cf0b8}'
     +'.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}@media(max-width:650px){.big{font-size:20px}table{font-size:11px}}</style>'
-    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a></div>'
+    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a><a href="/topics">专题</a><a href="/transfers">转会中心</a><a href="/injuries">伤停中心</a><a href="/entities">球队/球员</a><a href="/trends">趋势</a></div>'
     +body+'<script src="/app.js" defer></script></main></body></html>';
 }
 function adminAllowed(req){
@@ -158,6 +158,104 @@ export function registerFeatureRoutes(app,ctx){
     const table='<div class="card"><table><thead><tr><th>来源</th><th>原始</th><th>收录</th><th>收录率</th><th>商业</th><th>低信息</th><th>非足球</th><th>垃圾</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     res.set("Cache-Control","public, max-age=30, stale-while-revalidate=120");
     res.send(shell("来源健康",'<h1>来源健康</h1><p class="muted">用于检查哪些来源有内容、哪些来源被商品页或非足球噪音污染，以及各来源实际收录率。</p>'+summary+table));
+  });
+
+
+  function allStories(state){
+    return [...(state.allEligible||state.latest||[]),...(state.reportLatest||[])];
+  }
+  function storyHay(x){
+    return [x.title,x.eventKey,...(x.aiTags||[]),...(x.sources||[])].filter(Boolean).join(" ");
+  }
+  function entityCandidates(state){
+    const stop=new Set(["转会","伤停","比赛","国家队","争议","趣闻","教练","球星","综合","官方","英超","西甲","意甲","德甲","法甲","欧冠","欧联","VAR"]);
+    const map=new Map();
+    for(const x of allStories(state).slice(0,1000)){
+      const tags=(x.aiTags||[]).filter(t=>t&&String(t).length<=24&&!stop.has(String(t)));
+      for(const tag of tags){
+        const name=String(tag).trim(); if(!name)continue;
+        if(!map.has(name))map.set(name,{name,count:0,lastAt:null,categories:new Set()});
+        const row=map.get(name); row.count++; row.categories.add(x.category||"综合");
+        if(!row.lastAt||Date.parse(x.publishedAt||0)>Date.parse(row.lastAt||0))row.lastAt=x.publishedAt;
+      }
+    }
+    return [...map.values()].map(x=>({...x,categories:[...x.categories]})).sort((a,b)=>b.count-a.count||Date.parse(b.lastAt||0)-Date.parse(a.lastAt||0));
+  }
+  function centerPage(state,title,description,filter){
+    const items=allStories(state).filter(filter).sort((a,b)=>(b.importance||0)-(a.importance||0)||Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,100);
+    const cards=items.map(x=>'<div class="card"><div class="muted">'+esc(x.category||"")+' · '+(x.confirmations||0)+'源 · '+esc(ago(x.publishedAt))+'</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a><div class="muted">'+esc((x.sources||[x.source]).filter(Boolean).join(" · "))+'</div></div>').join("");
+    return shell(title,'<h1>'+esc(title)+'</h1><p class="muted">'+esc(description)+'</p>'+(cards||'<div class="card">当前暂无匹配内容。</div>'),description);
+  }
+
+  app.get("/transfers",(_req,res)=>{
+    const state=getState();
+    res.send(centerPage(state,"转会中心","集中展示加盟、离队、租借、续约、报价、谈判、体检、合同等转会事件。",x=>x.category==="转会"||/(转会|加盟|离队|租借|续约|报价|谈判|体检|合同|签约|Here we go)/i.test(storyHay(x))));
+  });
+
+  app.get("/injuries",(_req,res)=>{
+    const state=getState();
+    res.send(centerPage(state,"伤停中心","集中展示受伤、伤缺、复出、手术、停赛、禁赛等球队人员可用性事件。",x=>x.category==="伤停"||/(受伤|伤缺|缺席|复出|手术|停赛|禁赛|赛季报销|injur|suspend|ban)/i.test(storyHay(x))));
+  });
+
+  app.get("/topics",(_req,res)=>{
+    const state=getState();
+    const topics=new Map();
+    for(const x of allStories(state).slice(0,500)){
+      const keys=[...(x.aiTags||[])];
+      if(x.category)keys.push(x.category);
+      for(const k of keys){
+        const name=String(k||"").trim(); if(!name||name.length>30)continue;
+        if(!topics.has(name))topics.set(name,{name,count:0,importance:0});
+        const t=topics.get(name); t.count++; t.importance+=x.importance||0;
+      }
+    }
+    const rows=[...topics.values()].filter(x=>x.count>=2).sort((a,b)=>b.count-a.count||b.importance-a.importance).slice(0,80)
+      .map(x=>'<a class="card" style="display:block;text-decoration:none" href="/topic/'+encodeURIComponent(x.name)+'"><div class="big">'+esc(x.name)+'</div><div class="muted">'+x.count+' 条相关事件</div></a>').join("");
+    res.send(shell("自动专题","<h1>自动专题</h1><p class=\"muted\">根据新闻分类和 AI 标签自动生成专题入口，随新闻库变化更新。</p><div class=\"grid\">'+(rows||'<div class="card">专题正在生成。</div>')+'</div>'));
+  });
+
+  app.get("/topic/:name",(req,res)=>{
+    const state=getState(),name=decodeURIComponent(String(req.params.name||"")).slice(0,60);
+    const q=name.toLowerCase();
+    const items=allStories(state).filter(x=>storyHay(x).toLowerCase().includes(q)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,120);
+    const cards=items.map(x=>'<div class="card"><div class="muted">'+esc(x.category||"")+' · '+esc(ago(x.publishedAt))+' · '+(x.confirmations||0)+'源</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
+    res.send(shell(name+" 专题",'<h1>'+esc(name)+'</h1><p class="muted">自动专题 · '+items.length+' 条相关事件</p>'+(cards||'<div class="card">暂无相关事件。</div>'),name+" 足球新闻专题"));
+  });
+
+  app.get("/entities",(_req,res)=>{
+    const state=getState();
+    const rows=entityCandidates(state).slice(0,100).map(x=>'<a class="card" style="display:block;text-decoration:none" href="/entity/'+encodeURIComponent(x.name)+'"><div class="big">'+esc(x.name)+'</div><div class="muted">'+x.count+' 条新闻 · '+esc(x.categories.join(" / "))+'</div></a>').join("");
+    res.send(shell("球队 / 球员实体","<h1>球队 / 球员实体</h1><p class=\"muted\">优先使用 AI 标签自动建立实体页；无需手工维护每一个球队和球员。</p><div class=\"grid\">'+(rows||'<div class="card">实体索引正在生成。</div>')+'</div>'));
+  });
+
+  app.get("/entity/:name",async(req,res)=>{
+    const state=getState(),name=decodeURIComponent(String(req.params.name||"")).slice(0,60),q=name.toLowerCase();
+    const items=allStories(state).filter(x=>storyHay(x).toLowerCase().includes(q)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,120);
+    const team=await teamContext(name).catch(()=>[]);
+    const match=team.map(c=>'<div class="card"><div class="big">'+esc(c.team)+'</div><div class="muted">最近 / 下一场</div>'+[...(c.previous||[]),...(c.next||[])].slice(0,6).map(m=>'<div>'+esc(m.date)+' · '+esc(m.team1)+' '+(m.ft?esc(m.ft.join("-")):"vs")+' '+esc(m.team2)+'</div>').join("")+'</div>').join("");
+    const cards=items.map(x=>'<div class="card"><div class="muted">'+esc(x.category||"")+' · '+esc(ago(x.publishedAt))+'</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
+    res.send(shell(name,'<h1>'+esc(name)+'</h1><p class="muted">自动实体页 · '+items.length+' 条新闻</p>'+(match?'<h2>比赛上下文</h2>'+match:"")+'<h2>相关新闻</h2>'+(cards||'<div class="card">暂无相关事件。</div>'),name+" 足球新闻"));
+  });
+
+  app.get("/trends",(_req,res)=>{
+    const state=getState();
+    const snaps=Object.entries(state.snapshots||{}).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+    const cats=["转会","伤停","比赛","国家队","争议","趣闻","教练","球星","综合"];
+    const rows=cats.map(cat=>{
+      const vals=snaps.map(([date,items])=>({date,count:(items||[]).filter(x=>x.category===cat).length}));
+      const max=Math.max(1,...vals.map(x=>x.count));
+      const bars=vals.map(v=>'<span title="'+esc(v.date)+' '+v.count+'" style="display:inline-block;width:14px;height:'+Math.max(3,Math.round(v.count/max*70))+'px;background:currentColor;opacity:.65;margin-right:3px;vertical-align:bottom"></span>').join("");
+      return '<div class="card"><strong>'+esc(cat)+'</strong><div style="height:82px;display:flex;align-items:flex-end;margin-top:8px">'+bars+'</div><div class="muted">最近 '+vals.length+' 天快照</div></div>';
+    }).join("");
+    res.send(shell("新闻趋势","<h1>新闻趋势</h1><p class=\"muted\">基于每日快照统计各类新闻变化，不依赖第三方分析平台。</p><div class=\"grid\">'+rows+'</div>'));
+  });
+
+  app.get("/brief",(_req,res)=>{
+    const state=getState();
+    const cutoff=Date.now()-24*3600_000;
+    const items=allStories(state).filter(x=>Date.parse(x.publishedAt||0)>=cutoff).sort((a,b)=>(b.importance||0)-(a.importance||0)||(b.confirmations||0)-(a.confirmations||0)).slice(0,12);
+    const lines=items.map((x,i)=>'<div class="card"><div class="muted">#'+(i+1)+' · '+esc(x.category||"综合")+' · '+(x.confirmations||0)+'源</div><a class="big" href="/story/'+encodeURIComponent(x.storyId||x.id)+'">'+esc(x.title)+'</a></div>').join("");
+    res.send(shell("每日简报","<h1>每日简报</h1><p class=\"muted\">根据重要度、多源确认和时间自动生成；即使没有配置 AI，也可以稳定工作。</p>"+(lines||'<div class="card">最近24小时暂无可展示事件。</div>')));
   });
 
   app.get("/admin",(req,res)=>{
