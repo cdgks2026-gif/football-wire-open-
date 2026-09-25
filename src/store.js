@@ -109,7 +109,7 @@ export async function persistStories(stories=[]){
   try{
     await client.query("begin");
     for(const s of stories.slice(0,800)){
-      const searchText=[s.title,s.eventKey,s.aiEventKey,s.category,...(s.sources||[])].filter(Boolean).join(" ");
+      const searchText=[s.title,s.eventKey,s.aiEventKey,s.category,...(s.aiTags||[]),...(s.sources||[])].filter(Boolean).join(" ");
       const payload=JSON.stringify(s);
       const firstSeen=s.firstSeenAt||s.publishedAt||new Date().toISOString();
       const lastSeen=s.lastSeenAt||s.publishedAt||new Date().toISOString();
