@@ -238,9 +238,19 @@ function heatScore(item){
 }
 
 function rankScore(item){
+  const confirmations=item.confirmations||0;
+  const best=item.sourceDetails?.[0]?.score||item.sourceScore||0;
   const platform=directPlatformSource(item);
-  const platformBoost=platform==="懂球帝"?7:platform==="虎扑"?6:0;
-  return (item.credibilityScore||0)*1.2+(item.heat||0)+platformBoost;
+
+  // 硬优先级：官方/顶级权威 > 多源确认 > 权威单源 > 懂球帝/虎扑直发。
+  let band=0;
+  if(item.tier==="官方" || best>=98) band=4;
+  else if(confirmations>=2) band=3;
+  else if(best>=92) band=2;
+  else if(platform) band=1;
+
+  const platformTie=platform==="懂球帝"?2:platform==="虎扑"?1:0;
+  return band*10000+(item.credibilityScore||0)*10+(item.heat||0)+platformTie;
 }
 
 function importanceScore(item){
