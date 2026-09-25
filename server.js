@@ -13,11 +13,14 @@ import { assignStoryIds, applyEditorial, ensureEditor, editStory } from "./src/e
 import { teamContext, matchesAround, standings, leagueOptions } from "./src/matches.js";
 import { notifyNewImportant } from "./src/notify.js";
 import { registerFeatureRoutes } from "./src/features.js";
+import { maybeSendDailyDigest } from "./src/digest.js";
 
 const app=express();
 app.use(express.json({limit:"1mb"}));
 app.use(express.urlencoded({extended:false}));
 const PORT=Number(process.env.PORT||8088);
+const sseClients=new Set();
+let sseSeen=new Set();
 const DATA_FILE=process.env.DATA_FILE||path.join(process.cwd(),"data","state.json");
 const MAX_VISIBLE=Number(process.env.MAX_VISIBLE||250);
 const ENTRY_DAYS=Number(process.env.ENTRY_DAYS||5);
@@ -40,6 +43,16 @@ function saveState(){
 }
 
 function idFor(v){return crypto.createHash("sha1").update(String(v)).digest("hex").slice(0,16)}
+function broadcastStories(items=[]){
+  const fresh=items.filter(x=>!sseSeen.has(x.storyId||x.id)).slice(0,20);
+  for(const item of fresh){
+    const data=JSON.stringify({type:"story",item:{storyId:item.storyId,id:item.id,title:item.title,category:item.category,publishedAt:item.publishedAt,importance:item.importance,heat:item.heat}});
+    for(const res of sseClients){try{res.write("data: "+data+"\n\n")}catch{}}
+  }
+  for(const item of items)sseSeen.add(item.storyId||item.id);
+  if(sseSeen.size>800)sseSeen=new Set([...sseSeen].slice(-500));
+}
+
 function localDateKey(value=new Date()){
   try{
     const fmt=new Intl.DateTimeFormat("en-CA",{timeZone:process.env.APP_TIMEZONE||"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"});
@@ -851,8 +864,13 @@ function publishProcessed(processed,extraMetrics={}){
 
   void persistStories([...allClusters,...(state.exclusiveLatest||[])].filter(x=>x.storyId)).catch((err)=>console.error("[store persist async]",String(err)));
   void saveSnapshot(snapshotDate,snapshotItems).catch((err)=>console.error("[snapshot db]",String(err)));
+  broadcastStories(clustered);
   void notifyNewImportant(state,clustered).then((result)=>{
     state.metrics={...(state.metrics||{}),notifications:result};
+    saveState();
+  }).catch(()=>{});
+  void maybeSendDailyDigest(state,clustered).then((result)=>{
+    state.metrics={...(state.metrics||{}),digest:result};
     saveState();
   }).catch(()=>{});
 
@@ -1640,6 +1658,15 @@ app.use(express.static("public",{etag:false,maxAge:0,setHeaders:(res)=>res.set("
 
 
 registerFeatureRoutes(app,{getState:()=>state,saveState,maxVisible:MAX_VISIBLE});
+app.get("/api/stream",(req,res)=>{
+  res.set({"Content-Type":"text/event-stream","Cache-Control":"no-cache","Connection":"keep-alive"});
+  res.flushHeaders?.();
+  res.write('data: {"type":"ready"}\n\n');
+  sseClients.add(res);
+  const timer=setInterval(()=>{try{res.write(": ping\n\n")}catch{}},25000);
+  req.on("close",()=>{clearInterval(timer);sseClients.delete(res)});
+});
+
 
 app.get("/api/news",(req,res)=>{
   const q=String(req.query.q||"").trim();
