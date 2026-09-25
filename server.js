@@ -8,8 +8,14 @@ import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.j
 import { clusterLatest, category, eventKey } from "./src/events.js";
 import { extractReadableArticle, compactArticleCache } from "./src/article.js";
 import { aiEnabled, aiStatus, newAiBudget, judgeWithBudget } from "./src/ai.js";
+import { initStore, storeStatus, persistStories, getStory as getStoredStory, searchStories, saveSnapshot, getSnapshot, listSnapshots, saveOverride } from "./src/store.js";
+import { assignStoryIds, applyEditorial, ensureEditor, editStory } from "./src/editor.js";
+import { teamContext, matchesAround, standings, leagueOptions } from "./src/matches.js";
+import { notifyNewImportant } from "./src/notify.js";
 
 const app=express();
+app.use(express.json({limit:"1mb"}));
+app.use(express.urlencoded({extended:false}));
 const PORT=Number(process.env.PORT||8088);
 const DATA_FILE=process.env.DATA_FILE||path.join(process.cwd(),"data","state.json");
 const MAX_VISIBLE=Number(process.env.MAX_VISIBLE||250);
@@ -31,7 +37,54 @@ function saveState(){
   fs.writeFileSync(tmp,JSON.stringify(state,null,2));
   fs.renameSync(tmp,DATA_FILE);
 }
+
 function idFor(v){return crypto.createHash("sha1").update(String(v)).digest("hex").slice(0,16)}
+function localDateKey(value=new Date()){
+  try{
+    const fmt=new Intl.DateTimeFormat("en-CA",{timeZone:process.env.APP_TIMEZONE||"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"});
+    return fmt.format(value);
+  }catch{return new Date(value).toISOString().slice(0,10)}
+}
+function storySummary(x){
+  return {
+    storyId:x.storyId,id:x.id,title:x.title,category:x.category,publishedAt:x.publishedAt,
+    firstSeenAt:x.firstSeenAt,lastSeenAt:x.lastSeenAt,confirmations:x.confirmations||0,
+    heat:x.heat||0,importance:x.importance||0,sources:x.sources||[],sourceDetails:x.sourceDetails||[],
+    tiers:x.tiers||[],eventKey:x.eventKey||"",aiEventKey:x.aiEventKey||"",url:x.url||"",
+    exclusive:Boolean(x.exclusive),isMatchReport:Boolean(x.isMatchReport),members:x.members||[]
+  };
+}
+function rememberStories(items=[]){
+  state.stories=state.stories||{};
+  for(const item of items){
+    if(!item.storyId)continue;
+    const old=state.stories[item.storyId]||{history:[]};
+    const history=Array.isArray(old.history)?old.history:[];
+    const last=history[history.length-1];
+    if(!last||last.title!==item.title||String(last.publishedAt)!==String(item.publishedAt)){
+      history.push({title:item.title,publishedAt:item.publishedAt,category:item.category,confirmations:item.confirmations||0,heat:item.heat||0,sources:item.sources||[],recordedAt:new Date().toISOString()});
+    }
+    state.stories[item.storyId]={...storySummary(item),history:history.slice(-80)};
+  }
+  const entries=Object.entries(state.stories).sort((a,b)=>Date.parse(b[1].lastSeenAt||b[1].publishedAt||0)-Date.parse(a[1].lastSeenAt||a[1].publishedAt||0)).slice(0,3000);
+  state.stories=Object.fromEntries(entries);
+}
+function snapshotLocal(items=[]){
+  state.snapshots=state.snapshots||{};
+  const date=localDateKey();
+  state.snapshots[date]=items.slice(0,80).map(storySummary);
+  const keys=Object.keys(state.snapshots).sort().reverse().slice(0,120);
+  state.snapshots=Object.fromEntries(keys.map(k=>[k,state.snapshots[k]]));
+  return date;
+}
+function adminAllowed(req){
+  const configured=String(process.env.ADMIN_TOKEN||"");
+  if(!configured)return false;
+  const supplied=String(req.query.token||req.body?.token||req.headers["x-admin-token"]||"");
+  if(!supplied||supplied.length!==configured.length)return false;
+  try{return crypto.timingSafeEqual(Buffer.from(supplied),Buffer.from(configured))}catch{return false}
+}
+
 
 const JUNK_TITLE_RULES=[
   // 中文：比分/赛果预测、博彩、盘口、赔率、投注技巧、所谓专家推荐。
