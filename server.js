@@ -1432,9 +1432,9 @@ function agoText(value){
 
 const CHANNELS=[
   {id:"main",label:"最新"},
-  {id:"official",label:"官方"},
-  {id:"verified",label:"多源核实"},
-  {id:"expert",label:"转会"}
+  {id:"transfer",label:"转会"},
+  {id:"injury",label:"伤停"},
+  {id:"official",label:"官方"}
 ]
 
 
@@ -1454,6 +1454,8 @@ function channelMatches(item,section){
   const tiers=item.tiers||[item.tier].filter(Boolean);
   const best=item.sourceDetails?.[0]?.score||item.sourceScore||0;
   if(section==="main")return true;
+  if(section==="transfer")return item.category==="转会"||/(转会|加盟|离队|租借|续约|签约|报价|谈判|体检|合同|here we go)/i.test(String(item.title||""));
+  if(section==="injury")return item.category==="伤停"||/(受伤|伤缺|缺席|复出|手术|停赛|禁赛|赛季报销)/i.test(String(item.title||""));
   if(section==="official")return isOfficialNews(item);
   if(section==="exclusive")return item.exclusive===true;
   if(section==="verified")return (item.confirmations||0)>=2;
@@ -1518,7 +1520,7 @@ app.get("/",(req,res)=>{
   const sort=String(req.query.sort||"smart");
   const section=String(req.query.section||"main");
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
-  const cats=["全部","转会","伤停","比赛","国家队","教练"];
+  const cats=["全部","比赛","国家队","教练"];
   const channelNav=CHANNELS.map((ch)=>`<a class="${section===ch.id?"active":""}" href="/?section=${encodeURIComponent(ch.id)}">${ch.label}<small>${channelCount(ch.id)}</small></a>`).join("");
 
   const rows=items.map((x)=>{
