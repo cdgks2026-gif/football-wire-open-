@@ -1486,7 +1486,7 @@ function filteredItems(req){
     return tiers.includes(tier);
   });
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
-  if(q)items=items.filter((x)=>`${x.title} ${(x.sources||[]).join(" ")} ${x.source}`.includes(q));
+  if(q)items=items.filter((x)=>`${x.title} ${(x.sources||[]).join(" ")} ${x.source} ${x.eventKey||""} ${(x.aiTags||[]).join(" ")}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
   if(important)items=items.filter((x)=>(x.importance||0)>=4);
   if(sort==="latest"){
@@ -1611,6 +1611,7 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <button type="button" id="addLike">+关注词</button>
 <button type="button" id="addMute">+屏蔽词</button>
 <span id="prefState"></span>
+<span id="trendingTopics"></span>
 <button type="button" id="saveSearch">保存当前筛选</button>
 <select id="savedSearches"><option value="">已保存筛选</option></select>
 <button type="button" id="notifyToggle">开启浏览器通知</button>
@@ -1657,11 +1658,15 @@ app.get("/robots.txt",(_req,res)=>{
 app.get("/sitemap.xml",(_req,res)=>{
   res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://football-wire-production.up.railway.app/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://football-wire-production.up.railway.app/?section=official</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://football-wire-production.up.railway.app/?section=exclusive</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://football-wire-production.up.railway.app/?section=verified</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://football-wire-production.up.railway.app/?section=report</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
+  <url><loc>${PUBLIC_URL}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>${PUBLIC_URL}/?section=official</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>${PUBLIC_URL}/?section=exclusive</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>${PUBLIC_URL}/?section=verified</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>${PUBLIC_URL}/?section=report</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
+  <url><loc>${PUBLIC_URL}/digest</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>${PUBLIC_URL}/archive</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${PUBLIC_URL}/matches</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${PUBLIC_URL}/sources</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
 </urlset>`);
 });
 
@@ -1714,7 +1719,7 @@ app.get("/api/news",(req,res)=>{
     return tiers.includes(tier);
   });
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
-  if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
+  if(q)items=items.filter((x)=>`${x.title} ${x.source} ${x.eventKey||""} ${(x.aiTags||[]).join(" ")}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
   if(important)items=items.filter((x)=>(x.importance||0)>=4);
   if(sort==="latest")items=[...items].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
