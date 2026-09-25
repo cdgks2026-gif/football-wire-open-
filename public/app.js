@@ -96,5 +96,24 @@ try{
 }catch{}
 setInterval(()=>checkNews(false),60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+
+let bookmarks=read("lubai:bookmarks",[]);
+function renderBookmarkCount(){const el=$("#bookmarkCount");if(el)el.textContent=String(bookmarks.length)}
+$(".saveStory").forEach(btn=>btn.addEventListener("click",()=>{
+  const id=btn.dataset.storyId,title=btn.dataset.storyTitle;
+  if(!id)return;
+  const found=bookmarks.find(x=>x.id===id);
+  if(found)bookmarks=bookmarks.filter(x=>x.id!==id);
+  else bookmarks.unshift({id,title,at:Date.now()});
+  bookmarks=bookmarks.slice(0,200);write("lubai:bookmarks",bookmarks);renderBookmarkCount();
+  btn.textContent=found?"稍后读":"已收藏";
+}));
+$("#showBookmarks")?.addEventListener("click",()=>{
+  if(!bookmarks.length)return alert("还没有收藏故事");
+  const html=bookmarks.map((x,i)=>(i+1)+". "+x.title+"\n"+location.origin+"/story/"+x.id).join("\n\n");
+  alert(html.slice(0,12000));
+});
+renderBookmarkCount();
+
 applyPrefs();renderPrefText();renderSaved();
 })();
