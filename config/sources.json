@@ -246,5 +246,21 @@
     "type": "gnews",
     "query": "足球 (转会 OR 伤停 OR 官宣 OR 主帅 OR 国家队 OR 红牌 OR VAR OR 续约 OR 下课) when:1d -彩票 -竞彩 -足彩 -预测",
     "enabled": true
+  },
+  {
+    "name": "太阳报·足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:thesun.co.uk/sport/football football when:1d -odds -betting -tips -prediction",
+    "enabled": true
+  },
+  {
+    "name": "太阳报·足球花边",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:thesun.co.uk (footballer OR football) (girlfriend OR wife OR WAG OR relationship OR party OR nightclub OR holiday OR mansion OR car OR fashion OR lifestyle OR dressing room) when:2d -odds -betting -tips -prediction",
+    "enabled": true
   }
 ]
