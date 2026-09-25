@@ -300,7 +300,17 @@
     "tier": "中文媒体",
     "group": "cn",
     "type": "gnews",
-    "query": "site:dongqiudi.com 足球 when:5d -预测 -彩票 -竞彩 -足彩",
+    "query": "site:dongqiudi.com 足球 when:30d -预测 -彩票 -竞彩 -足彩",
+    "enabled": true,
+    "historyOnly": true
+  },
+  {
+    "name": "虎扑·独家历史补充",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "site:hupu.com 足球 when:30d -预测 -彩票 -竞彩 -足彩",
+    "historyOnly": true,
     "enabled": true
   }
 ]
