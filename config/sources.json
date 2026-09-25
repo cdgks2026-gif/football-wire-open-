@@ -108,7 +108,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:manutd.com/en/news OR site:realmadrid.com/en-US/news OR site:fcbarcelona.com/en/football/first-team/news OR site:mancity.com/news OR site:liverpoolfc.com/news OR site:arsenal.com/news OR site:chelseafc.com/en/news OR site:fcbayern.com/en/news OR site:psg.fr) football when:3d -store -shop -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\"",
+    "query": "(site:manutd.com OR site:realmadrid.com OR site:fcbarcelona.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com OR site:chelseafc.com OR site:fcbayern.com OR site:psg.fr) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\"",
     "enabled": true
   },
   {
@@ -318,7 +318,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "site:chelseafc.com/en/news/article Chelsea when:5d -store -shop -tickets -membership -merchandise",
+    "query": "site:chelseafc.com Chelsea football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\" -\"signature football\"",
     "enabled": true
   },
   {
@@ -326,7 +326,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:manutd.com/en/news OR site:mancity.com/news OR site:liverpoolfc.com/news OR site:arsenal.com/news) football when:3d -store -shop -tickets -membership -merchandise",
+    "query": "(site:manutd.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount",
     "enabled": true
   },
   {
@@ -334,7 +334,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:realmadrid.com/en-US/news OR site:fcbarcelona.com/en/football/first-team/news) football when:3d -store -shop -tickets -membership -merchandise",
+    "query": "(site:realmadrid.com OR site:fcbarcelona.com) football when:5d -shop -store -tickets -ticketing -membership -merchandise -sale -discount",
     "enabled": true
   }
 ]
