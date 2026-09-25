@@ -126,6 +126,44 @@ const SOURCE_REPUTATION_RULES=[
   [/搜狐|Sohu/i,65]
 ];
 
+
+function canonicalSourceName(name){
+  const n=String(name||"").trim();
+  if(!n)return "";
+  const rules=[
+    [/^懂球帝(?:[·｜|\s].*)?$/i,"懂球帝"],
+    [/^虎扑(?:足球)?$/i,"虎扑"],
+    [/Reuters|路透/i,"Reuters"],
+    [/BBC(?: Sport| Football)?|英国广播公司/i,"BBC"],
+    [/Sky Sports|天空体育/i,"Sky Sports"],
+    [/The Athletic|竞技体育网/i,"The Athletic"],
+    [/The Guardian|卫报/i,"The Guardian"],
+    [/Fabrizio Romano|罗马诺/i,"Fabrizio Romano"],
+    [/David Ornstein|奥恩斯坦/i,"David Ornstein"],
+    [/Gianluca Di Marzio|Di Marzio|迪马济奥/i,"Gianluca Di Marzio"],
+    [/Florian Plettenberg|Plettenberg|普莱滕贝格/i,"Florian Plettenberg"],
+    [/Matteo Moretto|Moretto|莫雷托/i,"Matteo Moretto"],
+    [/Ben Jacobs|雅各布斯/i,"Ben Jacobs"],
+    [/L.?Équipe|队报/i,"L'Équipe"],
+    [/RMC Sport/i,"RMC Sport"],
+    [/Kicker/i,"Kicker"],
+    [/La Gazzetta|Gazzetta/i,"La Gazzetta dello Sport"],
+    [/Mundo Deportivo/i,"Mundo Deportivo"],
+    [/Diario AS|AS\.com|^AS$/i,"AS"],
+    [/Marca/i,"Marca"],
+    [/SPORT\.es|^Sport$/i,"SPORT"],
+    [/FIFA|国际足联/i,"FIFA"],
+    [/UEFA|欧足联/i,"UEFA"]
+  ];
+  for(const [rule,label] of rules){
+    if(rule.test(n))return label;
+  }
+  return n
+    .replace(/\s+(Football|Soccer|Sport|Sports)$/i,"")
+    .replace(/(?:·|｜|\|)\s*(头条|国际|英超|西甲|意甲|德甲|法甲|足球).*$/i,"")
+    .trim();
+}
+
 function sourceReputation(name,tier){
   const n=String(name||"");
   for(const [rule,score] of SOURCE_REPUTATION_RULES){
@@ -179,7 +217,8 @@ function metaForEntry(entry){
   };
 }
 function makeItem(entry,title,meta,sourceInfo){
-  const source=sourceInfo?.source||meta.name;
+  const rawSource=sourceInfo?.source||meta.name;
+  const source=canonicalSourceName(rawSource);
   return {
     id:idFor(entry.id||`${entry.title}|${entry.published_at}`),
     minifluxId:entry.id,
