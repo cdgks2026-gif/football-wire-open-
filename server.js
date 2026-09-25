@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { loadSources, GROUP_META } from "./src/sources.js";
-import { bootstrapSources, getRecentEntries, refreshCategory, minifluxHealth } from "./src/miniflux.js";
+import { bootstrapSources, getRecentEntriesByCategory, refreshCategory, minifluxHealth } from "./src/miniflux.js";
 import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.js";
 import { clusterLatest, category } from "./src/events.js";
 
@@ -439,6 +439,7 @@ function publishProcessed(processed,extraMetrics={}){
   state.latest=clustered;
   state.allEligible=rankedEligible.slice(0,800);
   state.reportLatest=reportLatest;
+  const channelCounts=Object.fromEntries(CHANNELS.map((ch)=>[ch.id,channelCount(ch.id)]));
   state.metrics={
     ...(state.metrics||{}),
     rawEntries:extraMetrics.rawEntries??state.metrics?.rawEntries??0,
@@ -453,6 +454,7 @@ function publishProcessed(processed,extraMetrics={}){
     exclusiveVisible,
     platformDirectVisible,
     reportVisible:(state.reportLatest||[]).length,
+    channelCounts,
     confirmationRule:"主新闻：多源、顶级权威单源、懂球帝/虎扑直发均可进入；战报独立隔离；虎扑与懂球帝同事件按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
@@ -491,7 +493,14 @@ async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
   try{
-    const minifluxEntries=await getRecentEntries(ENTRY_DAYS,ENTRY_LIMIT);
+    const categoryBudgets={cn:450,official:260,fast:320,media:520};
+    const grouped=await Promise.all(Object.entries(categoryBudgets).map(async([group,limit])=>{
+      const cat=bootstrap?.categories?.[group];
+      if(!cat)return[];
+      try{return await getRecentEntriesByCategory(cat.id,ENTRY_DAYS,limit)}
+      catch(err){console.error("[entries]",group,String(err));return[]}
+    }));
+    const minifluxEntries=grouped.flat();
     const directHupu=await fetchHupuDirect();
     const entries=[...minifluxEntries,...directHupu];
     const processed=[];
