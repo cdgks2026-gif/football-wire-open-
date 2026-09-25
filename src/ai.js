@@ -31,6 +31,7 @@ function normalizeResult(obj){
     isCommercial:Boolean(obj.isCommercial),
     category:categories.has(obj.category)?obj.category:"综合",
     eventKey:String(obj.eventKey||"").trim().slice(0,140),
+    tags:Array.isArray(obj.tags)?obj.tags.map(x=>String(x).trim()).filter(Boolean).slice(0,8):[],
     confidence:Math.max(0,Math.min(1,Number(obj.confidence)||0))
   };
 }
@@ -78,8 +79,9 @@ export async function judgeNews(state,{title="",body="",source=""}){
     "商业广告包括商城商品、球衣销售、门票售卖、会员促销、折扣、购物页。",
     "栏目页、导航页、只有‘国际足球/英超/足球新闻’等空泛内容，不算具体新闻事件。",
     "category只能是：官方、转会、伤停、比赛、国家队、争议、趣闻、教练、球星、综合。",
+    "tags返回0-8个简短标签，优先球队、球员、赛事、动作，例如：热刺、姆巴佩、英超、伤停。",
     "只返回JSON，不要解释。",
-    '{"isFootballNews":true,"isSpecificEvent":true,"isCommercial":false,"category":"转会","eventKey":"球员|加盟|俱乐部","confidence":0.95}',
+    '{"isFootballNews":true,"isSpecificEvent":true,"isCommercial":false,"category":"转会","eventKey":"球员|加盟|俱乐部","tags":["球员","俱乐部","转会"],"confidence":0.95}',
     "",
     `来源线索：${source||"未知"}`,
     `标题：${title}`,
