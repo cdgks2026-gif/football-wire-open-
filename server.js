@@ -317,6 +317,21 @@ function isOfficialPublisherName(name){
   return OFFICIAL_PUBLISHER_RULES.some((rule)=>rule.test(n));
 }
 
+
+const TRANSFER_EXPERT_RULES=[
+  /Fabrizio Romano|法布里齐奥·罗马诺|罗马诺/i,
+  /David Ornstein|大卫·奥恩斯坦|奥恩斯坦/i,
+  /Gianluca Di Marzio|詹卢卡·迪马济奥|迪马济奥/i,
+  /Florian Plettenberg|弗洛里安·普莱滕贝格|普莱滕贝格/i,
+  /Matteo Moretto|马泰奥·莫雷托|莫雷托/i,
+  /Ben Jacobs|本·雅各布斯|雅各布斯/i
+];
+
+function isTransferExpertItem(source,title){
+  const text=`${source||""} ${title||""}`;
+  return TRANSFER_EXPERT_RULES.some((rule)=>rule.test(text));
+}
+
 function sourceReputation(name,tier){
   const n=String(name||"");
   for(const [rule,score] of SOURCE_REPUTATION_RULES){
@@ -617,7 +632,10 @@ function makeItem(entry,title,meta,sourceInfo){
   const source=canonicalSourceName(rawSource);
   // 官方源已经经过白名单域名 + 商业页过滤；GNews偶尔不给发布方后缀，不能因此把真官方新闻判成未验证。
   const verifiedSource=meta.tier==="官方" ? true : sourceInfo?.verified!==false;
-  const effectiveTier=meta.tier;
+  let effectiveTier=meta.tier;
+  if(meta.tier==="转会专家" && !isTransferExpertItem(source,title)){
+    effectiveTier="国际媒体";
+  }
   return {
     id:idFor(entry.id||`${entry.title}|${entry.published_at}`),
     minifluxId:entry.id,
@@ -823,6 +841,7 @@ function articlePriority(entry,meta){
   if(!meta || meta.historyOnly)return -1;
   const url=String(entry?.url||entry?.link||"");
   if(!/^https?:\/\//i.test(url))return -1;
+  if(/news\.google\.com/i.test(url))return -1;
   const title=normalizeTerms(extractPublisher(entry.title||"",meta).title||"");
   let score=0;
   if(meta.tier==="官方")score+=100;
