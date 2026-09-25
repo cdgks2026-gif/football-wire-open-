@@ -1,13 +1,42 @@
+const ENTITY_ALIASES = [
+  [/\bReal Madrid\b/gi,"皇家马德里"],
+  [/\bFC Barcelona\b|\bBarcelona\b/gi,"巴塞罗那"],
+  [/\bInter Milan\b|\bInternazionale\b/gi,"国际米兰"],
+  [/\bParis Saint-Germain\b|\bPSG\b/gi,"巴黎圣日耳曼"],
+  [/\bManchester United\b|\bMan Utd\b/gi,"曼联"],
+  [/\bManchester City\b|\bMan City\b/gi,"曼城"],
+  [/\bBayern Munich\b/gi,"拜仁慕尼黑"],
+  [/皇马/g,"皇家马德里"],
+  [/巴萨/g,"巴塞罗那"],
+  [/国米/g,"国际米兰"],
+  [/巴黎(?!圣日耳曼)/g,"巴黎圣日耳曼"],
+  [/拜仁(?!慕尼黑)/g,"拜仁慕尼黑"],
+  [/马竞/g,"马德里竞技"],
+  [/特狮/g,"特尔施特根"],
+  [/C罗|C\.罗|Cristiano Ronaldo/gi,"克里斯蒂亚诺·罗纳尔多"],
+  [/KDB|德布劳内/g,"凯文·德布劳内"],
+  [/Vini(?:cius)?\s*Jr\.?/gi,"维尼修斯"],
+  [/Lamine Yamal/gi,"亚马尔"],
+  [/Kylian Mbapp[eé]/gi,"姆巴佩"],
+  [/Erling Haaland/gi,"哈兰德"]
+];
+
+function normalizeEntities(title){
+  let t=String(title||"");
+  for(const [rule,replacement] of ENTITY_ALIASES)t=t.replace(rule,replacement);
+  return t;
+}
+
 const ENTITIES = [
   "姆巴佩","亚马尔","哈兰德","梅西","罗纳尔多","贝林厄姆","维尼修斯","萨拉赫","凯恩",
-  "佩德里","拉菲尼亚","登贝莱","穆西亚拉","维尔茨","奥利塞","孙兴慜",
+  "佩德里","拉菲尼亚","登贝莱","穆西亚拉","维尔茨","奥利塞","孙兴慜","特尔施特根","凯文·德布劳内","克里斯蒂亚诺·罗纳尔多",
   "曼联","皇家马德里","巴塞罗那","曼城","利物浦","阿森纳","切尔西","热刺",
   "拜仁慕尼黑","巴黎圣日耳曼","国际米兰","AC米兰","尤文图斯","马德里竞技","多特蒙德",
   "法国队","英格兰队","西班牙队","葡萄牙队","巴西队","阿根廷队"
 ];
 
 export function category(title) {
-  const t=title||"";
+  const t=normalizeEntities(title||"");
   if (/官方确认|官宣|正式宣布/.test(t)) return "官方";
   if (/转会|加盟|签约|租借|续约|报价|免签|离队|体检|协议|交易确认/.test(t)) return "转会";
   if (/伤|缺席|手术|恢复|复出|扭伤|拉伤|骨折|伤停|流感/.test(t)) return "伤停";
@@ -21,7 +50,7 @@ export function category(title) {
 }
 
 function topic(title) {
-  const t=title||"";
+  const t=normalizeEntities(title||"");
   if (/流感|生病|伤|缺席|恢复|训练|复出|伤停/.test(t)) return "健康训练";
   if (/转会|加盟|签约|租借|报价|离队|体检|协议|交易确认/.test(t)) return "转会";
   if (/续约|合同/.test(t)) return "合同";
@@ -33,13 +62,14 @@ function topic(title) {
 }
 
 export function eventKey(title) {
-  const entities=ENTITIES.filter((e)=>title.includes(e)).slice(0,2);
+  const normalized=normalizeEntities(title);
+  const entities=ENTITIES.filter((e)=>normalized.includes(e)).slice(0,2);
   if (!entities.length) return "";
-  return `${entities.join("|")}|${topic(title)}`;
+  return `${entities.join("|")}|${topic(normalized)}`;
 }
 
 function tokens(title) {
-  const clean=String(title||"")
+  const clean=normalizeEntities(title)
     .replace(/官方确认|官方|官宣|突发|重磅|最新|消息|报道|记者|表示|认为|据悉|曝/g," ")
     .toLowerCase();
   const out=[];
@@ -54,6 +84,26 @@ function tokens(title) {
   out.push(...latin);
   return out;
 }
+function actionTokens(title){
+  const t=normalizeEntities(title);
+  const rules=[
+    ["转会",/(转会|加盟|签约|租借|报价|体检|协议|离队)/],
+    ["续约",/(续约|合同|续签)/],
+    ["伤停",/(受伤|伤缺|缺席|手术|复出|恢复|伤停)/],
+    ["处罚",/(红牌|禁赛|处罚|罚款|调查)/],
+    ["教练",/(主帅|教练|下课|解雇|任命|执教)/],
+    ["回应",/(回应|表示|透露|否认|承认|采访)/],
+    ["比赛",/(战胜|击败|战平|绝杀|逆转|进球|助攻|比分|半场|全场)/]
+  ];
+  return rules.filter(([,r])=>r.test(t)).map(([k])=>k);
+}
+
+function actionCompatible(a,b){
+  const A=actionTokens(a),B=actionTokens(b);
+  if(!A.length||!B.length)return true;
+  return A.some((x)=>B.includes(x));
+}
+
 function similarityScore(a,b) {
   const A=new Set(tokens(a)),B=new Set(tokens(b));
   if (!A.size||!B.size) return 0;
@@ -80,7 +130,8 @@ export function clusterLatest(items) {
       if(!within36h)return false;
       if(eKey && g.eventKey){
         if(g.eventKey!==eKey)return false;
-        return similar(g.head.title,item.title,0.42);
+        if(!actionCompatible(g.head.title,item.title))return false;
+        return similar(g.head.title,item.title,0.38);
       }
       const crossPlatform=(item.source==="虎扑" && g.sources.has("懂球帝"))
         || (item.source==="懂球帝" && g.sources.has("虎扑"));
