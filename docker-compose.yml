@@ -11,6 +11,8 @@ services:
         condition: service_started
       libretranslate:
         condition: service_started
+      extractor:
+        condition: service_started
     environment:
       PORT: 8088
       MINIFLUX_URL: http://miniflux:8080
@@ -30,8 +32,15 @@ services:
       NTFY_URL: ${NTFY_URL:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      TRAFILATURA_URL: http://extractor:8080
     volumes:
       - ./data:/app/data
+
+  extractor:
+    build:
+      context: .
+      dockerfile: Dockerfile.extractor
+    restart: unless-stopped
 
   miniflux:
     image: miniflux/miniflux:latest
