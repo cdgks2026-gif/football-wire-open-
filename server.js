@@ -148,7 +148,7 @@ function entryBodyText(entry){
   return stripHtml(entry?._articleText||entry?.content||entry?.summary||entry?.description||"").slice(0,5000);
 }
 
-function lowInformationReason(title,entry){
+function lowInformationReason(title,entry,meta){
   const t=String(title||"").replace(/\s+/g," ").trim();
   if(!t)return "空标题";
   if(GENERIC_HEADLINE_RULES.some((rule)=>rule.test(t)))return "栏目/分类标题";
@@ -156,11 +156,15 @@ function lowInformationReason(title,entry){
   const combined=`${t} ${body}`;
   const hasEvent=EVENT_SIGNAL_RULES.some((rule)=>rule.test(combined));
 
-  // 极短标题必须由正文提供明确事件信息，否则不是可展示新闻。
   const visibleLen=t.replace(/[^\u4e00-\u9fa5a-z0-9]/gi,"").length;
   if(visibleLen<7 && !hasEvent)return "短标题且正文无具体事件";
 
-  // 正文存在时，标题与正文都没有任何事件动作，视为栏目页、导航页或低信息内容。
+  // 官方源已经经过来源白名单和商业页过滤：允许训练、采访、公告、幕后等非动作词新闻进入。
+  if(meta?.tier==="官方"){
+    if(visibleLen<10 && body.length<80)return "官方内容信息量不足";
+    return "";
+  }
+
   if(body.length>=40 && !hasEvent)return "正文无具体新闻事件";
   return "";
 }
@@ -879,12 +883,17 @@ async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
   try{
-    const categoryBudgets={cn:700,official:260,fast:320,media:520};
-    const groupedPromise=Promise.all(Object.entries(categoryBudgets).map(async([group,limit])=>{
-      const cat=bootstrap?.categories?.[group];
-      if(!cat)return[];
-      try{return await getRecentEntriesByCategory(cat.id,ENTRY_DAYS,limit)}
-      catch(err){console.error("[entries]",group,String(err));return[]}
+    const feedLimit=(meta)=>{
+      if(meta?.tier==="官方")return 80;
+      if(meta?.tier==="转会专家")return 70;
+      if(meta?.group==="cn")return 75;
+      return 45;
+    };
+    const configuredFeeds=Object.entries(bootstrap?.sourceByFeedId||{})
+      .filter(([,meta])=>!meta?.historyOnly);
+    const groupedPromise=Promise.all(configuredFeeds.map(async([feedId,meta])=>{
+      try{return await getRecentEntriesByFeed(Number(feedId),ENTRY_DAYS,feedLimit(meta))}
+      catch(err){console.error("[entries feed]",feedId,meta?.name,String(err));return[]}
     }));
     const historyPromise=(async()=>{
       const feedIds=Object.entries(bootstrap?.sourceByFeedId||{})
@@ -900,7 +909,14 @@ async function syncEntries(){
       return [...feedBatches.flat(),...dqdDirect];
     })();
     const [grouped,historyEntries,directHupu]=await Promise.all([groupedPromise,historyPromise,fetchHupuDirect()]);
-    const minifluxEntries=grouped.flat();
+    const minifluxEntries=[];
+    const seenEntries=new Set();
+    for(const entry of grouped.flat()){
+      const key=String(entry?.id||entry?.url||`${entry?.title}|${entry?.published_at}`);
+      if(seenEntries.has(key))continue;
+      seenEntries.add(key);
+      minifluxEntries.push(entry);
+    }
     const entries=[...minifluxEntries,...directHupu];
     const rawByGroup={};
     const rawBySource={};
@@ -932,7 +948,7 @@ async function syncEntries(){
         if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
-      const lowInfo=lowInformationReason(normalized,entry);
+      const lowInfo=lowInformationReason(normalized,entry,meta);
       if(lowInfo){
         lowInformationFiltered++;
         continue;
@@ -1043,7 +1059,7 @@ async function syncEntries(){
         if(commercialSamples.length<8)commercialSamples.push(normalized||entry.title||"");
         continue;
       }
-      const lowInfo=lowInformationReason(title,entry);
+      const lowInfo=lowInformationReason(title,entry,meta);
       if(lowInfo){
         lowInformationFiltered++;
         continue;
