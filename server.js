@@ -502,6 +502,7 @@ function publishProcessed(processed,extraMetrics={}){
     platformDirectVisible,
     reportVisible:(state.reportLatest||[]).length,
     channelCounts,
+    exclusiveDiagnostics:state.exclusiveDiagnostics||{},
     confirmationRule:"主新闻：多源、顶级权威单源、懂球帝/虎扑直发均可进入；战报独立隔离；虎扑与懂球帝同事件按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
@@ -594,9 +595,11 @@ async function syncEntries(){
     }
 
     const exclusiveProcessed=[];
+    const historySourceRaw={};
     for(const entry of historyEntries){
       const meta=metaForEntry(entry);
       if(!meta?.historyOnly)continue;
+      historySourceRaw[meta.name]=(historySourceRaw[meta.name]||0)+1;
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
       if(lowInformationReason(normalized,entry))continue;
@@ -605,12 +608,26 @@ async function syncEntries(){
       if(chineseRatio(normalized)<0.48)continue;
       exclusiveProcessed.push(makeItem(entry,normalized,meta,sourceInfo));
     }
-    state.exclusiveLatest=clusterLatest(exclusiveProcessed)
+    const exclusiveSourceProcessed={};
+    for(const item of exclusiveProcessed){
+      exclusiveSourceProcessed[item.source]=(exclusiveSourceProcessed[item.source]||0)+1;
+    }
+    const exclusiveClusters=clusterLatest(exclusiveProcessed)
       .map((x)=>({
         ...x,
         exclusive:Boolean(x.platformExclusiveSource),
         isMatchReport:isMatchReport(x)
-      }))
+      }));
+    state.exclusiveDiagnostics={
+      raw:historyEntries.length,
+      rawByFeed:historySourceRaw,
+      processed:exclusiveProcessed.length,
+      processedBySource:exclusiveSourceProcessed,
+      clusters:exclusiveClusters.length,
+      bothPlatforms:exclusiveClusters.filter((x)=>x.hupuDongqiudiMatched).length,
+      exclusivePairs:exclusiveClusters.filter((x)=>x.exclusive).length
+    };
+    state.exclusiveLatest=exclusiveClusters
       .filter((x)=>x.exclusive && !x.isMatchReport)
       .sort((a,b)=>Date.parse(b.platformExclusiveAt||b.publishedAt)-Date.parse(a.platformExclusiveAt||a.publishedAt))
       .slice(0,160);
