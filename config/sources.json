@@ -100,7 +100,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:fifa.com OR site:uefa.com) football when:1d",
+    "query": "(site:fifa.com OR site:uefa.com) football when:3d -shop -store -tickets -merchandise",
     "enabled": true
   },
   {
@@ -108,7 +108,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:manutd.com OR site:realmadrid.com OR site:fcbarcelona.com OR site:mancity.com OR site:liverpoolfc.com OR site:arsenal.com OR site:chelseafc.com OR site:fcbayern.com OR site:psg.fr) football when:1d",
+    "query": "(site:manutd.com/en/news OR site:realmadrid.com/en-US/news OR site:fcbarcelona.com/en/football/first-team/news OR site:mancity.com/news OR site:liverpoolfc.com/news OR site:arsenal.com/news OR site:chelseafc.com/en/news OR site:fcbayern.com/en/news OR site:psg.fr) football when:3d -store -shop -tickets -ticketing -membership -merchandise -sale -discount -\"add to cart\"",
     "enabled": true
   },
   {
@@ -116,7 +116,7 @@
     "tier": "官方",
     "group": "official",
     "type": "gnews",
-    "query": "(site:premierleague.com OR site:laliga.com OR site:legaseriea.it OR site:bundesliga.com OR site:ligue1.com) football when:1d",
+    "query": "(site:premierleague.com OR site:laliga.com OR site:legaseriea.it OR site:bundesliga.com OR site:ligue1.com) football when:3d -shop -store -tickets -merchandise",
     "enabled": true
   },
   {
@@ -311,6 +311,30 @@
     "type": "gnews",
     "query": "site:hupu.com 足球 when:30d -预测 -彩票 -竞彩 -足彩",
     "historyOnly": true,
+    "enabled": true
+  },
+  {
+    "name": "切尔西官方新闻",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "site:chelseafc.com/en/news/article Chelsea when:5d -store -shop -tickets -membership -merchandise",
+    "enabled": true
+  },
+  {
+    "name": "英超豪门官方新闻",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "(site:manutd.com/en/news OR site:mancity.com/news OR site:liverpoolfc.com/news OR site:arsenal.com/news) football when:3d -store -shop -tickets -membership -merchandise",
+    "enabled": true
+  },
+  {
+    "name": "皇马巴萨官方新闻",
+    "tier": "官方",
+    "group": "official",
+    "type": "gnews",
+    "query": "(site:realmadrid.com/en-US/news OR site:fcbarcelona.com/en/football/first-team/news) football when:3d -store -shop -tickets -membership -merchandise",
     "enabled": true
   }
 ]
