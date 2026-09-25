@@ -18,6 +18,36 @@ function trimCache(cache,max=320){
   return Object.fromEntries(entries.slice(0,max));
 }
 
+
+async function trafilaturaFallback(url,timeout=6500){
+  const base=String(process.env.TRAFILATURA_URL||"").replace(/\/$/,"");
+  if(!base)return null;
+  try{
+    const res=await fetch(base+"/extract",{
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({url}),
+      signal:AbortSignal.timeout(timeout)
+    });
+    if(!res.ok)return null;
+    const data=await res.json();
+    if(!data?.ok||!data?.text)return null;
+    return {
+      ok:true,
+      reason:"",
+      url,
+      finalUrl:url,
+      title:String(data.title||"").trim(),
+      excerpt:"",
+      byline:String(data.author||"").trim(),
+      siteName:String(data.hostname||"").trim(),
+      text:String(data.text||"").replace(/\s+/g," ").trim().slice(0,12_000),
+      length:Number(data.length||String(data.text||"").length),
+      extractor:"trafilatura"
+    };
+  }catch{return null}
+}
+
 export async function extractReadableArticle(url,cache={},opts={}){
   if(!validHttpUrl(url))return {ok:false,reason:"bad-url"};
   const ttl=Number(opts.ttl||DEFAULT_TTL);
@@ -35,6 +65,8 @@ export async function extractReadableArticle(url,cache={},opts={}){
       signal:AbortSignal.timeout(Number(opts.timeout||5500))
     });
     if(!res.ok){
+      const fallback=await trafilaturaFallback(url);
+      if(fallback){Object.assign(result,fallback);cache[url]=result;return result}
       result.reason=`http-${res.status}`;
       cache[url]=result;
       return result;
@@ -68,6 +100,8 @@ export async function extractReadableArticle(url,cache={},opts={}){
     const excerpt=String(article?.excerpt||"").replace(/\s+/g," ").trim();
 
     if(!text || text.length<80){
+      const fallback=await trafilaturaFallback(finalUrl||url);
+      if(fallback){Object.assign(result,fallback);cache[url]=result;return result}
       result.reason="no-article";
       result.finalUrl=finalUrl;
       result.title=title;
@@ -85,10 +119,13 @@ export async function extractReadableArticle(url,cache={},opts={}){
       byline:String(article?.byline||"").trim(),
       siteName:String(article?.siteName||"").trim(),
       text:text.slice(0,12_000),
-      length:text.length
+      length:text.length,
+      extractor:"readability"
     });
   }catch(err){
-    result.reason=String(err?.name||err||"fetch-failed").slice(0,120);
+    const fallback=await trafilaturaFallback(url);
+    if(fallback)Object.assign(result,fallback);
+    else result.reason=String(err?.name||err||"fetch-failed").slice(0,120);
   }
 
   cache[url]=result;
