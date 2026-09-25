@@ -61,12 +61,33 @@ export function clusterLatest(items) {
     let group=eKey?groups.find((g)=>g.eventKey===eKey):null;
     if (!group) group=groups.find((g)=>Math.abs(Date.parse(g.head.publishedAt)-Date.parse(item.publishedAt))<36*3600_000 && similar(g.head.title,item.title));
     if (!group) {
-      groups.push({eventKey:eKey,head:item,sources:new Set([item.source]),tiers:new Set([item.tier])});
+      const sources=new Map();
+      if (item.sourceVerified!==false && item.source) sources.set(item.source, item.sourceScore||0);
+      groups.push({eventKey:eKey,head:item,sources,tiers:new Set([item.tier])});
     } else {
-      group.sources.add(item.source);group.tiers.add(item.tier);
+      if (item.sourceVerified!==false && item.source) {
+        const old=group.sources.get(item.source)||0;
+        group.sources.set(item.source,Math.max(old,item.sourceScore||0));
+      }
+      group.tiers.add(item.tier);
       const a=Date.parse(item.publishedAt),b=Date.parse(group.head.publishedAt);
-      if (a>b || (a===b && sourceWeight(item.tier)>sourceWeight(group.head.tier))) group.head=item;
+      const headScore=group.head.sourceScore||sourceWeight(group.head.tier);
+      const itemScore=item.sourceScore||sourceWeight(item.tier);
+      if (a>b || (a===b && itemScore>headScore)) group.head=item;
     }
   }
-  return groups.map((g)=>({...g.head,category:category(g.head.title),confirmations:g.sources.size,sources:[...g.sources].slice(0,6),eventKey:g.eventKey}));
+  return groups.map((g)=>{
+    const sourceDetails=[...g.sources.entries()]
+      .map(([name,score])=>({name,score}))
+      .sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name));
+    return {
+      ...g.head,
+      category:category(g.head.title),
+      confirmations:sourceDetails.length,
+      sources:sourceDetails.map((x)=>x.name).slice(0,6),
+      sourceDetails:sourceDetails.slice(0,6),
+      primarySource:sourceDetails[0]?.name||g.head.source,
+      eventKey:g.eventKey
+    };
+  });
 }
