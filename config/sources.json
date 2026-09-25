@@ -222,5 +222,29 @@
     "type": "gnews",
     "query": "football VAR red card controversy dressing room funny unusual when:1d",
     "enabled": true
+  },
+  {
+    "name": "全球足球热点联合检索",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(football OR soccer) (transfer OR injury OR coach OR manager OR contract OR squad OR red card OR VAR OR national team) when:1d -prediction -odds -betting",
+    "enabled": true
+  },
+  {
+    "name": "全球足球突发联合检索",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "(football OR soccer) (breaking OR exclusive OR official OR confirmed OR agreement OR injured OR suspended OR sacked) when:1d -prediction -odds -betting",
+    "enabled": true
+  },
+  {
+    "name": "中文足球热点联合检索",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "足球 (转会 OR 伤停 OR 官宣 OR 主帅 OR 国家队 OR 红牌 OR VAR OR 续约 OR 下课) when:1d -彩票 -竞彩 -足彩 -预测",
+    "enabled": true
   }
 ]
