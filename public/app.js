@@ -36,6 +36,17 @@ $("#addLike")?.addEventListener("click",()=>addPref("like"));
 $("#addMute")?.addEventListener("click",()=>addPref("mute"));
 $("#managePrefs")?.addEventListener("click",managePrefs);
 
+
+async function loadTrending(){
+  const el=$("#trendingTopics");if(!el)return;
+  try{
+    const r=await fetch("/api/trending",{cache:"no-store"});if(!r.ok)return;
+    const j=await r.json(),items=j.items||[];
+    if(!items.length){el.textContent="";return}
+    el.innerHTML='热门：'+items.slice(0,8).map(x=>'<a href="/?q='+encodeURIComponent(x.name)+'" style="color:inherit;text-decoration:none;margin-left:6px">'+x.name+'·'+x.count+'</a>').join("");
+  }catch{}
+}
+
 const saved=read("lubai:savedSearches",[]);
 function renderSaved(){
   const sel=$("#savedSearches");if(!sel)return;
@@ -134,5 +145,5 @@ document.body.appendChild(net);
 function renderNetwork(){net.style.display=navigator.onLine?"none":"block";net.textContent="离线模式：显示已缓存页面";}
 addEventListener("online",renderNetwork);addEventListener("offline",renderNetwork);renderNetwork();
 
-applyPrefs();renderPrefText();renderSaved();
+applyPrefs();renderPrefText();renderSaved();loadTrending();
 })();
