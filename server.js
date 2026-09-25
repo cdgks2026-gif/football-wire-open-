@@ -335,6 +335,7 @@ function parseHupuPublishedAt(html){
     /"publish_time"\s*:\s*"?([0-9]{10,13})"?/i,
     /"createTime"\s*:\s*"?([0-9]{10,13})"?/i,
     /"createdAt"\s*:\s*"?([0-9]{10,13})"?/i,
+    /(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)\s*发布/i,
     /datetime=["']([^"']{10,40})["']/i
   ];
   for(const p of patterns){
@@ -386,7 +387,8 @@ async function fetchHupuDirect(){
     const toResolve=out.filter((x)=>!state.hupuTimes[x.url]).slice(0,24);
     await Promise.all(toResolve.map(async(item)=>{
       try{
-        const r=await fetch(item.url,{headers:{"user-agent":"Mozilla/5.0"}});
+        const detailUrl=item.url.replace(/^https:\/\/m\.hupu\.com\/bbs\/(\d+)(?:\.html)?$/i,"https://bbs.hupu.com/$1.html");
+        const r=await fetch(detailUrl,{headers:{"user-agent":"Mozilla/5.0"}});
         if(!r.ok)return;
         const page=await r.text();
         const ts=parseHupuPublishedAt(page);
