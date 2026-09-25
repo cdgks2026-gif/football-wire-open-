@@ -52,7 +52,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Fabrizio Romano\" football transfer OR \"Here we go\" when:1d",
+    "query": "\"Fabrizio Romano\" transfer OR \"Here we go\" when:1d",
     "enabled": true
   },
   {
@@ -60,7 +60,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"David Ornstein\" football transfer when:2d",
+    "query": "\"David Ornstein\" transfer when:2d",
     "enabled": true
   },
   {
@@ -68,7 +68,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Gianluca Di Marzio\" football transfer when:2d",
+    "query": "\"Gianluca Di Marzio\" transfer when:2d",
     "enabled": true
   },
   {
@@ -76,7 +76,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Florian Plettenberg\" football transfer when:2d",
+    "query": "\"Florian Plettenberg\" transfer when:2d",
     "enabled": true
   },
   {
@@ -84,7 +84,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Matteo Moretto\" football transfer when:2d",
+    "query": "\"Matteo Moretto\" transfer when:2d",
     "enabled": true
   },
   {
@@ -92,7 +92,7 @@
     "tier": "转会专家",
     "group": "fast",
     "type": "gnews",
-    "query": "\"Ben Jacobs\" football transfer when:2d",
+    "query": "\"Ben Jacobs\" transfer when:2d",
     "enabled": true
   },
   {
@@ -285,6 +285,14 @@
     "group": "cn",
     "type": "gnews",
     "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:1d -预测 -彩票 -竞彩 -足彩",
+    "enabled": true
+  },
+  {
+    "name": "转会专家·联合补充",
+    "tier": "转会专家",
+    "group": "fast",
+    "type": "gnews",
+    "query": "(\"Fabrizio Romano\" OR \"David Ornstein\" OR \"Florian Plettenberg\" OR \"Gianluca Di Marzio\" OR \"Matteo Moretto\" OR \"Ben Jacobs\") when:5d",
     "enabled": true
   }
 ]
