@@ -1,0 +1,14 @@
+{
+  "name":"露白足球",
+  "short_name":"露白足球",
+  "description":"开源足球新闻聚合器：多源核实、独家识别、战报、历史与语义搜索",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#06100c",
+  "theme_color":"#06100c",
+  "lang":"zh-CN",
+  "icons":[
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
