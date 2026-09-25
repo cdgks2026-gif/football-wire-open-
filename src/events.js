@@ -39,16 +39,32 @@ export function eventKey(title) {
 }
 
 function tokens(title) {
-  return String(title||"")
-    .replace(/官方确认|官方|官宣|突发|重磅|最新|消息|报道|记者|表示|认为/g," ")
-    .replace(/[^\u4e00-\u9fa5a-z0-9]+/gi," ")
-    .split(/\s+/).filter((x)=>x.length>=2);
+  const clean=String(title||"")
+    .replace(/官方确认|官方|官宣|突发|重磅|最新|消息|报道|记者|表示|认为|据悉|曝/g," ")
+    .toLowerCase();
+  const out=[];
+  const han=clean.match(/[\u4e00-\u9fa5]+/g)||[];
+  for(const chunk of han){
+    if(chunk.length===2)out.push(chunk);
+    else{
+      for(let i=0;i<chunk.length-1;i++)out.push(chunk.slice(i,i+2));
+    }
+  }
+  const latin=clean.match(/[a-z0-9]{3,}/g)||[];
+  out.push(...latin);
+  return out;
 }
-function similar(a,b) {
+function similarityScore(a,b) {
+  const A=new Set(tokens(a)),B=new Set(tokens(b));
+  if (!A.size||!B.size) return 0;
+  let same=0;for (const x of A) if (B.has(x)) same++;
+  return same/Math.min(A.size,B.size);
+}
+function similar(a,b,threshold=0.48) {
   const A=new Set(tokens(a)),B=new Set(tokens(b));
   if (!A.size||!B.size) return false;
   let same=0;for (const x of A) if (B.has(x)) same++;
-  return same>=2 && same/Math.min(A.size,B.size)>=0.58;
+  return same>=3 && same/Math.min(A.size,B.size)>=threshold;
 }
 export function sourceWeight(tier) {
   return tier==="官方"?40:tier==="转会专家"?30:tier==="国际媒体"?20:10;
@@ -58,8 +74,16 @@ export function clusterLatest(items) {
   const groups=[];
   for (const item of sorted) {
     const eKey=eventKey(item.title);
-    let group=eKey?groups.find((g)=>g.eventKey===eKey):null;
-    if (!group) group=groups.find((g)=>Math.abs(Date.parse(g.head.publishedAt)-Date.parse(item.publishedAt))<36*3600_000 && similar(g.head.title,item.title));
+    const itemTime=Date.parse(item.publishedAt);
+    let group=groups.find((g)=>{
+      const within36h=Math.abs(Date.parse(g.head.publishedAt)-itemTime)<36*3600_000;
+      if(!within36h)return false;
+      if(eKey && g.eventKey){
+        if(g.eventKey!==eKey)return false;
+        return similar(g.head.title,item.title,0.42);
+      }
+      return similar(g.head.title,item.title,0.60);
+    });
     if (!group) {
       const sources=new Map();
       if (item.sourceVerified!==false && item.source) sources.set(item.source, item.sourceScore||0);
