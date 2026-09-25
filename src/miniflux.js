@@ -98,7 +98,8 @@ export async function bootstrapSources(sources) {
         name: source.name,
         tier: source.tier,
         group: source.group,
-        type: source.type
+        type: source.type,
+        historyOnly: source.historyOnly===true
       };
     }
   }
