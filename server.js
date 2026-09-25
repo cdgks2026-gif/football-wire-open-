@@ -190,6 +190,7 @@ const FOOTBALL_ANCHORS=[
 ];
 
 function isExplicitFootballSource(meta){
+  if(meta?.tier==="官方")return true;
   const n=String(meta?.name||"");
   return /懂球帝|足球|罗马诺|奥恩斯坦|迪马济奥|普莱滕贝格|莫雷托|雅各布斯|国际足联|欧足联|豪门官方|五大联赛官方|路透社足球|天空体育足球|广播公司足球/.test(n);
 }
