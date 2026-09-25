@@ -14,6 +14,8 @@ import { teamContext, matchesAround, standings, leagueOptions } from "./src/matc
 import { notifyNewImportant } from "./src/notify.js";
 import { registerFeatureRoutes } from "./src/features.js";
 import { maybeSendDailyDigest } from "./src/digest.js";
+import { renderPluginRss, isPluginSource } from "./src/source_plugins.js";
+import { subscribeWebSubSources, webSubChallenge } from "./src/websub.js";
 
 const app=express();
 app.use(express.json({limit:"1mb"}));
@@ -922,6 +924,7 @@ async function setup(){
   }
   const sources=loadSources();
   bootstrap=await bootstrapSources(sources);
+  state.metrics={...(state.metrics||{}),websub:await subscribeWebSubSources(sources).catch(()=>({configured:0,subscribed:0}))};
   console.log(`[setup] ${sources.length} 个来源已配置；新建 ${bootstrap.created.length} 个订阅`);
   await refreshDue(true);
   setTimeout(()=>syncEntries(),5000);
@@ -1654,6 +1657,22 @@ app.get("/sitemap.xml",(_req,res)=>{
   <url><loc>https://football-wire-production.up.railway.app/?section=verified</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
   <url><loc>https://football-wire-production.up.railway.app/?section=report</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
 </urlset>`);
+});
+
+app.get("/internal/source/:name",async(req,res)=>{
+  const name=decodeURIComponent(String(req.params.name||""));
+  const source=loadSources().find(x=>x.name===name);
+  if(!source||!isPluginSource(source))return res.status(404).send("unknown source");
+  try{
+    const rss=await renderPluginRss(source);
+    res.type("application/rss+xml").send(rss);
+  }catch(err){res.status(502).send(String(err))}
+});
+
+app.get("/websub/callback",webSubChallenge);
+app.post("/websub/callback",(_req,res)=>{
+  res.status(204).end();
+  void refreshDue(true).then(()=>setTimeout(()=>syncEntries(),1200));
 });
 
 app.use(express.static("public",{etag:false,maxAge:0,setHeaders:(res)=>res.set("Cache-Control","no-store")}));
