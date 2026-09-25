@@ -184,7 +184,7 @@ function canonicalSourceName(name){
   const n=String(name||"").trim();
   if(!n)return "";
   const rules=[
-    [/^懂球帝(?:[·｜|\s].*)?$/i,"懂球帝"],
+    [/懂球帝/i,"懂球帝"],
     [/虎扑|Hupu/i,"虎扑"],
     [/Reuters|路透/i,"Reuters"],
     [/BBC(?: Sport| Football)?|英国广播公司/i,"BBC"],
