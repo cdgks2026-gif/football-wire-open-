@@ -258,8 +258,197 @@ GitHub 仓库本身是公开仓库，因此代码可以被 GitHub 搜索、Clone
 - [x] 战报独立栏目
 - [x] 来源健康诊断
 - [x] 可选 Groq + Qwen AI 裁判层
-- [ ] Embedding 向量事件检索
+- [x] PostgreSQL / pgvector 兼容向量事件检索
 - [ ] Qwen / BGE Reranker 精排
 - [ ] PostgreSQL + pgvector 长期新闻语义库
-- [ ] SSE / WebSocket 实时推送
-- [ ] PWA
+- [x] SSE 实时推送
+- [x] PWA
+
+
+## V55 完整功能集
+
+当前版本已经把项目从“新闻流”升级成“足球事件聚合与历史库”：
+
+### 编辑台
+设置 `ADMIN_TOKEN` 后访问：
+
+```text
+/admin?token=你的ADMIN_TOKEN
+```
+
+支持：
+- 置顶 / 取消置顶
+- 隐藏错误新闻
+- 修改分类
+- 合并两个故事
+- 从错误聚类中拆出单条报道
+- 查看每个来源的原始量、收录量和过滤原因
+
+### 永久故事页与时间线
+
+每个聚类事件都会生成稳定的 `storyId`：
+
+```text
+/story/:storyId
+```
+
+故事页展示：
+- 当前最新进展
+- 首次 / 最后出现时间
+- 来源数量
+- 新闻版本变化
+- 聚类成员报道
+- 可识别球队的最近比赛和下一场比赛
+
+### PostgreSQL 历史库与 pgvector
+
+设置 `APP_DATABASE_URL` 后自动创建 `lubai_*` 表保存故事、版本和每日快照。
+
+如果 PostgreSQL 支持 `vector` 扩展，会自动开启 64 维向量检索；不支持时自动降级到文本历史搜索，不影响主新闻流。
+
+Docker Compose 已改用 `pgvector/pgvector:pg17`。
+
+### 每日足球档案
+
+```text
+/archive
+/archive/YYYY-MM-DD
+```
+
+每天持续保存主要新闻快照，可回看历史日期。
+
+### 五大联赛赛程与积分榜
+
+```text
+/matches
+```
+
+使用 OpenFootball 公共数据集，支持：
+- 英超
+- 西甲
+- 意甲
+- 德甲
+- 法甲
+- 赛程 / 结果
+- 自动计算积分榜
+- 故事页球队比赛上下文
+
+该数据用于背景信息，不作为官方实时比分源。
+
+### 个性化训练
+
+浏览器本地保存：
+- 关注球队 / 球员 / 关键词
+- 屏蔽关键词
+- 保存筛选条件
+- 稍后读 / 收藏故事
+
+不需要账号，不把个人偏好上传服务器。
+
+### PWA 与实时流
+
+- `manifest.webmanifest`
+- Service Worker 离线壳
+- 可安装到手机桌面
+- `GET /api/stream` SSE 实时新闻流
+- 浏览器 Notification 通知
+- SSE 断线时自动保留轮询兜底
+
+### 可选外部通知
+
+支持环境变量：
+- `NTFY_URL`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+只推送高重要度、独家或多源确认事件，并带永久故事页链接。
+
+### 每日摘要
+
+支持：
+- SMTP 邮件
+- 通用 JSON Webhook
+
+主要变量：
+
+```env
+DIGEST_HOUR=8
+DIGEST_WEBHOOK_URL=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+DIGEST_TO=
+```
+
+### 双引擎正文抽取
+
+第一层：Mozilla Readability  
+第二层：Trafilatura fallback
+
+Docker Compose 会启动独立的 `extractor` 服务。Readability 失败、正文过短或网页结构异常时才调用 Trafilatura。
+
+### JSON / XPath 来源插件
+
+除 RSS、RSSHub、Google News RSS 外，还支持将 JSON API 或 HTML XPath 页面自动转换为内部 RSS。
+
+JSON 来源示意：
+
+```json
+{
+  "name": "Example JSON",
+  "tier": "国际媒体",
+  "group": "media",
+  "type": "json",
+  "url": "https://example.com/api/news",
+  "itemsPath": "data.items",
+  "titlePath": "title",
+  "urlPath": "url",
+  "datePath": "publishedAt",
+  "contentPath": "summary",
+  "enabled": true
+}
+```
+
+XPath 来源示意：
+
+```json
+{
+  "name": "Example XPath",
+  "tier": "国际媒体",
+  "group": "media",
+  "type": "xpath",
+  "url": "https://example.com/football",
+  "itemXpath": "//article",
+  "titleXpath": "string(.//h2)",
+  "urlXpath": "string(.//a[1]/@href)",
+  "dateXpath": "string(.//time/@datetime)",
+  "contentXpath": "string(.)",
+  "enabled": true
+}
+```
+
+### WebSub
+
+来源配置提供 `websubHub` 和 `websubTopic` 时，会自动尝试订阅；回调：
+
+```text
+GET /websub/callback
+POST /websub/callback
+```
+
+收到推送后立即触发刷新，而不是等待下一轮定时轮询。
+
+### AI 标签与语义事件键
+
+可选 Groq + Qwen 会输出：
+- 是否足球新闻
+- 是否具体事件
+- 是否商业广告
+- 分类
+- 稳定 eventKey
+- 球队 / 球员 / 赛事 / 动作标签
+
+AI 不决定新闻真假；真实性仍由来源、发布时间和多源确认决定。
+
