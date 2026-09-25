@@ -798,6 +798,8 @@ function publishProcessed(processed,extraMetrics={}){
     rawByGroup:extraMetrics.rawByGroup??state.metrics?.rawByGroup??{},
     rawBySource:extraMetrics.rawBySource??state.metrics?.rawBySource??{},
     articleExtraction:extraMetrics.articleExtraction??state.metrics?.articleExtraction??{},
+    ai:aiStatus(state),
+    aiBudget:extraMetrics.aiBudget??state.metrics?.aiBudget??{},
     filterStatsBySource:extraMetrics.filterStatsBySource??state.metrics?.filterStatsBySource??{},
     commercialSamples:extraMetrics.commercialSamples??state.metrics?.commercialSamples??[],
     unconfirmedFiltered,
@@ -1241,6 +1243,7 @@ async function syncEntries(){
           nonFootballFiltered,
           lowInformationFiltered,
           commercialFiltered,
+          aiBudget,
           phase:"外文标题增量翻译中"
         });
       }
@@ -1426,7 +1429,15 @@ app.get("/",(req,res)=>{
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="refresh" content="30">
-<title>露白足球｜全球足球中文快讯</title>
+<title>露白足球｜开源足球新闻聚合器</title>
+<meta name="description" content="露白足球：开源足球新闻聚合器，聚合懂球帝、虎扑、官方及国际媒体，支持多源核实、独家首发识别、战报分栏、正文过滤和可选AI语义增强。">
+<meta name="keywords" content="足球新闻,懂球帝,虎扑,足球聚合器,开源足球,football news,news aggregator,RSSHub,Miniflux">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<link rel="canonical" href="https://football-wire-production.up.railway.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="露白足球｜开源足球新闻聚合器">
+<meta property="og:description" content="多源核实、独家识别、战报分栏、正文过滤与可选AI语义增强。">
+<meta property="og:url" content="https://football-wire-production.up.railway.app/">
 <style>
 *{box-sizing:border-box}
 :root{--bg:#06100c;--panel:#0c1813;--line:#233b31;--text:#f3f8f5;--muted:#91a59c;--green:#63e7a1}
@@ -1461,6 +1472,8 @@ button{background:var(--green);color:#052014;font-weight:800}
 .exclusive{border-color:#9b7732!important;color:#ffd77f!important}
 .hot{border-color:#8b3b35!important;color:#ff9e91!important}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+footer{padding:24px 0 8px;color:var(--muted);font-size:12px}
+footer a{color:var(--muted);text-underline-offset:3px}
 @media(max-width:700px){h1{font-size:30px}.title{font-size:16px}form{position:static}}
 </style>
 </head>
@@ -1468,7 +1481,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 多重分栏 · 官方/独家/多源可重叠 · 战报单独隔离</div>
+<div class="sub">纯足球 · 多重分栏 · 官方/独家/多源可重叠 · 战报单独隔离${aiEnabled()?" · AI语义增强":""}</div>
 <nav class="sections">${channelNav}</nav>
 </header>
 <form method="get" action="/">
@@ -1493,6 +1506,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 </form>
 <div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 商城/促销已过滤 ${state.metrics?.commercialFiltered||0} 条 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")} · 更新 ${escHtml(agoText(state.metrics?.syncedAt)||"刚刚")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
+<footer>露白足球 Open · <a href="https://github.com/cdgks2026-gif/football-wire-open-" target="_blank" rel="noopener noreferrer">GitHub 开源代码</a></footer>
 </div>
 </body>
 </html>`;
@@ -1500,6 +1514,21 @@ button{background:var(--green);color:#052014;font-weight:800}
   res.set("Pragma","no-cache");
   res.set("Expires","0");
   res.type("html").send(page);
+});
+
+app.get("/robots.txt",(_req,res)=>{
+  res.type("text/plain").send("User-agent: *\nAllow: /\nSitemap: https://football-wire-production.up.railway.app/sitemap.xml\n");
+});
+
+app.get("/sitemap.xml",(_req,res)=>{
+  res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://football-wire-production.up.railway.app/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://football-wire-production.up.railway.app/?section=official</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://football-wire-production.up.railway.app/?section=exclusive</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://football-wire-production.up.railway.app/?section=verified</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://football-wire-production.up.railway.app/?section=report</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
+</urlset>`);
 });
 
 app.use(express.static("public",{etag:false,maxAge:0,setHeaders:(res)=>res.set("Cache-Control","no-store")}));
@@ -1549,6 +1578,11 @@ app.get("/api/source-health",(_req,res)=>{
   });
 });
 
+app.get("/api/ai-status",(_req,res)=>{
+  res.set("Cache-Control","no-store");
+  res.json(aiStatus(state));
+});
+
 app.get("/api/status",async(_req,res)=>{
   res.set("Cache-Control","no-store");
   res.json({
@@ -1556,7 +1590,8 @@ app.get("/api/status",async(_req,res)=>{
     miniflux:await minifluxHealth(),
     sourceCount:bootstrap?Object.keys(bootstrap.sourceByFeedId).length:0,
     newsCount:(state.latest||[]).length,
-    metrics:state.metrics||{}
+    metrics:state.metrics||{},
+    ai:aiStatus(state)
   });
 });
 
