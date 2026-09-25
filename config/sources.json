@@ -248,35 +248,43 @@
     "enabled": true
   },
   {
-    "name": "太阳报·足球",
-    "tier": "国际媒体",
-    "group": "media",
-    "type": "gnews",
-    "query": "site:thesun.co.uk/sport/football football when:1d -odds -betting -tips -prediction",
+    "name": "懂球帝·深度",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/55",
     "enabled": true
   },
   {
-    "name": "太阳报·足球花边",
-    "tier": "国际媒体",
-    "group": "media",
-    "type": "gnews",
-    "query": "site:thesun.co.uk (footballer OR football) (girlfriend OR wife OR WAG OR relationship OR party OR nightclub OR holiday OR mansion OR car OR fashion OR lifestyle OR dressing room) when:2d -odds -betting -tips -prediction",
+    "name": "懂球帝·闲情",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/37",
     "enabled": true
   },
   {
-    "name": "太阳报·全量足球",
-    "tier": "国际媒体",
-    "group": "media",
-    "type": "gnews",
-    "query": "site:thesun.co.uk football when:2d -odds -betting -tips -prediction",
+    "name": "懂球帝·中超",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "rsshub",
+    "path": "/dongqiudi/top_news/56",
     "enabled": true
   },
   {
-    "name": "太阳报·足球RSS",
-    "tier": "国际媒体",
-    "group": "media",
-    "type": "rss",
-    "url": "https://www.thesun.co.uk/sport/football/feed/",
+    "name": "虎扑足球·移动端",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "site:m.hupu.com/soccer 足球 when:1d -预测 -彩票 -竞彩 -足彩",
+    "enabled": true
+  },
+  {
+    "name": "虎扑足球·新闻补充",
+    "tier": "中文媒体",
+    "group": "cn",
+    "type": "gnews",
+    "query": "site:hupu.com/bbs 足球 (官方 OR 记者 OR 罗马诺 OR 队报 OR 天空 OR BBC OR 转会 OR 伤停 OR 比赛) when:1d -预测 -彩票 -竞彩 -足彩",
     "enabled": true
   }
 ]
