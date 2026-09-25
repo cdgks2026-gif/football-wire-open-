@@ -117,10 +117,32 @@ const JUNK_TITLE_RULES=[
   /\bpredicted\s+(?:score|result|line-?up|xi)\b/i,
   /\b(?:betting\s+tips?|best\s+bets?|betting\s+predictions?|odds|moneyline|parlay|over\s*\/\s*under)\b/i,
   /\b(?:tips?\s+and\s+predictions?|prediction\s+and\s+odds)\b/i,
+  /\b(?:bookmaker|sportsbook|wager(?:ing)?|punter|tipster|bet builder|free bets?|bet bonus|betting bonus|promo code|welcome offer|acca|accumulator|asian handicap|handicap betting|spread betting|both teams to score|btts|correct score|anytime goalscorer|first goalscorer|win to nil|cash out|boosted odds|betting picks?)\b/i,
+  /(?:亚盘|欧赔|亚洲盘|欧洲赔率|水位|初盘|临场盘|即时盘|盘口分析|赔率分析|投注技巧|投注策略|投注推荐|竞彩推荐|足彩推荐|专家推荐|稳胆|胆码|定胆|串关|单关|半全场|胜平负推荐|让球胜平负|总进球数|比分投注技巧|投注平台|博彩网站|博彩公司|送彩金|首存优惠|投注返现)/i,
 
   // 西/葡/意/法/德常见博彩与预测词。
   /\b(?:pron[oó]stic(?:o|os|i)|apuestas?|apostas?|palpites?|scommesse|pronostics?|paris?\s+sportifs?|wett(?:en|tipps?)|quoten)\b/i
 ];
+
+const GAMBLING_URL_RULES=[
+  /(?:^|[./_-])(?:bet|bets|betting|sportsbook|bookmaker|odds|casino|gambling|tips|predictions?)(?:[./_?=-]|$)/i,
+  /(?:bet365|williamhill|paddypower|betfair|betway|unibet|stake\.com|1xbet|betfred|ladbrokes|coral\.co\.uk|draftkings|fanduel)/i
+];
+
+function gamblingReason(title,entry){
+  const body=entryBodyText(entry);
+  const url=String(entry?.url||entry?.link||"");
+  const text=`${String(title||"")} ${body}`;
+  for(const rule of JUNK_TITLE_RULES)if(rule.test(text))return "博彩/预测内容";
+  for(const rule of GAMBLING_URL_RULES)if(rule.test(url))return "博彩URL";
+  const bettingSignals=[
+    /(?:赔率|盘口|投注|下注|竞彩|足彩|博彩|亚盘|欧赔|水位|串关|稳胆|胆码|半全场|胜平负)/i,
+    /\b(?:odds|betting|bets?|bookmaker|sportsbook|wager|tipster|acca|accumulator|handicap|btts|goalscorer)\b/i
+  ];
+  let hits=0; for(const rule of bettingSignals)if(rule.test(text))hits++;
+  if(hits>=2)return "多重博彩信号";
+  return "";
+}
 
 function junkTitleReason(title){
   const t=String(title||"").replace(/\s+/g," ").trim();
@@ -1117,7 +1139,7 @@ async function syncEntries(){
       stat(meta.name,"raw",String(entry.title||"").slice(0,160));
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
-      const junk=junkTitleReason(normalized);
+      const junk=gamblingReason(normalized,entry)||junkTitleReason(normalized);
       if(junk){
         junkFiltered++;
         stat(meta.name,"junk",normalized||entry.title||"");
@@ -1198,7 +1220,7 @@ async function syncEntries(){
       const normalized=normalizeTerms(sourceInfo.title);
       if(!normalized || GENERIC_HEADLINE_RULES.some((rule)=>rule.test(normalized)))continue;
       if(commercialReason(normalized,entry))continue;
-      if(junkTitleReason(normalized))continue;
+      if(gamblingReason(normalized,entry)||junkTitleReason(normalized))continue;
       if(chineseRatio(normalized)<0.30)continue;
       const item=makeItem(entry,normalized,meta,sourceInfo);
       if(!["懂球帝","虎扑"].includes(item.source))continue;
@@ -1277,7 +1299,7 @@ async function syncEntries(){
         stat(meta.name,"translateFail",sourceInfo.title||entry.title||"");
         continue;
       }
-      const junk=junkTitleReason(title);
+      const junk=gamblingReason(title,entry)||junkTitleReason(title);
       if(junk){
         junkFiltered++;
         stat(meta.name,"junk",title||entry.title||"");
