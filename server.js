@@ -288,8 +288,13 @@ function publishProcessed(processed,extraMetrics={}){
   });
 
   const eligible=allClusters.filter((x)=>{
-    if((x.confirmations||0)>=2)return true;
-    return x.exclusive===true && (x.sourceDetails?.[0]?.score||x.sourceScore||0)>=92;
+    const confirmations=x.confirmations||0;
+    const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
+    // 两家交叉时，至少要有一家达到主流媒体级别；普通来源至少三家一致。
+    if(confirmations>=3 && best>=70)return true;
+    if(confirmations>=2 && best>=78)return true;
+    // 单一来源只有明确标注“独家”且来源属于顶级信誉才展示。
+    return x.exclusive===true && best>=92;
   });
 
   const clustered=eligible
