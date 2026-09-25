@@ -250,6 +250,31 @@ function canonicalSourceName(name){
     .trim();
 }
 
+
+const OFFICIAL_PUBLISHER_RULES=[
+  /(?:Chelsea|切尔西)(?:\s+FC|\s+Football Club)?$/i,
+  /Manchester United|Man Utd|曼联/i,
+  /Manchester City|Man City|曼城/i,
+  /Liverpool FC|Liverpool Football Club|利物浦/i,
+  /Arsenal|阿森纳/i,
+  /Real Madrid|皇家马德里|皇马/i,
+  /FC Barcelona|Barcelona|巴塞罗那|巴萨/i,
+  /FC Bayern|Bayern Munich|拜仁/i,
+  /Paris Saint-Germain|PSG|巴黎圣日耳曼/i,
+  /FIFA|国际足联/i,
+  /UEFA|欧足联/i,
+  /Premier League|英超官方/i,
+  /LaLiga|西甲官方/i,
+  /Serie A|Lega Serie A|意甲官方/i,
+  /Bundesliga|德甲官方/i,
+  /Ligue 1|法甲官方/i
+];
+
+function isOfficialPublisherName(name){
+  const n=String(name||"").trim();
+  return OFFICIAL_PUBLISHER_RULES.some((rule)=>rule.test(n));
+}
+
 function sourceReputation(name,tier){
   const n=String(name||"");
   for(const [rule,score] of SOURCE_REPUTATION_RULES){
@@ -356,10 +381,19 @@ function importanceScore(item){
 
 
 function isMatchReport(item){
-  const text=`${item?.title||""} ${item?.contentExcerpt||""}`;
-  return /(?:^|[【[])(?:战报|全场|半场|完场|赛果)(?:】|\]|[:：\s])/i.test(text)
-    || /\b\d{1,2}\s*[-:：]\s*\d{1,2}\b/.test(text)
-    || /(?:比分为|最终比分|全场比分|半场比分)/i.test(text);
+  const title=String(item?.title||"");
+  const text=`${title} ${item?.contentExcerpt||""}`;
+
+  if(/(?:^|[【[])(?:战报|全场|半场|完场|赛果)(?:】|\]|[:：\s])/i.test(text))return true;
+  if(/(?:比分为|最终比分|全场比分|半场比分)/i.test(text))return true;
+
+  const score=/\b\d{1,2}\s*[-:：]\s*\d{1,2}\b/.test(title);
+  if(!score)return false;
+
+  // 避免把价格区间、合同年份、尺码等数字误当比分。
+  if(/(?:€|£|\$|美元|欧元|英镑|万|百万|亿|赛季|合同|年龄|岁|尺码|size).{0,12}\d{1,2}\s*[-:：]\s*\d{1,2}/i.test(title))return false;
+
+  return /(?:战胜|击败|战平|不敌|取胜|绝平|绝杀|逆转|负于|淘汰|vs\.?|\bv\b|beat|defeat|draw|win|loss|欧冠|欧联|英超|西甲|意甲|德甲|法甲|欧国联|世界杯|欧洲杯|美洲杯)/i.test(title);
 }
 
 function parseHupuPublishedAt(html){
@@ -539,16 +573,21 @@ function metaForEntry(entry){
 function makeItem(entry,title,meta,sourceInfo){
   const rawSource=sourceInfo?.source||meta.name;
   const source=canonicalSourceName(rawSource);
+  const verifiedSource=sourceInfo?.verified!==false;
+  const officialGnews=meta.tier==="官方" && meta.type==="gnews";
+  const effectiveTier=officialGnews && (!verifiedSource || !isOfficialPublisherName(source))
+    ? "国际媒体"
+    : meta.tier;
   return {
     id:idFor(entry.id||`${entry.title}|${entry.published_at}`),
     minifluxId:entry.id,
     title,
     source,
-    sourceVerified:sourceInfo?.verified!==false,
-    sourceScore:sourceReputation(source,meta.tier),
+    sourceVerified:verifiedSource,
+    sourceScore:sourceReputation(source,effectiveTier),
     exclusive:explicitExclusive(entry.title||"")||explicitExclusive(title),
     timeReliable:entry?._timeReliable!==false,
-    tier:meta.tier,
+    tier:effectiveTier,
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
     category:category(title),
@@ -1051,7 +1090,7 @@ app.get("/",(req,res)=>{
         ${badges.join("")}
         <span>${escHtml(agoText(x.publishedAt))}</span>
       </div>
-      <div class="title">${escHtml(x.title)}</div>
+      <div class="title">${x.url?`<a href="${escHtml(x.url)}" target="_blank" rel="noopener noreferrer">${escHtml(x.title)}</a>`:escHtml(x.title)}</div>
     </article>`;
   }).join("");
 
@@ -1086,6 +1125,8 @@ button{background:var(--green);color:#052014;font-weight:800}
 .meta{display:flex;gap:7px;flex-wrap:wrap;color:var(--muted);font-size:10.5px;margin-bottom:6px}
 .meta span{border:1px solid #345546;border-radius:999px;padding:3px 6px}
 .title{font-size:17px;line-height:1.5;font-weight:800}
+.title a{color:inherit;text-decoration:none}
+.title a:hover{text-decoration:underline;text-underline-offset:3px}
 .verified{border-color:#2f7656!important;color:#8cf0b8!important}
 .official{border-color:#3979a8!important;color:#9fd3ff!important}
 .authority{border-color:#446d90!important;color:#9bc7e8!important}
