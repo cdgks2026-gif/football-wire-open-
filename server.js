@@ -591,10 +591,8 @@ function makeItem(entry,title,meta,sourceInfo){
   const rawSource=sourceInfo?.source||meta.name;
   const source=canonicalSourceName(rawSource);
   const verifiedSource=sourceInfo?.verified!==false;
-  const officialGnews=meta.tier==="官方" && meta.type==="gnews";
-  const effectiveTier=officialGnews && (!verifiedSource || !isOfficialPublisherName(source))
-    ? "国际媒体"
-    : meta.tier;
+  // 官方源已经经过官方域名/新闻路径检索与商业页过滤，不再依赖不稳定的 GNews 发布方字符串降级。
+  const effectiveTier=meta.tier;
   return {
     id:idFor(entry.id||`${entry.title}|${entry.published_at}`),
     minifluxId:entry.id,
@@ -1054,6 +1052,7 @@ function filteredItems(req){
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
+  const sort=String(req.query.sort||"smart");
   const section=String(req.query.section||"main");
 
   let items;
@@ -1075,6 +1074,11 @@ function filteredItems(req){
   if(q)items=items.filter((x)=>`${x.title} ${(x.sources||[]).join(" ")} ${x.source}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
   if(important)items=items.filter((x)=>(x.importance||0)>=4);
+  if(sort==="latest"){
+    items=[...items].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
+  }else if(sort==="hot"){
+    items=[...items].sort((a,b)=>(b.heat||0)-(a.heat||0) || Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
+  }
   return items;
 }
 
@@ -1085,6 +1089,7 @@ app.get("/",(req,res)=>{
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
+  const sort=String(req.query.sort||"smart");
   const section=String(req.query.section||"main");
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
   const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
@@ -1173,10 +1178,15 @@ button{background:var(--green);color:#052014;font-weight:800}
 <option value="6" ${hours===6?"selected":""}>最近6小时</option>
 <option value="24" ${hours===24?"selected":""}>最近24小时</option>
 </select>
+<select name="sort">
+<option value="smart" ${sort==="smart"?"selected":""}>智能排序</option>
+<option value="latest" ${sort==="latest"?"selected":""}>最新优先</option>
+<option value="hot" ${sort==="hot"?"selected":""}>热度优先</option>
+</select>
 <label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 商城/促销已过滤 ${state.metrics?.commercialFiltered||0} 条 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 商城/促销已过滤 ${state.metrics?.commercialFiltered||0} 条 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")} · 更新 ${escHtml(agoText(state.metrics?.syncedAt)||"刚刚")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
@@ -1196,6 +1206,7 @@ app.get("/api/news",(req,res)=>{
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
+  const sort=String(req.query.sort||"smart");
   const section=String(req.query.section||"main");
 
   let items;
@@ -1211,6 +1222,8 @@ app.get("/api/news",(req,res)=>{
   if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
   if(hours>0)items=items.filter((x)=>Date.now()-Date.parse(x.publishedAt)<=hours*3600_000);
   if(important)items=items.filter((x)=>(x.importance||0)>=4);
+  if(sort==="latest")items=[...items].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
+  else if(sort==="hot")items=[...items].sort((a,b)=>(b.heat||0)-(a.heat||0) || Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
 
   res.set("Cache-Control","no-store");
   res.json({
