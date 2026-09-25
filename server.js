@@ -387,7 +387,7 @@ app.get("/",(req,res)=>{
 
   const rows=items.map((x)=>{
     const sourceDetails=(x.sourceDetails||[]).slice(0,4);
-    const sourceLine=sourceDetails.map((src,i)=>`${i+1}. ${escHtml(src.name)}（${src.score}）`).join(" · ");
+    const sourceLine=sourceDetails.map((src,i)=>`${i+1}. ${escHtml(src.name)}`).join(" · ");
     return `
     <article class="item">
       <div class="meta">
