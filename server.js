@@ -615,8 +615,8 @@ function metaForEntry(entry){
 function makeItem(entry,title,meta,sourceInfo){
   const rawSource=sourceInfo?.source||meta.name;
   const source=canonicalSourceName(rawSource);
-  const verifiedSource=sourceInfo?.verified!==false;
-  // 官方源已经经过官方域名/新闻路径检索与商业页过滤，不再依赖不稳定的 GNews 发布方字符串降级。
+  // 官方源已经经过白名单域名 + 商业页过滤；GNews偶尔不给发布方后缀，不能因此把真官方新闻判成未验证。
+  const verifiedSource=meta.tier==="官方" ? true : sourceInfo?.verified!==false;
   const effectiveTier=meta.tier;
   return {
     id:idFor(entry.id||`${entry.title}|${entry.published_at}`),
