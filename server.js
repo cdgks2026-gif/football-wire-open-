@@ -891,6 +891,9 @@ function publishProcessed(processed,extraMetrics={}){
 }
 
 async function setup(){
+  ensureEditor(state);
+  const db=await initStore();
+  state.metrics={...(state.metrics||{}),store:db};
   const sources=loadSources();
   bootstrap=await bootstrapSources(sources);
   console.log(`[setup] ${sources.length} 个来源已配置；新建 ${bootstrap.created.length} 个订阅`);
@@ -1199,7 +1202,7 @@ async function syncEntries(){
       dqdDirect:historyEntries.filter((x)=>x?._meta?.type==="direct-history").length,
       exclusivePairs:exclusiveMatches.length
     };
-    state.exclusiveLatest=exclusiveMatches.slice(0,160);
+    state.exclusiveLatest=assignStoryIds(exclusiveMatches.slice(0,160));
 
     publishProcessed(processed,{
       rawEntries:entries.length,
