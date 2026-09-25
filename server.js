@@ -62,7 +62,8 @@ const COMMERCIAL_STRONG_RULES=[
   /(?:官方商城|官方商店|立即购买|加入购物车|商品编号|产品编号|库存|清仓|现货|发货|配送|售价[:：]?\s*[¥￥$€£]?\d)/i,
   /\b(?:add to cart|in stock|out of stock|product id|product code|shipping|your price|clearance|shop now|buy now)\b/i,
   /(?:US\$|S\$|HK\$|£|€|¥|￥)\s*\d+(?:\.\d+)?/i,
-  /(?:signature football|signed football|football - size\s*\d|football size\s*\d)/i
+  /(?:phantom football|signature football|signed football|football - size\s*\d|football size\s*\d|official licensed product|official merchandise)/i,
+  /(?:幻影足球|签名足球|签字足球|官方授权商品|官方周边|五号足球|5号足球|足球\s*[（(]?\s*5号\s*[）)]?)/i
 ];
 
 const COMMERCIAL_HINT_RULES=[
@@ -70,8 +71,25 @@ const COMMERCIAL_HINT_RULES=[
   /\b(?:shop|store|buy|price|sale|discount|jersey|shirt|kit|merchandise|tickets?|ticketing|membership|season ticket|gift card)\b/i
 ];
 
+
+const PRODUCT_TITLE_RULES=[
+  /(?:Chelsea|切尔西).{0,30}(?:Phantom|幻影).{0,12}(?:Football|足球)/i,
+  /(?:Arsenal|阿森纳|Liverpool|利物浦|Manchester United|曼联|Manchester City|曼城|Real Madrid|皇马|Barcelona|巴萨|Bayern|拜仁|PSG|巴黎).{0,30}(?:Signature|Signed|Phantom|签名|签字|幻影).{0,12}(?:Football|足球)/i,
+  /(?:Home|Away|Third|主场|客场|第三).{0,12}(?:Jersey|Shirt|Kit|球衣).{0,12}(?:20\d{2}|\d{2}\/\d{2})/i
+];
+
+function productTitleReason(title){
+  const t=String(title||"").replace(/\s+/g," ").trim();
+  for(const rule of PRODUCT_TITLE_RULES){
+    if(rule.test(t))return "商品标题";
+  }
+  return "";
+}
+
 function commercialReason(title,entry){
   const t=String(title||"").replace(/\s+/g," ").trim();
+  const titleProduct=productTitleReason(t);
+  if(titleProduct)return titleProduct;
   const body=entryBodyText(entry);
   const text=`${t} ${body}`;
   const url=String(entry?.url||entry?.link||"");
