@@ -192,6 +192,44 @@ function extractPublisher(rawTitle,meta){
   return {title:raw,source:meta.name,verified:true};
 }
 
+
+function explicitExclusive(title){
+  const t=String(title||"");
+  return /(?:^|[：:\s【[(])(?:独家|独家消息|独家报道|EXCLUSIVE|EXCL|SCOOP)(?:[：:\s】)\]]|$)/i.test(t);
+}
+
+function credibilityFor(item){
+  const details=item.sourceDetails||[];
+  const best=details[0]?.score||item.sourceScore||0;
+  const avg=details.length?details.reduce((a,b)=>a+(b.score||0),0)/details.length:best;
+
+  if((item.confirmations||0)>=3 && best>=88) return {score:98,label:"已核实"};
+  if((item.confirmations||0)>=2 && best>=92 && avg>=80) return {score:95,label:"已核实"};
+  if((item.confirmations||0)>=2 && best>=85) return {score:91,label:"交叉确认"};
+  if((item.confirmations||0)>=2) return {score:86,label:"交叉确认"};
+  if((item.confirmations||0)===1 && item.exclusive===true && best>=92) return {score:82,label:"独家"};
+  return {score:0,label:""};
+}
+
+function heatScore(item){
+  let score=0;
+  const hours=Math.max(0,(Date.now()-Date.parse(item.publishedAt||0))/3600000);
+  score+=Math.max(0,30-Math.min(30,hours*2));
+  score+=Math.min(30,(item.confirmations||0)*9);
+  const best=item.sourceDetails?.[0]?.score||item.sourceScore||0;
+  score+=Math.max(0,(best-65)*0.45);
+
+  const t=item.title||"";
+  if(/官宣|官方确认|达成协议|Here we go|签约|加盟|下课|任命|重伤|赛季报销|禁赛|决赛|夺冠|红牌|VAR|冲突/.test(t)) score+=12;
+  if(/姆巴佩|亚马尔|哈兰德|梅西|C罗|贝林厄姆|维尼修斯|萨拉赫|曼联|曼城|利物浦|阿森纳|切尔西|热刺|皇马|皇家马德里|巴萨|巴塞罗那|拜仁|巴黎圣日耳曼/.test(t)) score+=7;
+  if(item.exclusive)score+=6;
+  return Math.round(score);
+}
+
+function rankScore(item){
+  return (item.credibilityScore||0)*1.2+(item.heat||0);
+}
+
 function importanceScore(item){
   let score=0;
   const bestSourceScore=item.sourceDetails?.[0]?.score||item.sourceScore||0;
@@ -226,6 +264,7 @@ function makeItem(entry,title,meta,sourceInfo){
     source,
     sourceVerified:sourceInfo?.verified!==false,
     sourceScore:sourceReputation(source,meta.tier),
+    exclusive:explicitExclusive(entry.title||"")||explicitExclusive(title),
     tier:meta.tier,
     group:meta.group,
     publishedAt:entry.published_at||entry.created_at||new Date().toISOString(),
@@ -233,18 +272,38 @@ function makeItem(entry,title,meta,sourceInfo){
   };
 }
 function publishProcessed(processed,extraMetrics={}){
-  const allClusters=clusterLatest(processed);
-  const clustered=allClusters
-    .filter((x)=>(x.confirmations||0)>=2)
+  const allClusters=clusterLatest(processed).map((x)=>{
+    const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
+    const exclusive=(x.confirmations||0)===1 && x.exclusive===true && best>=92;
+    const base={...x,exclusive};
+    const credibility=credibilityFor(base);
+    const heat=heatScore(base);
+    return {
+      ...base,
+      credibilityScore:credibility.score,
+      credibilityLabel:credibility.label,
+      heat,
+      importance:importanceScore(base)
+    };
+  });
+
+  const eligible=allClusters.filter((x)=>{
+    if((x.confirmations||0)>=2)return true;
+    return x.exclusive===true && (x.sourceDetails?.[0]?.score||x.sourceScore||0)>=92;
+  });
+
+  const clustered=eligible
     .sort((a,b)=>{
-      const ta=Date.parse(a.publishedAt),tb=Date.parse(b.publishedAt);
-      if(tb!==ta)return tb-ta;
-      return (b.sourceDetails?.[0]?.score||0)-(a.sourceDetails?.[0]?.score||0);
+      const rs=rankScore(b)-rankScore(a);
+      if(rs!==0)return rs;
+      return Date.parse(b.publishedAt)-Date.parse(a.publishedAt);
     })
     .slice(0,MAX_VISIBLE);
-  const unconfirmedFiltered=Math.max(0,allClusters.length-clustered.length);
 
-  state.latest=clustered.map((x)=>({...x,importance:importanceScore(x)}));
+  const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
+  const exclusiveVisible=clustered.filter((x)=>x.exclusive).length;
+
+  state.latest=clustered;
   state.metrics={
     ...(state.metrics||{}),
     rawEntries:extraMetrics.rawEntries??state.metrics?.rawEntries??0,
@@ -255,7 +314,8 @@ function publishProcessed(processed,extraMetrics={}){
     junkFiltered:extraMetrics.junkFiltered??state.metrics?.junkFiltered??0,
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     unconfirmedFiltered,
-    confirmationRule:"至少2个独立出处",
+    exclusiveVisible,
+    confirmationRule:"双源确认；高信誉明确独家可单源展示",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -425,17 +485,16 @@ app.get("/",(req,res)=>{
   const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
 
   const rows=items.map((x)=>{
-    const sourceDetails=(x.sourceDetails||[]).slice(0,4);
-    const sourceLine=sourceDetails.map((src,i)=>`${i+1}. ${escHtml(src.name)}`).join(" · ");
+    const hot=x.heat>=58;
     return `
     <article class="item">
       <div class="meta">
         <span>${escHtml(x.category)}</span>
-        <span>${x.confirmations}个独立出处确认</span>
+        ${x.exclusive?'<span class="exclusive">独家</span>':`<span class="verified">${escHtml(x.credibilityLabel||"已核实")}</span>`}
+        ${hot?'<span class="hot">热门</span>':""}
         <span>${escHtml(agoText(x.publishedAt))}</span>
       </div>
       <div class="title">${escHtml(x.title)}</div>
-      <div class="sources"><b>出处：</b>${sourceLine}</div>
     </article>`;
   }).join("");
 
@@ -466,8 +525,9 @@ button{background:var(--green);color:#052014;font-weight:800}
 .meta{display:flex;gap:7px;flex-wrap:wrap;color:var(--muted);font-size:10.5px;margin-bottom:6px}
 .meta span{border:1px solid #345546;border-radius:999px;padding:3px 6px}
 .title{font-size:17px;line-height:1.5;font-weight:800}
-.sources{margin-top:8px;color:#b9c8c1;font-size:12px;line-height:1.6}
-.sources b{color:var(--green)}
+.verified{border-color:#2f7656!important;color:#8cf0b8!important}
+.exclusive{border-color:#9b7732!important;color:#ffd77f!important}
+.hot{border-color:#8b3b35!important;color:#ff9e91!important}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
 @media(max-width:700px){h1{font-size:30px}.title{font-size:16px}form{position:static}}
 </style>
@@ -476,7 +536,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 至少2个独立媒体交叉确认 · 出处按知名度排序 · 每30秒自动刷新</div>
+<div class="sub">纯足球 · 全网联合核查 · 按热度与可信度排序 · 每30秒自动刷新</div>
 </header>
 <form method="get" action="/">
 <input name="q" value="${escHtml(q)}" placeholder="搜索球员、球队、教练">
@@ -492,7 +552,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前 ${items.length} 条 · 仅显示≥2个独立出处确认 · 未获双源确认已隐藏 ${state.metrics?.unconfirmedFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<div class="status">当前 ${items.length} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 未通过真实性核查隐藏 ${state.metrics?.unconfirmedFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
