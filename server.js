@@ -434,6 +434,79 @@ function makeItem(entry,title,meta,sourceInfo){
     contentExcerpt:entryBodyText(entry).slice(0,600)
   };
 }
+
+function exclusiveHeadlineTokens(title){
+  const clean=String(title||"")
+    .replace(/[【[]?流言板[】\]]?/g," ")
+    .replace(/官方确认|官宣|突发|重磅|最新|消息|报道|记者|据悉/g," ")
+    .toLowerCase();
+  const out=[];
+  const han=clean.match(/[\u4e00-\u9fa5]+/g)||[];
+  for(const chunk of han){
+    if(chunk.length===2)out.push(chunk);
+    else for(let i=0;i<chunk.length-1;i++)out.push(chunk.slice(i,i+2));
+  }
+  const latin=clean.match(/[a-z0-9]{3,}/g)||[];
+  out.push(...latin);
+  return out;
+}
+
+function exclusiveHeadlineSimilarity(a,b){
+  const A=new Set(exclusiveHeadlineTokens(a)),B=new Set(exclusiveHeadlineTokens(b));
+  if(!A.size||!B.size)return 0;
+  let same=0;
+  for(const x of A)if(B.has(x))same++;
+  if(same<4)return 0;
+  return same/Math.min(A.size,B.size);
+}
+
+function buildExclusiveHistory(items){
+  const hupu=items.filter((x)=>x.source==="虎扑");
+  const dqd=items.filter((x)=>x.source==="懂球帝");
+  const usedDqd=new Set();
+  const matched=[];
+  for(const h of hupu){
+    const ht=Date.parse(h.publishedAt);
+    let best=null,bestScore=0,bestIndex=-1;
+    for(let i=0;i<dqd.length;i++){
+      if(usedDqd.has(i))continue;
+      const d=dqd[i];
+      const dt=Date.parse(d.publishedAt);
+      if(!Number.isFinite(ht)||!Number.isFinite(dt))continue;
+      if(Math.abs(ht-dt)>72*3600_000)continue;
+      const score=exclusiveHeadlineSimilarity(h.title,d.title);
+      if(score>bestScore){
+        bestScore=score;best=d;bestIndex=i;
+      }
+    }
+    if(!best || bestScore<0.44)continue;
+    usedDqd.add(bestIndex);
+    const hTime=Date.parse(h.publishedAt),dTime=Date.parse(best.publishedAt);
+    if(hTime===dTime)continue;
+    const first=hTime<dTime?h:best;
+    const second=hTime<dTime?best:h;
+    const candidate={
+      ...first,
+      title:first.title,
+      publishedAt:first.publishedAt,
+      exclusive:true,
+      platformExclusiveSource:first.source,
+      platformExclusiveAt:first.publishedAt,
+      confirmations:2,
+      sources:["懂球帝","虎扑"],
+      sourceDetails:[
+        {name:first.source,score:first.sourceScore||0,firstPublishedAt:first.publishedAt,timeReliable:true},
+        {name:second.source,score:second.sourceScore||0,firstPublishedAt:second.publishedAt,timeReliable:true}
+      ],
+      hupuDongqiudiMatched:true,
+      exclusiveSimilarity:bestScore,
+      category:category(first.title)
+    };
+    if(!isMatchReport(candidate))matched.push(candidate);
+  }
+  return matched.sort((a,b)=>Date.parse(b.platformExclusiveAt)-Date.parse(a.platformExclusiveAt));
+}
+
 function publishProcessed(processed,extraMetrics={}){
   const allClusters=clusterLatest(processed).map((x)=>{
     const exclusive=Boolean(x.platformExclusiveSource);
@@ -602,35 +675,28 @@ async function syncEntries(){
       historySourceRaw[meta.name]=(historySourceRaw[meta.name]||0)+1;
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
-      if(lowInformationReason(normalized,entry))continue;
-      if(footballOnlyReason(`${normalized} ${entryBodyText(entry)}`,meta))continue;
+      if(!normalized || GENERIC_HEADLINE_RULES.some((rule)=>rule.test(normalized)))continue;
       if(junkTitleReason(normalized))continue;
-      if(chineseRatio(normalized)<0.48)continue;
-      exclusiveProcessed.push(makeItem(entry,normalized,meta,sourceInfo));
+      if(chineseRatio(normalized)<0.30)continue;
+      const item=makeItem(entry,normalized,meta,sourceInfo);
+      if(!["懂球帝","虎扑"].includes(item.source))continue;
+      exclusiveProcessed.push(item);
     }
     const exclusiveSourceProcessed={};
     for(const item of exclusiveProcessed){
       exclusiveSourceProcessed[item.source]=(exclusiveSourceProcessed[item.source]||0)+1;
     }
-    const exclusiveClusters=clusterLatest(exclusiveProcessed)
-      .map((x)=>({
-        ...x,
-        exclusive:Boolean(x.platformExclusiveSource),
-        isMatchReport:isMatchReport(x)
-      }));
+    const exclusiveMatches=buildExclusiveHistory(exclusiveProcessed);
     state.exclusiveDiagnostics={
       raw:historyEntries.length,
       rawByFeed:historySourceRaw,
       processed:exclusiveProcessed.length,
       processedBySource:exclusiveSourceProcessed,
-      clusters:exclusiveClusters.length,
-      bothPlatforms:exclusiveClusters.filter((x)=>x.hupuDongqiudiMatched).length,
-      exclusivePairs:exclusiveClusters.filter((x)=>x.exclusive).length
+      hupu:exclusiveProcessed.filter((x)=>x.source==="虎扑").length,
+      dqd:exclusiveProcessed.filter((x)=>x.source==="懂球帝").length,
+      exclusivePairs:exclusiveMatches.length
     };
-    state.exclusiveLatest=exclusiveClusters
-      .filter((x)=>x.exclusive && !x.isMatchReport)
-      .sort((a,b)=>Date.parse(b.platformExclusiveAt||b.publishedAt)-Date.parse(a.platformExclusiveAt||a.publishedAt))
-      .slice(0,160);
+    state.exclusiveLatest=exclusiveMatches.slice(0,160);
 
     publishProcessed(processed,{
       rawEntries:entries.length,
