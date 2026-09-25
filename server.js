@@ -10,10 +10,8 @@ import { extractReadableArticle, compactArticleCache } from "./src/article.js";
 import { aiEnabled, aiStatus, newAiBudget, judgeWithBudget } from "./src/ai.js";
 import { initStore, storeStatus, persistStories, getStory as getStoredStory, searchStories, saveSnapshot, getSnapshot, listSnapshots, saveOverride, loadOverrides } from "./src/store.js";
 import { assignStoryIds, applyEditorial, ensureEditor, editStory } from "./src/editor.js";
-import { teamContext, matchesAround, standings, leagueOptions } from "./src/matches.js";
 import { notifyNewImportant } from "./src/notify.js";
 import { registerFeatureRoutes } from "./src/features.js";
-import { maybeSendDailyDigest } from "./src/digest.js";
 import { renderPluginRss, isPluginSource } from "./src/source_plugins.js";
 import { subscribeWebSubSources, webSubChallenge } from "./src/websub.js";
 
@@ -896,10 +894,6 @@ function publishProcessed(processed,extraMetrics={}){
     state.metrics={...(state.metrics||{}),notifications:result};
     saveState();
   }).catch(()=>{});
-  void maybeSendDailyDigest(state,clustered).then((result)=>{
-    state.metrics={...(state.metrics||{}),digest:result};
-    saveState();
-  }).catch(()=>{});
 
   const channelCounts=Object.fromEntries(CHANNELS.map((ch)=>[ch.id,channelCount(ch.id)]));
   state.metrics={
@@ -1437,16 +1431,11 @@ function agoText(value){
 }
 
 const CHANNELS=[
-  {id:"main",label:"全部"},
+  {id:"main",label:"最新"},
   {id:"official",label:"官方"},
-  {id:"exclusive",label:"独家"},
   {id:"verified",label:"多源核实"},
-  {id:"authority",label:"权威媒体"},
-  {id:"expert",label:"转会专家"},
-  {id:"dqd",label:"懂球帝"},
-  {id:"hupu",label:"虎扑"},
-  {id:"report",label:"战报"}
-];
+  {id:"expert",label:"转会"}
+]
 
 
 function isOfficialNews(item){
@@ -1529,7 +1518,7 @@ app.get("/",(req,res)=>{
   const sort=String(req.query.sort||"smart");
   const section=String(req.query.section||"main");
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
-  const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
+  const cats=["全部","转会","伤停","比赛","国家队","教练"];
   const channelNav=CHANNELS.map((ch)=>`<a class="${section===ch.id?"active":""}" href="/?section=${encodeURIComponent(ch.id)}">${ch.label}<small>${channelCount(ch.id)}</small></a>`).join("");
 
   const rows=items.map((x)=>{
@@ -1547,9 +1536,11 @@ app.get("/",(req,res)=>{
     <article class="item" data-title="${escHtml(x.title)}">
       <div class="meta">
         <span>${escHtml(x.category)}</span>
-        ${badges.join("")}
+        <span>${escHtml((x.sources||[x.source]).filter(Boolean).slice(0,2).join(" · "))}</span>
+        ${(x.confirmations||0)>=2?`<span class="verified">${x.confirmations}源</span>`:""}
+        ${badges.filter(b=>!b.includes("多源核实")).join("")}
         <span>${escHtml(agoText(x.publishedAt))}</span>
-        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a><button type="button" class="saveStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">稍后读</button><button type="button" class="shareStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">分享</button>`:""}
+        ${x.storyId?`<button type="button" class="saveStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">收藏</button><button type="button" class="shareStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">分享</button>`:""}
       </div>
       <div class="title">${x.url?`<a href="${escHtml(x.url)}" target="_blank" rel="noopener noreferrer">${escHtml(x.title)}</a>`:escHtml(x.title)}</div>
     </article>`;
@@ -1620,37 +1611,19 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 多重分栏 · 官方/独家/多源可重叠 · 战报单独隔离${aiEnabled()?" · AI语义增强":""}</div>
+<div class="sub">只看足球新闻 · 中文标题 · 多源聚合 · 博彩与商品内容过滤</div>
 <nav class="sections">${channelNav}</nav>
 <div class="toolbar">
-<a href="/search">历史/语义搜索</a>
-<a href="/archive">每日归档</a>
-<a href="/matches">赛程与积分榜</a>
-<a href="/digest">24小时摘要</a>
-<a href="/sources">来源健康</a>
+<a href="/search">搜索</a>
+<a href="/hot?hours=24">24小时热点</a>
 <a href="/feed.xml">RSS</a>
-<a href="/topics">专题</a>
-<a href="/transfers">转会</a>
-<a href="/injuries">伤停</a>
-<a href="/entities">球队/球员</a>
-<a href="/trends">趋势</a>
-<a href="/brief">每日简报</a>
-<button type="button" id="mineToggle">只看我的关注</button>
-<button type="button" id="managePrefs">个性化偏好</button>
-<button type="button" id="addLike">+关注词</button>
-<button type="button" id="addMute">+屏蔽词</button>
-<span id="prefState"></span>
-<span id="trendingTopics"></span>
-<button type="button" id="saveSearch">保存当前筛选</button>
-<select id="savedSearches"><option value="">已保存筛选</option></select>
-<button type="button" id="notifyToggle">开启浏览器通知</button>
-<button type="button" id="showBookmarks">稍后读 <span id="bookmarkCount">0</span></button>
+<button type="button" id="notifyToggle">新闻通知</button>
+<button type="button" id="showBookmarks">收藏 <span id="bookmarkCount">0</span></button>
 </div>
 </header>
 <form method="get" action="/">
 <input type="hidden" name="section" value="${escHtml(section)}">
 <input name="q" value="${escHtml(q)}" placeholder="搜索球员、球队、教练">
-<select name="tier">${tiers.map(v=>`<option ${v===tier?"selected":""}>${v}</option>`).join("")}</select>
 <select name="category">${cats.map(v=>`<option ${v===cat?"selected":""}>${v}</option>`).join("")}</select>
 <select name="hours">
 <option value="0" ${hours? "":"selected"}>全部时间</option>
@@ -1664,12 +1637,11 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <option value="latest" ${sort==="latest"?"selected":""}>最新优先</option>
 <option value="hot" ${sort==="hot"?"selected":""}>热度优先</option>
 </select>
-<label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 商城/促销已过滤 ${state.metrics?.commercialFiltered||0} 条 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")} · 更新 ${escHtml(agoText(state.metrics?.syncedAt)||"刚刚")}</div>
+<div class="status">${items.length} 条足球新闻 · 更新 ${escHtml(agoText(state.metrics?.syncedAt)||"刚刚")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
-<footer>露白足球 Open · <a href="https://github.com/cdgks2026-gif/football-wire-open-" target="_blank" rel="noopener noreferrer">GitHub 开源代码</a></footer>
+<footer><a href="/sources">来源状态</a> · <a href="https://github.com/cdgks2026-gif/football-wire-open-" target="_blank" rel="noopener noreferrer">开源代码</a></footer>
 </div>
 <script src="/app.js" defer></script>
 </body>
@@ -1688,14 +1660,8 @@ app.get("/sitemap.xml",(_req,res)=>{
   res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${PUBLIC_URL}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
-  <url><loc>${PUBLIC_URL}/?section=official</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>${PUBLIC_URL}/?section=exclusive</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>${PUBLIC_URL}/?section=verified</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>${PUBLIC_URL}/?section=report</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
-  <url><loc>${PUBLIC_URL}/digest</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>${PUBLIC_URL}/archive</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>${PUBLIC_URL}/matches</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>${PUBLIC_URL}/sources</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>${PUBLIC_URL}/search</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>${PUBLIC_URL}/hot</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
 </urlset>`);
 });
 
@@ -1717,6 +1683,10 @@ app.post("/websub/callback",(_req,res)=>{
 
 app.use(express.static("public",{etag:false,maxAge:0,setHeaders:(res)=>res.set("Cache-Control","no-store")}));
 
+
+const REMOVED_PORTAL_ROUTES=["/archive","/matches","/digest","/topics","/transfers","/injuries","/entities","/trends","/brief","/relations","/leagues"];
+app.get(REMOVED_PORTAL_ROUTES,(_req,res)=>res.redirect(302,"/"));
+app.get(["/archive/:date","/topic/:name","/entity/:name","/league/:id","/match/:key"],(_req,res)=>res.redirect(302,"/"));
 
 registerFeatureRoutes(app,{getState:()=>state,saveState,maxVisible:MAX_VISIBLE});
 app.get("/api/stream",(req,res)=>{
