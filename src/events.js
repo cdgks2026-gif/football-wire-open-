@@ -166,7 +166,7 @@ export function clusterLatest(items) {
           timeReliable:item.timeReliable!==false
         });
       }
-      groups.push({eventKey:eKey,head:item,sources,tiers:new Set([item.tier])});
+      groups.push({eventKey:eKey,head:item,sources,tiers:new Set([item.tier]),members:[item]});
     } else {
       if (item.sourceVerified!==false && item.source) {
         const old=group.sources.get(item.source);
@@ -191,6 +191,7 @@ export function clusterLatest(items) {
         }
       }
       group.tiers.add(item.tier);
+      group.members.push(item);
       const a=Date.parse(item.publishedAt),b=Date.parse(group.head.publishedAt);
       const headScore=group.head.sourceScore||sourceWeight(group.head.tier);
       const itemScore=item.sourceScore||sourceWeight(item.tier);
@@ -231,6 +232,23 @@ export function clusterLatest(items) {
 
     const baseTitle=platformExclusiveTitle||g.head.title;
     const basePublishedAt=platformExclusiveAt||g.head.publishedAt;
+    const times=(g.members||[]).map((m)=>Date.parse(m.publishedAt||0)).filter(Number.isFinite).sort((a,b)=>a-b);
+    const firstSeenAt=times.length?new Date(times[0]).toISOString():basePublishedAt;
+    const lastSeenAt=times.length?new Date(times[times.length-1]).toISOString():basePublishedAt;
+    const members=(g.members||[])
+      .sort((a,b)=>Date.parse(a.publishedAt)-Date.parse(b.publishedAt))
+      .slice(0,30)
+      .map((m)=>({
+        id:m.id,
+        title:m.title,
+        source:m.source,
+        tier:m.tier,
+        publishedAt:m.publishedAt,
+        url:m.url||"",
+        sourceScore:m.sourceScore||0,
+        category:m.category||category(m.title),
+        contentExcerpt:String(m.contentExcerpt||"").slice(0,300)
+      }));
     return {
       ...g.head,
       title:baseTitle,
@@ -244,7 +262,10 @@ export function clusterLatest(items) {
       hupuDongqiudiMatched:Boolean(dongqiudi&&hupu),
       platformExclusiveSource,
       platformExclusiveAt,
-      eventKey:g.eventKey
+      eventKey:g.eventKey,
+      firstSeenAt,
+      lastSeenAt,
+      members
     };
   });
 }
