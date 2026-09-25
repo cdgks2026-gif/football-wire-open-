@@ -36,7 +36,7 @@ function shell(title,body,description=""){
     +'table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #233b31;padding:8px;text-align:left}'
     +'input,select,button{background:#0c1813;color:#f3f8f5;border:1px solid #345546;border-radius:8px;padding:8px}button{cursor:pointer}.danger{border-color:#8a3e3e;color:#ffaaa0}.good{border-color:#2f7656;color:#8cf0b8}'
     +'.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}@media(max-width:650px){.big{font-size:20px}table{font-size:11px}}</style>'
-    +'</head><body><main><div class="top"><a href="/">首页</a><a href="/search">历史搜索</a><a href="/archive">每日归档</a><a href="/matches">赛程与积分榜</a><a href="/digest">24小时摘要</a><a href="/sources">来源健康</a><a href="/feed.xml">RSS</a><a href="/topics">专题</a><a href="/transfers">转会中心</a><a href="/injuries">伤停中心</a><a href="/entities">球队/球员</a><a href="/trends">趋势</a><a href="/relations">关系图</a><a href="/hot">热点榜</a><a href="/leagues">联赛</a></div>'
+    +'</head><body><main><div class="top"><a href="/">最新新闻</a><a href="/search">搜索</a><a href="/hot?hours=24">24小时热点</a><a href="/feed.xml">RSS</a><a href="/sources">来源状态</a></div>'
     +body+'<script src="/app.js" defer></script></main></body></html>';
 }
 function adminAllowed(req){
