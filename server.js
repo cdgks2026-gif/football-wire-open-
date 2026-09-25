@@ -104,6 +104,7 @@ const SOURCE_REPUTATION_RULES=[
   [/The Athletic|竞技体育网/i,96],
   [/Sky Sports|天空体育/i,95],
   [/The Guardian|卫报/i,93],
+  [/The Sun|太阳报/i,72],
   [/FIFA|国际足联|UEFA|欧足联/i,99],
   [/David Ornstein|奥恩斯坦/i,97],
   [/Fabrizio Romano|罗马诺/i,96],
@@ -138,6 +139,7 @@ function canonicalSourceName(name){
     [/Sky Sports|天空体育/i,"Sky Sports"],
     [/The Athletic|竞技体育网/i,"The Athletic"],
     [/The Guardian|卫报/i,"The Guardian"],
+    [/The Sun|太阳报/i,"The Sun"],
     [/Fabrizio Romano|罗马诺/i,"Fabrizio Romano"],
     [/David Ornstein|奥恩斯坦/i,"David Ornstein"],
     [/Gianluca Di Marzio|Di Marzio|迪马济奥/i,"Gianluca Di Marzio"],
@@ -207,7 +209,7 @@ function credibilityFor(item){
   if((item.confirmations||0)>=2 && best>=92 && avg>=80) return {score:95,label:"已核实"};
   if((item.confirmations||0)>=2 && best>=85) return {score:91,label:"交叉确认"};
   if((item.confirmations||0)>=2) return {score:86,label:"交叉确认"};
-  if((item.confirmations||0)===1 && item.exclusive===true && best>=92) return {score:82,label:"独家"};
+  if((item.confirmations||0)===1 && best>=92) return {score:84,label:"权威单源"};
   return {score:0,label:""};
 }
 
@@ -264,6 +266,7 @@ function makeItem(entry,title,meta,sourceInfo){
     source,
     sourceVerified:sourceInfo?.verified!==false,
     sourceScore:sourceReputation(source,meta.tier),
+    isSun:source==="The Sun",
     exclusive:explicitExclusive(entry.title||"")||explicitExclusive(title),
     tier:meta.tier,
     group:meta.group,
@@ -286,12 +289,12 @@ function publishProcessed(processed,extraMetrics={}){
     };
   });
 
+  // 主新闻放宽：两家独立媒体即可；单一顶级权威来源也可进入。
   const eligible=allClusters.filter((x)=>{
     const confirmations=x.confirmations||0;
     const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
-    // 两家交叉时，至少要有一家达到主流媒体级别；普通来源至少三家一致。
-    if(confirmations>=3 && best>=70)return true;
-    if(confirmations>=2 && best>=78)return true;
+    if(confirmations>=2)return true;
+    if(confirmations===1 && best>=92)return true;
     return false;
   });
 
@@ -303,10 +306,22 @@ function publishProcessed(processed,extraMetrics={}){
     })
     .slice(0,MAX_VISIBLE);
 
+  // 太阳报专栏：只要事件里包含 The Sun，就进入专栏；作为花边，不冒充已核实硬新闻。
+  const sunLatest=allClusters
+    .filter((x)=>(x.sourceDetails||[]).some((src)=>src.name==="The Sun"))
+    .map((x)=>({...x,gossip:true,credibilityLabel:(x.confirmations||0)>=2?"交叉确认":"花边"}))
+    .sort((a,b)=>{
+      const rs=rankScore(b)-rankScore(a);
+      if(rs!==0)return rs;
+      return Date.parse(b.publishedAt)-Date.parse(a.publishedAt);
+    })
+    .slice(0,120);
+
   const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
   const exclusiveVisible=clustered.filter((x)=>x.exclusive).length;
 
   state.latest=clustered;
+  state.sunLatest=sunLatest;
   state.metrics={
     ...(state.metrics||{}),
     rawEntries:extraMetrics.rawEntries??state.metrics?.rawEntries??0,
@@ -318,7 +333,8 @@ function publishProcessed(processed,extraMetrics={}){
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     unconfirmedFiltered,
     exclusiveVisible,
-    confirmationRule:"多源真实性核查；虎扑与懂球帝同事件按最早发布时间判独家",
+    sunVisible:(state.sunLatest||[]).length,
+    confirmationRule:"主新闻：双源或顶级权威单源；太阳报专栏：花边单列；虎扑与懂球帝按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -468,7 +484,8 @@ function filteredItems(req){
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
-  let items=state.latest||[];
+  const section=String(req.query.section||"main");
+  let items=section==="sun"?(state.sunLatest||[]):(state.latest||[]);
   if(tier!=="全部")items=items.filter((x)=>x.tier===tier);
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
   if(q)items=items.filter((x)=>`${x.title} ${(x.sources||[]).join(" ")} ${x.source}`.includes(q));
@@ -484,16 +501,20 @@ app.get("/",(req,res)=>{
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
+  const section=String(req.query.section||"main");
   const tiers=["全部","官方","转会专家","国际媒体","中文媒体"];
   const cats=["全部","转会","球星","伤停","比赛","国家队","争议","趣闻","教练","综合"];
 
   const rows=items.map((x)=>{
     const hot=x.heat>=58;
+    const trustBadge=section==="sun"
+      ? `<span class="gossip">${escHtml(x.credibilityLabel||"花边")}</span>`
+      : (x.exclusive?'<span class="exclusive">独家</span>':`<span class="verified">${escHtml(x.credibilityLabel||"已核实")}</span>`);
     return `
     <article class="item">
       <div class="meta">
-        <span>${escHtml(x.category)}</span>
-        ${x.exclusive?'<span class="exclusive">独家</span>':`<span class="verified">${escHtml(x.credibilityLabel||"已核实")}</span>`}
+        <span>${section==="sun"?"太阳报":escHtml(x.category)}</span>
+        ${trustBadge}
         ${hot?'<span class="hot">热门</span>':""}
         <span>${escHtml(agoText(x.publishedAt))}</span>
       </div>
@@ -516,6 +537,9 @@ body{margin:0;background:#06100c;color:var(--text);font-family:system-ui,-apple-
 header{padding:24px 0 14px}
 h1{margin:0;font-size:36px;letter-spacing:-1px}
 .sub{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.6}
+.sections{display:flex;gap:8px;margin-top:14px}
+.sections a{display:inline-block;text-decoration:none;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px}
+.sections a.active{color:#052014;background:var(--green);border-color:var(--green);font-weight:800}
 form{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:#06100cf2;padding:10px 0;border-bottom:1px solid #14251e;z-index:5}
 input,select,button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 10px;font:inherit}
 input{flex:1;min-width:180px}
@@ -531,6 +555,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 .verified{border-color:#2f7656!important;color:#8cf0b8!important}
 .exclusive{border-color:#9b7732!important;color:#ffd77f!important}
 .hot{border-color:#8b3b35!important;color:#ff9e91!important}
+.gossip{border-color:#8b6c9d!important;color:#deb6f0!important}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
 @media(max-width:700px){h1{font-size:30px}.title{font-size:16px}form{position:static}}
 </style>
@@ -539,9 +564,14 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 全网联合核查 · 虎扑×懂球帝首发判定 · 按热度与可信度排序</div>
+<div class="sub">纯足球 · 主新闻放宽核查 · 虎扑×懂球帝首发判定 · 太阳报专栏收录足球花边</div>
+<nav class="sections">
+<a class="${section==="main"?"active":""}" href="/">主新闻</a>
+<a class="${section==="sun"?"active":""}" href="/?section=sun">太阳报</a>
+</nav>
 </header>
 <form method="get" action="/">
+<input type="hidden" name="section" value="${escHtml(section)}">
 <input name="q" value="${escHtml(q)}" placeholder="搜索球员、球队、教练">
 <select name="tier">${tiers.map(v=>`<option ${v===tier?"selected":""}>${v}</option>`).join("")}</select>
 <select name="category">${cats.map(v=>`<option ${v===cat?"selected":""}>${v}</option>`).join("")}</select>
@@ -555,7 +585,10 @@ button{background:var(--green);color:#052014;font-weight:800}
 <label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前 ${items.length} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 未通过真实性核查隐藏 ${state.metrics?.unconfirmedFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<div class="status">${section==="sun"
+  ? `太阳报足球花边 ${items.length} 条 · 单源花边可收录 · 多源一致则标交叉确认`
+  : `当前 ${items.length} 条 · 独家 ${state.metrics?.exclusiveVisible||0} 条 · 放宽后仅隐藏低可信单源 ${state.metrics?.unconfirmedFiltered||0} 条`}
+ · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
@@ -575,8 +608,9 @@ app.get("/api/news",(req,res)=>{
   const cat=String(req.query.category||"全部");
   const hours=Number(req.query.hours||0);
   const important=String(req.query.important||"0")==="1";
+  const section=String(req.query.section||"main");
 
-  let items=state.latest||[];
+  let items=section==="sun"?(state.sunLatest||[]):(state.latest||[]);
   if(tier!=="全部")items=items.filter((x)=>x.tier===tier);
   if(cat!=="全部")items=items.filter((x)=>x.category===cat);
   if(q)items=items.filter((x)=>`${x.title} ${x.source}`.includes(q));
