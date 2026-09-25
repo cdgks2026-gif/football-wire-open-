@@ -8,10 +8,11 @@ import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.j
 import { clusterLatest, category, eventKey } from "./src/events.js";
 import { extractReadableArticle, compactArticleCache } from "./src/article.js";
 import { aiEnabled, aiStatus, newAiBudget, judgeWithBudget } from "./src/ai.js";
-import { initStore, storeStatus, persistStories, getStory as getStoredStory, searchStories, saveSnapshot, getSnapshot, listSnapshots, saveOverride } from "./src/store.js";
+import { initStore, storeStatus, persistStories, getStory as getStoredStory, searchStories, saveSnapshot, getSnapshot, listSnapshots, saveOverride, loadOverrides } from "./src/store.js";
 import { assignStoryIds, applyEditorial, ensureEditor, editStory } from "./src/editor.js";
 import { teamContext, matchesAround, standings, leagueOptions } from "./src/matches.js";
 import { notifyNewImportant } from "./src/notify.js";
+import { registerFeatureRoutes } from "./src/features.js";
 
 const app=express();
 app.use(express.json({limit:"1mb"}));
@@ -894,6 +895,12 @@ async function setup(){
   ensureEditor(state);
   const db=await initStore();
   state.metrics={...(state.metrics||{}),store:db};
+  if(db.enabled){
+    try{
+      const saved=await loadOverrides();
+      if(saved.editor&&typeof saved.editor==="object")state.editor={...ensureEditor(state),...saved.editor};
+    }catch{}
+  }
   const sources=loadSources();
   bootstrap=await bootstrapSources(sources);
   console.log(`[setup] ${sources.length} 个来源已配置；新建 ${bootstrap.created.length} 个订阅`);
@@ -1631,6 +1638,8 @@ app.get("/sitemap.xml",(_req,res)=>{
 
 app.use(express.static("public",{etag:false,maxAge:0,setHeaders:(res)=>res.set("Cache-Control","no-store")}));
 
+
+registerFeatureRoutes(app,{getState:()=>state,saveState,maxVisible:MAX_VISIBLE});
 
 app.get("/api/news",(req,res)=>{
   const q=String(req.query.q||"").trim();
