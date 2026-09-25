@@ -356,19 +356,29 @@ function parseHupuPublishedAt(html){
 
 
 async function fetchDongqiudiHistory(days=30){
+  const cacheKey=`dqdHistory:${days}`;
+  const cached=state?.directCache?.[cacheKey];
+  if(cached?.at && Date.now()-cached.at<10*60_000 && Array.isArray(cached.items)){
+    return cached.items;
+  }
+
   const cutoff=Date.now()-days*86400000;
   const categoryIds=[1,120,3,5,4,6,55,37,56];
-  const seen=new Set();
-  const out=[];
 
-  for(const categoryId of categoryIds){
+  const fetchCategory=async(categoryId)=>{
+    const items=[];
+    const seen=new Set();
     let url=`https://api.dongqiudi.com/app/tabs/iphone/${categoryId}.json`;
-    for(let page=0;page<12 && url;page++){
+
+    for(let page=0;page<10 && url;page++){
       try{
-        const res=await fetch(url,{headers:{
-          "user-agent":"Dongqiudi/8.0 (iPhone; iOS 18.0)",
-          "accept":"application/json"
-        }});
+        const res=await fetch(url,{
+          headers:{
+            "user-agent":"Dongqiudi/8.0 (iPhone; iOS 18.0)",
+            "accept":"application/json"
+          },
+          signal:AbortSignal.timeout(4500)
+        });
         if(!res.ok)break;
         const data=await res.json();
         const articles=Array.isArray(data?.articles)?data.articles:[];
@@ -388,11 +398,12 @@ async function fetchDongqiudiHistory(days=30){
           if(!Number.isFinite(ms)||ms<=0)continue;
           oldest=Math.min(oldest,ms);
           if(ms<cutoff)continue;
+
           const articleId=a?.id||a?.aid||`${categoryId}-${ms}-${title}`;
           const key=String(articleId);
           if(seen.has(key))continue;
           seen.add(key);
-          out.push({
+          items.push({
             id:`dqd-direct-${key}`,
             title,
             content:title,
@@ -413,9 +424,22 @@ async function fetchDongqiudiHistory(days=30){
         break;
       }
     }
-  }
+    return items;
+  };
 
-  return out.sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at));
+  const batches=await Promise.all(categoryIds.map(fetchCategory));
+  const merged=[];
+  const seenAll=new Set();
+  for(const item of batches.flat()){
+    if(seenAll.has(item.id))continue;
+    seenAll.add(item.id);
+    merged.push(item);
+  }
+  merged.sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at));
+
+  state.directCache=state.directCache||{};
+  state.directCache[cacheKey]={at:Date.now(),items:merged};
+  return merged;
 }
 
 async function fetchHupuDirect(){
