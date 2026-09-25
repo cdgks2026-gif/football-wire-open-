@@ -540,7 +540,7 @@ async function syncEntries(){
   if(syncing||!bootstrap)return;
   syncing=true;
   try{
-    const categoryBudgets={cn:450,official:260,fast:320,media:520};
+    const categoryBudgets={cn:700,official:260,fast:320,media:520};
     const grouped=await Promise.all(Object.entries(categoryBudgets).map(async([group,limit])=>{
       const cat=bootstrap?.categories?.[group];
       if(!cat)return[];
