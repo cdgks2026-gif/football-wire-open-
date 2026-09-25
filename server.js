@@ -687,13 +687,28 @@ async function syncEntries(){
       exclusiveSourceProcessed[item.source]=(exclusiveSourceProcessed[item.source]||0)+1;
     }
     const exclusiveMatches=buildExclusiveHistory(exclusiveProcessed);
+    const hupuHist=exclusiveProcessed.filter((x)=>x.source==="虎扑");
+    const dqdHist=exclusiveProcessed.filter((x)=>x.source==="懂球帝");
+    const nearest=[];
+    for(const h of hupuHist.slice(0,40)){
+      let bestTitle="",bestScore=0;
+      for(const d of dqdHist){
+        const score=exclusiveHeadlineSimilarity(h.title,d.title);
+        if(score>bestScore){bestScore=score;bestTitle=d.title;}
+      }
+      nearest.push({h:h.title,d:bestTitle,s:Number(bestScore.toFixed(3))});
+    }
+    nearest.sort((a,b)=>b.s-a.s);
     state.exclusiveDiagnostics={
       raw:historyEntries.length,
       rawByFeed:historySourceRaw,
       processed:exclusiveProcessed.length,
       processedBySource:exclusiveSourceProcessed,
-      hupu:exclusiveProcessed.filter((x)=>x.source==="虎扑").length,
-      dqd:exclusiveProcessed.filter((x)=>x.source==="懂球帝").length,
+      hupu:hupuHist.length,
+      dqd:dqdHist.length,
+      hupuSamples:hupuHist.slice(0,5).map((x)=>x.title),
+      dqdSamples:dqdHist.slice(0,5).map((x)=>x.title),
+      nearest:nearest.slice(0,5),
       exclusivePairs:exclusiveMatches.length
     };
     state.exclusiveLatest=exclusiveMatches.slice(0,160);
