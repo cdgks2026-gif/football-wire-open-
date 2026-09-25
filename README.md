@@ -1,4 +1,4 @@
-# Football Wire Open
+# 露白足球 Open
 
 公开开源、可自托管的全球足球中文标题快讯站。
 
@@ -12,7 +12,7 @@ RSSHub / Google News RSS / 原生 RSS
            Miniflux
  增量抓取 + HTTP 缓存 + 去重 + PostgreSQL
               ↓
-      Football Wire 服务
+      露白足球 服务
   中文标题 + 事件合并 + 最新进展覆盖
               ↓
           浏览器页面
@@ -73,7 +73,7 @@ docker compose up -d --build
 ```
 
 打开：
-- Football Wire：`http://localhost:8088`
+- 露白足球：`http://localhost:8088`
 - Miniflux：`http://localhost:8080`
 - RSSHub：`http://localhost:1200`
 - LibreTranslate：`http://localhost:5000`
@@ -142,7 +142,7 @@ docker compose restart app
 
 ## 开源与版权
 
-Football Wire Open 自身使用 MIT 许可证。RSSHub/LibreTranslate 是独立 AGPL 服务，Miniflux 为 Apache-2.0。
+露白足球 Open 自身使用 MIT 许可证。RSSHub/LibreTranslate 是独立 AGPL 服务，Miniflux 为 Apache-2.0。
 
 本项目不绕过登录墙、验证码、付费墙或其他访问控制；只聚合标题、来源和时间，不镜像文章正文。部署者应自行遵守数据来源的服务条款、robots 规则及当地版权法规。
 
