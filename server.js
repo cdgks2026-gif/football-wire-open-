@@ -1525,7 +1525,7 @@ app.get("/",(req,res)=>{
         <span>${escHtml(x.category)}</span>
         ${badges.join("")}
         <span>${escHtml(agoText(x.publishedAt))}</span>
-        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a>`:""}
+        ${x.storyId?`<a class="storylink" href="/story/${encodeURIComponent(x.storyId)}">故事</a><button type="button" class="saveStory" data-story-id="${escHtml(x.storyId)}" data-story-title="${escHtml(x.title)}">稍后读</button>`:""}
       </div>
       <div class="title">${x.url?`<a href="${escHtml(x.url)}" target="_blank" rel="noopener noreferrer">${escHtml(x.title)}</a>`:escHtml(x.title)}</div>
     </article>`;
@@ -1609,6 +1609,7 @@ footer a{color:var(--muted);text-underline-offset:3px}
 <button type="button" id="saveSearch">保存当前筛选</button>
 <select id="savedSearches"><option value="">已保存筛选</option></select>
 <button type="button" id="notifyToggle">开启浏览器通知</button>
+<button type="button" id="showBookmarks">稍后读 <span id="bookmarkCount">0</span></button>
 </div>
 </header>
 <form method="get" action="/">
