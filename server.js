@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { loadSources, GROUP_META } from "./src/sources.js";
-import { bootstrapSources, getRecentEntriesByCategory, refreshCategory, minifluxHealth } from "./src/miniflux.js";
+import { bootstrapSources, getRecentEntriesByCategory, getRecentEntriesByFeed, refreshCategory, minifluxHealth } from "./src/miniflux.js";
 import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.js";
 import { clusterLatest, category } from "./src/events.js";
 
@@ -548,10 +548,15 @@ async function syncEntries(){
       catch(err){console.error("[entries]",group,String(err));return[]}
     }));
     const historyPromise=(async()=>{
-      const cat=bootstrap?.categories?.cn;
-      if(!cat)return[];
-      try{return await getRecentEntriesByCategory(cat.id,30,1000)}
-      catch(err){console.error("[exclusive history]",String(err));return[]}
+      const feedIds=Object.entries(bootstrap?.sourceByFeedId||{})
+        .filter(([,meta])=>meta?.historyOnly)
+        .map(([id])=>Number(id));
+      if(!feedIds.length)return[];
+      const batches=await Promise.all(feedIds.map(async(id)=>{
+        try{return await getRecentEntriesByFeed(id,30,500)}
+        catch(err){console.error("[exclusive history feed]",id,String(err));return[]}
+      }));
+      return batches.flat();
     })();
     const [grouped,historyEntries,directHupu]=await Promise.all([groupedPromise,historyPromise,fetchHupuDirect()]);
     const minifluxEntries=grouped.flat();
