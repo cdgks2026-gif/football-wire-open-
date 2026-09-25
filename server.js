@@ -57,6 +57,39 @@ function junkTitleReason(title){
   return "";
 }
 
+
+const COMMERCIAL_STRONG_RULES=[
+  /(?:官方商城|官方商店|立即购买|加入购物车|商品编号|产品编号|库存|清仓|现货|发货|配送|售价[:：]?\s*[¥￥$€£]?\d)/i,
+  /\b(?:add to cart|in stock|out of stock|product id|product code|shipping|your price|clearance|shop now|buy now)\b/i,
+  /(?:US\$|S\$|HK\$|£|€|¥|￥)\s*\d+(?:\.\d+)?/i,
+  /(?:signature football|signed football|football - size\s*\d|football size\s*\d)/i
+];
+
+const COMMERCIAL_HINT_RULES=[
+  /(?:商城|商店|购买|售价|价格|折扣|优惠|球衣|训练服|周边|纪念品|签名足球|门票|票务|季票|会员|礼品卡)/i,
+  /\b(?:shop|store|buy|price|sale|discount|jersey|shirt|kit|merchandise|tickets?|ticketing|membership|season ticket|gift card)\b/i
+];
+
+function commercialReason(title,entry){
+  const t=String(title||"").replace(/\s+/g," ").trim();
+  const body=entryBodyText(entry);
+  const text=`${t} ${body}`;
+  const url=String(entry?.url||entry?.link||"");
+
+  if(/(?:^|[./-])(?:store|shop|tickets?|ticketing|merchandise|products?)(?:[./?-]|$)/i.test(url)){
+    return "商业URL";
+  }
+  for(const rule of COMMERCIAL_STRONG_RULES){
+    if(rule.test(text))return "商品/销售页";
+  }
+  let hints=0;
+  for(const rule of COMMERCIAL_HINT_RULES){
+    if(rule.test(text))hints++;
+  }
+  if(hints>=2)return "商业促销内容";
+  return "";
+}
+
 const GENERIC_HEADLINE_RULES=[
   /^(?:国际足球|国际足坛|国际足坛新闻|国际足球新闻|国内足球|中国足球|足球|足球新闻|足坛|足坛新闻)$/i,
   /^(?:英超|西甲|意甲|德甲|法甲|欧冠|欧联|欧协联|世界杯|欧洲杯|美洲杯|国家队)$/i,
@@ -659,6 +692,7 @@ function publishProcessed(processed,extraMetrics={}){
     junkFiltered:extraMetrics.junkFiltered??state.metrics?.junkFiltered??0,
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     lowInformationFiltered:extraMetrics.lowInformationFiltered??state.metrics?.lowInformationFiltered??0,
+    commercialFiltered:extraMetrics.commercialFiltered??state.metrics?.commercialFiltered??0,
     unconfirmedFiltered,
     exclusiveVisible,
     platformDirectVisible,
@@ -731,6 +765,7 @@ async function syncEntries(){
     let junkFiltered=0;
     let nonFootballFiltered=0;
     let lowInformationFiltered=0;
+    let commercialFiltered=0;
 
     // 第一阶段：只保留足球；再过滤预测、博彩、赔率等低质量内容。
     for(const entry of entries){
@@ -738,6 +773,11 @@ async function syncEntries(){
       if(!meta || meta.historyOnly)continue;
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
+      const commercial=commercialReason(normalized,entry);
+      if(commercial){
+        commercialFiltered++;
+        continue;
+      }
       const lowInfo=lowInformationReason(normalized,entry);
       if(lowInfo){
         lowInformationFiltered++;
@@ -767,6 +807,7 @@ async function syncEntries(){
       const sourceInfo=extractPublisher(entry.title||"",meta);
       const normalized=normalizeTerms(sourceInfo.title);
       if(!normalized || GENERIC_HEADLINE_RULES.some((rule)=>rule.test(normalized)))continue;
+      if(commercialReason(normalized,entry))continue;
       if(junkTitleReason(normalized))continue;
       if(chineseRatio(normalized)<0.30)continue;
       const item=makeItem(entry,normalized,meta,sourceInfo);
@@ -812,6 +853,7 @@ async function syncEntries(){
       junkFiltered,
       nonFootballFiltered,
       lowInformationFiltered,
+      commercialFiltered,
       phase:"中文标题已就绪"
     });
 
@@ -837,6 +879,11 @@ async function syncEntries(){
         hiddenForeign++;
         continue;
       }
+      const commercial=commercialReason(title,entry);
+      if(commercial){
+        commercialFiltered++;
+        continue;
+      }
       const lowInfo=lowInformationReason(title,entry);
       if(lowInfo){
         lowInformationFiltered++;
@@ -860,6 +907,8 @@ async function syncEntries(){
           hiddenForeign,
           junkFiltered,
           nonFootballFiltered,
+          lowInformationFiltered,
+          commercialFiltered,
           phase:"外文标题增量翻译中"
         });
       }
@@ -872,6 +921,7 @@ async function syncEntries(){
       junkFiltered,
       nonFootballFiltered,
       lowInformationFiltered,
+      commercialFiltered,
       phase:"完成"
     });
   }catch(err){
@@ -1068,7 +1118,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <label class="important"><input type="checkbox" name="important" value="1" ${important?"checked":""}> 只看重要新闻</label>
 <button type="submit">筛选</button>
 </form>
-<div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
+<div class="status">当前栏目 ${items.length} 条 · 同一新闻可跨多个栏目重复出现 · 商城/促销已过滤 ${state.metrics?.commercialFiltered||0} 条 · 栏目/空泛内容已过滤 ${state.metrics?.lowInformationFiltered||0} 条 · 非足球 ${state.metrics?.nonFootballFiltered||0} 条 · 垃圾信息 ${state.metrics?.junkFiltered||0} 条 · ${escHtml(state.metrics?.phase||"同步中")}</div>
 <main class="list">${rows||'<div class="empty">当前筛选暂无新闻。</div>'}</main>
 </div>
 </body>
