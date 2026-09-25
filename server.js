@@ -445,7 +445,7 @@ app.get("/",(req,res)=>{
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="refresh" content="30">
-<title>Football Wire｜全球足球中文快讯</title>
+<title>露白足球｜全球足球中文快讯</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#06100c;--panel:#0c1813;--line:#233b31;--text:#f3f8f5;--muted:#91a59c;--green:#63e7a1}
@@ -475,7 +475,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <body>
 <div class="wrap">
 <header>
-<h1>Football Wire</h1>
+<h1>露白足球</h1>
 <div class="sub">纯足球 · 至少2个独立媒体交叉确认 · 出处按知名度排序 · 每30秒自动刷新</div>
 </header>
 <form method="get" action="/">
