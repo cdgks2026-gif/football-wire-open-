@@ -1,6 +1,21 @@
 import crypto from "node:crypto";
 
-const DEFAULT_MODEL=process.env.GROQ_MODEL||"qwen/qwen3.8-27b";
+const PROVIDER=(process.env.AI_PROVIDER||"").trim().toLowerCase()
+  || (process.env.GROQ_API_KEY?"groq":process.env.OPENROUTER_API_KEY?"openrouter":"groq");
+const DEFAULTS={
+  groq:{base:"https://api.groq.com/openai/v1",model:"qwen/qwen3.8-27b"},
+  openrouter:{base:"https://openrouter.ai/api/v1",model:"openrouter/free"}
+};
+const KEY=process.env.AI_API_KEY
+  || (PROVIDER==="openrouter"?process.env.OPENROUTER_API_KEY:process.env.GROQ_API_KEY)
+  || process.env.GROQ_API_KEY
+  || process.env.OPENROUTER_API_KEY
+  || "";
+const BASE_URL=(process.env.AI_BASE_URL||DEFAULTS[PROVIDER]?.base||DEFAULTS.groq.base).replace(/\/$/,"");
+const DEFAULT_MODEL=process.env.AI_MODEL
+  || (PROVIDER==="openrouter"?process.env.OPENROUTER_MODEL:process.env.GROQ_MODEL)
+  || DEFAULTS[PROVIDER]?.model
+  || DEFAULTS.groq.model;
 const SYNC_LIMIT=Number(process.env.AI_SYNC_LIMIT||10);
 const DAILY_LIMIT=Number(process.env.AI_DAILY_LIMIT||180);
 const TIMEOUT_MS=Number(process.env.AI_TIMEOUT_MS||9000);
@@ -14,7 +29,7 @@ function dayKey(){
 }
 
 function cleanJson(text){
-  const raw=String(text||"").trim();
+  const raw=String(text||"").trim().replace(/^\`\`\`(?:json)?/i,"").replace(/\`\`\`$/,"").trim();
   if(!raw)return null;
   try{return JSON.parse(raw)}catch{}
   const m=raw.match(/\{[\s\S]*\}/);
@@ -36,12 +51,24 @@ function normalizeResult(obj){
   };
 }
 
+function requestHeaders(){
+  const headers={
+    "Authorization":`Bearer ${KEY}`,
+    "Content-Type":"application/json"
+  };
+  if(PROVIDER==="openrouter"){
+    headers["HTTP-Referer"]=process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app";
+    headers["X-Title"]="LuBai Football";
+  }
+  return headers;
+}
+
 export function aiEnabled(){
-  return Boolean(process.env.GROQ_API_KEY);
+  return Boolean(KEY);
 }
 
 export function aiLimits(){
-  return {model:DEFAULT_MODEL,syncLimit:SYNC_LIMIT,dailyLimit:DAILY_LIMIT};
+  return {provider:PROVIDER,model:DEFAULT_MODEL,syncLimit:SYNC_LIMIT,dailyLimit:DAILY_LIMIT};
 }
 
 export function ensureAiState(state){
@@ -80,7 +107,7 @@ export async function judgeNews(state,{title="",body="",source=""}){
     "栏目页、导航页、只有‘国际足球/英超/足球新闻’等空泛内容，不算具体新闻事件。",
     "category只能是：官方、转会、伤停、比赛、国家队、争议、趣闻、教练、球星、综合。",
     "tags返回0-8个简短标签，优先球队、球员、赛事、动作，例如：热刺、姆巴佩、英超、伤停。",
-    "只返回JSON，不要解释。",
+    "只返回一个JSON对象，不要解释，不要Markdown代码块。",
     '{"isFootballNews":true,"isSpecificEvent":true,"isCommercial":false,"category":"转会","eventKey":"球员|加盟|俱乐部","tags":["球员","俱乐部","转会"],"confidence":0.95}',
     "",
     `来源线索：${source||"未知"}`,
@@ -89,26 +116,26 @@ export async function judgeNews(state,{title="",body="",source=""}){
   ].join("\n");
 
   ai.callsToday=(ai.callsToday||0)+1;
+  ai.lastProvider=PROVIDER;
   ai.lastModel=DEFAULT_MODEL;
   ai.lastCallAt=new Date().toISOString();
 
   try{
-    const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+    const bodyPayload={
+      model:DEFAULT_MODEL,
+      messages:[
+        {role:"system",content:"Return compact valid JSON only. Do not include chain-of-thought or explanations."},
+        {role:"user",content:prompt}
+      ],
+      temperature:0.1,
+      max_tokens:320
+    };
+    if(PROVIDER==="groq")bodyPayload.response_format={type:"json_object"};
+
+    const res=await fetch(`${BASE_URL}/chat/completions`,{
       method:"POST",
-      headers:{
-        "Authorization":`Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        model:DEFAULT_MODEL,
-        messages:[
-          {role:"system",content:"Return compact JSON only. Do not include chain-of-thought or explanations."},
-          {role:"user",content:prompt}
-        ],
-        temperature:0.1,
-        max_completion_tokens:260,
-        response_format:{type:"json_object"}
-      }),
+      headers:requestHeaders(),
+      body:JSON.stringify(bodyPayload),
       signal:AbortSignal.timeout(TIMEOUT_MS)
     });
     if(!res.ok){
@@ -123,10 +150,9 @@ export async function judgeNews(state,{title="",body="",source=""}){
       ai.lastError="invalid-json";
       return {skipped:true,reason:"invalid-json"};
     }
-    const saved={...parsed,at:new Date().toISOString(),model:DEFAULT_MODEL};
+    const saved={...parsed,at:new Date().toISOString(),provider:PROVIDER,model:DEFAULT_MODEL};
     ai.cache[cacheKey]=saved;
 
-    // 控制持久化状态体积，只保留最近约1200个判断。
     const entries=Object.entries(ai.cache);
     if(entries.length>1200){
       entries.sort((a,b)=>Date.parse(b[1]?.at||0)-Date.parse(a[1]?.at||0));
@@ -155,8 +181,12 @@ export async function judgeWithBudget(state,input,budget){
 
 export function aiStatus(state){
   const ai=ensureAiState(state);
+  let host="";
+  try{host=new URL(BASE_URL).host}catch{}
   return {
     enabled:aiEnabled(),
+    provider:PROVIDER,
+    endpointHost:host,
     model:DEFAULT_MODEL,
     callsToday:ai.callsToday||0,
     failuresToday:ai.failuresToday||0,
