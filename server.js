@@ -273,8 +273,7 @@ function makeItem(entry,title,meta,sourceInfo){
 }
 function publishProcessed(processed,extraMetrics={}){
   const allClusters=clusterLatest(processed).map((x)=>{
-    const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
-    const exclusive=(x.confirmations||0)===1 && x.exclusive===true && best>=92;
+    const exclusive=Boolean(x.platformExclusiveSource);
     const base={...x,exclusive};
     const credibility=credibilityFor(base);
     const heat=heatScore(base);
@@ -293,8 +292,7 @@ function publishProcessed(processed,extraMetrics={}){
     // 两家交叉时，至少要有一家达到主流媒体级别；普通来源至少三家一致。
     if(confirmations>=3 && best>=70)return true;
     if(confirmations>=2 && best>=78)return true;
-    // 单一来源只有明确标注“独家”且来源属于顶级信誉才展示。
-    return x.exclusive===true && best>=92;
+    return false;
   });
 
   const clustered=eligible
@@ -320,7 +318,7 @@ function publishProcessed(processed,extraMetrics={}){
     nonFootballFiltered:extraMetrics.nonFootballFiltered??state.metrics?.nonFootballFiltered??0,
     unconfirmedFiltered,
     exclusiveVisible,
-    confirmationRule:"双源确认；高信誉明确独家可单源展示",
+    confirmationRule:"多源真实性核查；虎扑与懂球帝同事件按最早发布时间判独家",
     phase:extraMetrics.phase||"ready",
     syncedAt:new Date().toISOString()
   };
@@ -541,7 +539,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 <div class="wrap">
 <header>
 <h1>露白足球</h1>
-<div class="sub">纯足球 · 全网联合核查 · 按热度与可信度排序 · 每30秒自动刷新</div>
+<div class="sub">纯足球 · 全网联合核查 · 虎扑×懂球帝首发判定 · 按热度与可信度排序</div>
 </header>
 <form method="get" action="/">
 <input name="q" value="${escHtml(q)}" placeholder="搜索球员、球队、教练">
