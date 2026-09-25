@@ -410,7 +410,13 @@ async function syncEntries(){
     // 第二阶段：只翻译最新少量外文标题，避免首次同步拖垮免费实例。
     let translatedNow=0;
     let hiddenForeign=Math.max(0,foreign.length-FOREIGN_TRANSLATE_LIMIT);
-    for(const {entry,meta,sourceInfo} of foreign.slice(0,FOREIGN_TRANSLATE_LIMIT)){
+    const prioritizedForeign=[...foreign].sort((a,b)=>{
+      const aSun=canonicalSourceName(a.sourceInfo?.source||a.meta?.name)==="The Sun"?1:0;
+      const bSun=canonicalSourceName(b.sourceInfo?.source||b.meta?.name)==="The Sun"?1:0;
+      if(aSun!==bSun)return bSun-aSun;
+      return Date.parse(b.entry?.published_at||b.entry?.created_at||0)-Date.parse(a.entry?.published_at||a.entry?.created_at||0);
+    });
+    for(const {entry,meta,sourceInfo} of prioritizedForeign.slice(0,FOREIGN_TRANSLATE_LIMIT)){
       const before=Object.keys(state.translations).length;
       const title=await toChineseTitle(sourceInfo.title,state.translations);
       if(Object.keys(state.translations).length>before)translatedNow++;
