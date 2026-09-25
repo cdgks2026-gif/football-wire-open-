@@ -426,7 +426,7 @@ function importanceScore(item){
   else if(bestSourceScore>=88)score+=2;
   else if(bestSourceScore>=78)score+=1;
   if(isOfficialNews(item))score+=5;
-  if(item.tier==="转会专家")score+=4;
+  if(item.tier==="转会专家" || isTransferExpertItem(item.source,item.title))score+=4;
   if(item.tier==="国际媒体")score+=2;
   if((item.confirmations||0)>=2)score+=3;
   const t=item.title||"";
@@ -1217,7 +1217,7 @@ function channelMatches(item,section){
   if(section==="exclusive")return item.exclusive===true;
   if(section==="verified")return (item.confirmations||0)>=2;
   if(section==="authority")return best>=92 || isOfficialNews(item);
-  if(section==="expert")return tiers.includes("转会专家");
+  if(section==="expert")return tiers.includes("转会专家") || isTransferExpertItem(item.source,item.title);
   if(section==="dqd")return hasNamedSource(item,"懂球帝");
   if(section==="hupu")return hasNamedSource(item,"虎扑");
   if(section==="report")return item.isMatchReport===true;
@@ -1285,6 +1285,7 @@ app.get("/",(req,res)=>{
     const tiers=x.tiers||[x.tier].filter(Boolean);
     const badges=[];
     if(isOfficialNews(x))badges.push('<span class="official">官方</span>');
+    if(isTransferExpertItem(x.source,x.title))badges.push('<span class="expert">转会专家</span>');
     if(x.exclusive)badges.push('<span class="exclusive">独家</span>');
     if((x.confirmations||0)>=2)badges.push('<span class="verified">多源核实</span>');
     else if((x.sourceDetails?.[0]?.score||x.sourceScore||0)>=92)badges.push('<span class="authority">权威单源</span>');
@@ -1337,6 +1338,7 @@ button{background:var(--green);color:#052014;font-weight:800}
 .verified{border-color:#2f7656!important;color:#8cf0b8!important}
 .official{border-color:#3979a8!important;color:#9fd3ff!important}
 .authority{border-color:#446d90!important;color:#9bc7e8!important}
+.expert{border-color:#75619a!important;color:#cbb8f2!important}
 .platform{border-color:#5e685f!important;color:#c4d0c5!important}
 .exclusive{border-color:#9b7732!important;color:#ffd77f!important}
 .hot{border-color:#8b3b35!important;color:#ff9e91!important}
