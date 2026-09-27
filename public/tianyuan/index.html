@@ -377,7 +377,8 @@ function fresh(){
 var state=fresh();
 try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
 state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;
-function save(){try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}if(currentUser&&!cloudLoading)scheduleCloudSave();}
+function localSaveKey(){return currentUser?SAVE+':user:'+currentUser.id:SAVE;}
+function save(){try{localStorage.setItem(localSaveKey(),JSON.stringify(state));}catch(e){}if(currentUser&&!cloudLoading)scheduleCloudSave();}
 function fmt(){return '∞';}
 
 function authHeaders(){return authToken?{'Content-Type':'application/json','Authorization':'Bearer '+authToken}:{'Content-Type':'application/json'};}
@@ -417,16 +418,24 @@ window.submitAuth=async function(){
 }
 async function afterLogin(){
  document.getElementById('authScreen').classList.add('hidden');renderAccountChip();
+ var accountLocal=null;
+ try{var lr=localStorage.getItem(SAVE+':user:'+currentUser.id);if(lr)accountLocal=JSON.parse(lr);}catch(e){}
  try{
   cloudLoading=true;
   var data=await apiJSON('/api/tianyuan/save');
   if(data.save&&data.save.payload&&Object.keys(data.save.payload).length){
-    state=Object.assign(fresh(),data.save.payload);try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}
+    state=Object.assign(fresh(),data.save.payload);
+  }else if(accountLocal&&typeof accountLocal==='object'){
+    state=Object.assign(fresh(),accountLocal);
   }else{
-    await pushCloudSave();
+    state=fresh();
   }
- }catch(e){toast('已登录，云存档稍后再同步');}
- finally{cloudLoading=false;renderAll();applyWorldMood();}
+  state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;
+  try{localStorage.setItem(SAVE+':user:'+currentUser.id,JSON.stringify(state));}catch(e){}
+  cloudLoading=false;
+  if(!data.save)await pushCloudSave();
+ }catch(e){cloudLoading=false;toast('已登录，云存档稍后再同步');}
+ finally{renderAll();applyWorldMood();}
 }
 function renderAccountChip(){
  var c=currentUser&&CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
@@ -437,7 +446,7 @@ function scheduleCloudSave(){clearTimeout(cloudSaveTimer);cloudSaveTimer=setTime
 async function pushCloudSave(){
  if(!currentUser||!authToken||cloudLoading)return;
  var data=await apiJSON('/api/tianyuan/save',{method:'PUT',body:JSON.stringify({payload:state})});
- state.profile=state.profile||{};state.profile.lastCloudSync=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}
+ state.profile=state.profile||{};state.profile.lastCloudSync=Date.now();try{localStorage.setItem(localSaveKey(),JSON.stringify(state));}catch(e){}
  var cs=document.getElementById('cloudStatus');if(cs)cs.textContent='云存档已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
  return data;
 }
