@@ -11,7 +11,7 @@
 <link rel="manifest" href="/tianyuan/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/tianyuan/icon.svg">
 <meta name="mobile-web-app-capable" content="yes">
-<title>向往田园 5.2 · 沉浸互动版</title>
+<title>向往田园 5.3 · 云端生活版</title>
 <style>
 :root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -128,15 +128,47 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .kitchenStage{height:220px;border-radius:20px;background:url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1100&q=82') center/cover;position:relative;overflow:hidden}.kitchenStage:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.54))}.steam{position:absolute;left:50%;top:50%;z-index:3;width:80px;height:80px;opacity:0;filter:blur(7px);background:radial-gradient(circle,rgba(255,255,255,.7),transparent 60%)}.steam.on{opacity:1;animation:steamUp 1s ease-out infinite}@keyframes steamUp{from{transform:translate(-50%,10px) scale(.8);opacity:.1}to{transform:translate(-50%,-50px) scale(1.35);opacity:.65}}
 .animalMood{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:#eef1e7;color:#657064;font-size:9px}
 @media(max-width:760px){.playerActor{width:42px;height:52px}.playerActor .head{left:12px}.playerActor .body{left:7px}.weatherBadge{right:10px;bottom:12px}.fieldStrip{left:4%;bottom:19%;width:42%}.actionBubble{min-width:135px}.fishingScene,.kitchenStage{height:220px}}
+
+/* 5.3 账号、角色、云存档 */
+.accountChip{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.09);color:#fff;border-radius:999px;padding:5px 8px 5px 6px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;white-space:nowrap}
+.accountAvatar{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(245,239,220,.96);color:#315c43;font-size:14px;box-shadow:inset 0 0 0 1px rgba(48,73,55,.1)}
+.authScreen{position:fixed;inset:0;z-index:500;background:linear-gradient(180deg,rgba(12,28,19,.22),rgba(12,28,19,.72)),url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=86') center/cover;display:grid;place-items:center;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+.authScreen.hidden{display:none}.authPanel{width:min(520px,100%);max-height:92vh;overflow:auto;border-radius:28px;background:rgba(249,246,237,.94);border:1px solid rgba(255,255,255,.8);box-shadow:0 34px 90px rgba(7,20,12,.38);backdrop-filter:blur(22px);padding:22px}
+.authPanel h1{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:29px;margin:0;color:#263a2c}.authPanel .lead{color:#72786f;font-size:11px;line-height:1.65;margin:7px 0 15px}
+.authTabs{display:grid;grid-template-columns:1fr 1fr;background:#ebe8de;border-radius:13px;padding:3px;margin-bottom:14px}.authTabs button{border:0;background:transparent;border-radius:10px;padding:9px;font-size:11px;color:#7b7c76}.authTabs button.active{background:#fff;color:#315c43;font-weight:900;box-shadow:0 4px 12px rgba(39,56,43,.07)}
+.authForm{display:grid;gap:9px}.authForm input{width:100%;border:1px solid rgba(62,78,66,.14);background:#fff;color:#29362e;border-radius:14px;padding:12px 13px;font-size:14px;outline:none}.authForm input:focus{border-color:#77957d;box-shadow:0 0 0 3px rgba(70,108,80,.08)}
+.characterTitle{font-family:"Songti SC","STSong",serif;font-size:14px;margin:3px 0 7px;color:#425047}.characterGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.charCard{border:1px solid rgba(55,75,60,.12);background:#fff;border-radius:16px;padding:10px 5px;text-align:center;cursor:pointer}.charCard.active{outline:2px solid #62816a;background:#f4f5ed}.charCard .face{font-size:25px;display:block;margin-bottom:4px}.charCard b{display:block;font-size:10px}.charCard small{display:block;font-size:8px;color:#8a8c85;margin-top:2px}.authSubmit{border:0;background:#315c43;color:white;border-radius:14px;padding:12px 14px;font-weight:900;margin-top:3px}.authError{min-height:18px;color:#9d4e44;font-size:10px;text-align:center}.authFoot{font-size:9px;color:#92938e;line-height:1.5;text-align:center;margin-top:10px}
+.accountCard{display:flex;align-items:center;gap:12px;padding:12px;border-radius:17px;background:#efeee5;border:1px solid rgba(67,82,70,.09)}.accountBigAvatar{width:54px;height:54px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:29px}.accountMeta b{display:block;font-size:14px}.accountMeta small{display:block;color:#7b8078;font-size:9px;margin-top:3px}.roleEditGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.roleEdit{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:13px;padding:8px 4px;text-align:center;font-size:19px}.roleEdit.active{outline:2px solid #66856f}.cloudStatus{font-size:9px;color:#7d837b;margin-top:8px;min-height:14px}
+@media(max-width:560px){.authPanel{border-radius:23px;padding:17px}.authPanel h1{font-size:25px}.characterGrid,.roleEditGrid{grid-template-columns:repeat(2,1fr)}.charCard{padding:10px 6px}.accountChip{padding-right:6px}.accountChip .accountName{display:none}}
 </style>
 </head>
 <body>
+<div class="authScreen" id="authScreen">
+  <div class="authPanel">
+    <h1>回到云溪小院</h1>
+    <div class="lead">选一个喜欢的角色，给自己的小院留一个账号。以后换手机、换浏览器，也能继续之前的生活。</div>
+    <div class="authTabs"><button id="authLoginTab" class="active" onclick="setAuthMode('login')">登录</button><button id="authRegisterTab" onclick="setAuthMode('register')">第一次来</button></div>
+    <div id="registerCharacterBlock" style="display:none">
+      <div class="characterTitle">今天想以什么身份住进小院？</div>
+      <div class="characterGrid" id="authCharacterGrid"></div>
+      <div style="height:10px"></div>
+    </div>
+    <div class="authForm">
+      <input id="authUsername" autocomplete="username" placeholder="账号（3–24位）">
+      <input id="authPassword" autocomplete="current-password" type="password" placeholder="密码（至少6位）">
+      <button class="authSubmit" id="authSubmit" onclick="submitAuth()">进入小院</button>
+      <div class="authError" id="authError"></div>
+    </div>
+    <div class="authFoot">账号密码只用于这个游戏的云存档。密码在服务器中以加盐哈希保存，不会写进存档或网页源码。</div>
+  </div>
+</div>
 <div class="app">
 <header class="top"><div class="topin">
 <div class="brand">向往田园<small>田园日常</small></div>
 <div class="pill">🪙 <span id="coin">9,999,999,999,999</span></div>
 <div class="pill">💎 <span id="gem">9,999,999,999,999</span></div>
 <div class="pill">⚡ <span id="energy">9,999,999,999,999</span></div>
+<button class="accountChip" id="accountChip" onclick="openAccountPanel()"><span class="accountAvatar" id="accountAvatar">🌱</span><span class="accountName" id="accountName">未登录</span></button>
 </div></header>
 <div class="installBar" id="installBar">
   <div class="grow"><b>安装“向往田园”到手机</b><small>全屏启动 · 独立图标 · 自动存档 · 可离线进入</small></div>
@@ -257,6 +289,15 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 (function(){
 var INF=9999999999999;
 var SAVE='tianyuan_online_v41';
+var AUTH_TOKEN_KEY='tianyuan_auth_token_v1';
+var authToken=localStorage.getItem(AUTH_TOKEN_KEY)||'';
+var currentUser=null,authMode='login',selectedCharacter='farmer',cloudSaveTimer=null,cloudLoading=false;
+var CHARACTER_META={
+ farmer:{name:'田野少年',icon:'🌾',desc:'喜欢土地和四季'},
+ cook:{name:'灶台食客',icon:'🍲',desc:'喜欢烟火和料理'},
+ angler:{name:'河湾钓客',icon:'🎣',desc:'喜欢河风和水声'},
+ gardener:{name:'花房园丁',icon:'🌿',desc:'喜欢花草和院子'}
+};
 var cropPhotos={
 '小麦':'https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?auto=format&fit=crop&w=700&q=78',
 '玉米':'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=78',
@@ -331,12 +372,99 @@ var story=[
 function fresh(){
  return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),
  merge:Array.from({length:48},function(){return null}),mergeSel:null,mergeCount:0,mergeMax:1,story:0,
- collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0,animals:{chicken:{fedAt:0,readyAt:0},cow:{fedAt:0,readyAt:0},bee:{fedAt:0,readyAt:0},grape:{fedAt:0,readyAt:0}},weather:null};
+ collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0,profile:{lastCloudSync:0},animals:{chicken:{fedAt:0,readyAt:0},cow:{fedAt:0,readyAt:0},bee:{fedAt:0,readyAt:0},grape:{fedAt:0,readyAt:0}},weather:null};
 }
 var state=fresh();
 try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
-function save(){try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}}
+state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}if(currentUser&&!cloudLoading)scheduleCloudSave();}
 function fmt(){return '∞';}
+
+function authHeaders(){return authToken?{'Content-Type':'application/json','Authorization':'Bearer '+authToken}:{'Content-Type':'application/json'};}
+async function apiJSON(url,opts){
+ var res=await fetch(url,Object.assign({headers:authHeaders()},opts||{}));
+ var data={};try{data=await res.json();}catch(e){}
+ if(!res.ok){var err=new Error(data.error||('HTTP '+res.status));err.status=res.status;throw err;}return data;
+}
+function renderCharacterChoices(){
+ var el=document.getElementById('authCharacterGrid');if(!el)return;
+ el.innerHTML=Object.keys(CHARACTER_META).map(function(k){var c=CHARACTER_META[k];return '<button class="charCard '+(selectedCharacter===k?'active':'')+'" onclick="chooseCharacter(\''+k+'\')"><span class="face">'+c.icon+'</span><b>'+c.name+'</b><small>'+c.desc+'</small></button>';}).join('');
+}
+window.chooseCharacter=function(k){if(!CHARACTER_META[k])return;selectedCharacter=k;renderCharacterChoices();}
+window.setAuthMode=function(mode){
+ authMode=mode==='register'?'register':'login';
+ document.getElementById('authLoginTab').classList.toggle('active',authMode==='login');
+ document.getElementById('authRegisterTab').classList.toggle('active',authMode==='register');
+ document.getElementById('registerCharacterBlock').style.display=authMode==='register'?'block':'none';
+ document.getElementById('authSubmit').textContent=authMode==='register'?'住进小院':'进入小院';
+ document.getElementById('authPassword').autocomplete=authMode==='register'?'new-password':'current-password';
+ document.getElementById('authError').textContent='';
+ renderCharacterChoices();
+}
+function authErrorText(code){
+ return ({'username-invalid':'账号需为3–24位中文、字母、数字或下划线','password-invalid':'密码至少6位','username-exists':'这个账号已经有人用了','invalid-credentials':'账号或密码不对','too-many-attempts':'尝试太频繁，稍后再试','account-service-unavailable':'云存档服务暂时不可用'}[code]||'暂时没能进入小院，请再试一次');
+}
+window.submitAuth=async function(){
+ var u=document.getElementById('authUsername').value.trim(),p=document.getElementById('authPassword').value;
+ var btn=document.getElementById('authSubmit'),err=document.getElementById('authError');err.textContent='';btn.disabled=true;btn.textContent='正在开门…';
+ try{
+  var body={username:u,password:p};if(authMode==='register')body.character=selectedCharacter;
+  var data=await apiJSON('/api/tianyuan/'+(authMode==='register'?'register':'login'),{method:'POST',body:JSON.stringify(body)});
+  authToken=data.token;currentUser=data.user;localStorage.setItem(AUTH_TOKEN_KEY,authToken);
+  selectedCharacter=currentUser.character||'farmer';await afterLogin();
+ }catch(e){err.textContent=authErrorText(e.message);}
+ finally{btn.disabled=false;btn.textContent=authMode==='register'?'住进小院':'进入小院';}
+}
+async function afterLogin(){
+ document.getElementById('authScreen').classList.add('hidden');renderAccountChip();
+ try{
+  cloudLoading=true;
+  var data=await apiJSON('/api/tianyuan/save');
+  if(data.save&&data.save.payload&&Object.keys(data.save.payload).length){
+    state=Object.assign(fresh(),data.save.payload);try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}
+  }else{
+    await pushCloudSave();
+  }
+ }catch(e){toast('已登录，云存档稍后再同步');}
+ finally{cloudLoading=false;renderAll();applyWorldMood();}
+}
+function renderAccountChip(){
+ var c=currentUser&&CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
+ var av=document.getElementById('accountAvatar'),nm=document.getElementById('accountName');
+ if(av)av.textContent=c.icon;if(nm)nm.textContent=currentUser?(currentUser.displayName||currentUser.username):'未登录';
+}
+function scheduleCloudSave(){clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(function(){pushCloudSave().catch(function(){});},900);}
+async function pushCloudSave(){
+ if(!currentUser||!authToken||cloudLoading)return;
+ var data=await apiJSON('/api/tianyuan/save',{method:'PUT',body:JSON.stringify({payload:state})});
+ state.profile=state.profile||{};state.profile.lastCloudSync=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}
+ var cs=document.getElementById('cloudStatus');if(cs)cs.textContent='云存档已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+ return data;
+}
+async function bootAccount(){
+ renderCharacterChoices();setAuthMode('login');
+ if(!authToken){document.getElementById('authScreen').classList.remove('hidden');return;}
+ try{
+  var data=await apiJSON('/api/tianyuan/me');currentUser=data.user;selectedCharacter=currentUser.character||'farmer';await afterLogin();
+ }catch(e){authToken='';currentUser=null;localStorage.removeItem(AUTH_TOKEN_KEY);document.getElementById('authScreen').classList.remove('hidden');renderAccountChip();}
+}
+window.openAccountPanel=function(){
+ if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
+ var c=CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
+ var roles=Object.keys(CHARACTER_META).map(function(k){return '<button class="roleEdit '+(currentUser.character===k?'active':'')+'" onclick="changeCharacter(\''+k+'\')">'+CHARACTER_META[k].icon+'<div style="font-size:8px;margin-top:2px">'+CHARACTER_META[k].name+'</div></button>';}).join('');
+ var admin=currentUser.role==='admin'?'<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#315c43;color:#fff;font-size:8px">管理员</span>':'';
+ openModal('我的小院','<div class="accountCard"><div class="accountBigAvatar">'+c.icon+'</div><div class="accountMeta"><b>'+escapeHtml(currentUser.displayName||currentUser.username)+admin+'</b><small>@'+escapeHtml(currentUser.username)+' · '+c.name+'</small></div></div><div class="roleEditGrid">'+roles+'</div><div class="cloudStatus" id="cloudStatus">云存档已连接</div><div class="row" style="margin-top:10px"><button class="btn" onclick="manualCloudSave()">立即同步</button><button class="btn alt" onclick="logoutAccount()">退出账号</button></div>');
+}
+function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
+window.changeCharacter=async function(k){
+ if(!CHARACTER_META[k])return;
+ try{var data=await apiJSON('/api/tianyuan/profile',{method:'PUT',body:JSON.stringify({character:k})});currentUser=data.user;selectedCharacter=k;renderAccountChip();closeModal();toast('换成了 '+CHARACTER_META[k].name);save();}catch(e){toast('角色切换失败');}
+}
+window.manualCloudSave=async function(){var cs=document.getElementById('cloudStatus');if(cs)cs.textContent='正在同步…';try{await pushCloudSave();toast('云存档同步完成');}catch(e){if(cs)cs.textContent='同步失败，请稍后重试';}}
+window.logoutAccount=async function(){
+ try{await apiJSON('/api/tianyuan/logout',{method:'POST',body:'{}'});}catch(e){}
+ authToken='';currentUser=null;localStorage.removeItem(AUTH_TOKEN_KEY);closeModal();renderAccountChip();document.getElementById('authScreen').classList.remove('hidden');setAuthMode('login');
+}
 function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){e.classList.remove('show')},1600)}
 function addXP(n){state.xp+=n;while(state.xp>=state.level*100){state.xp-=state.level*100;state.level++;state.prosper+=25;toast('庄园升到 '+state.level+' 级');}save();renderStats();}
 function collect(k){if(!state.collection[k]){state.collection[k]=1;state.prosper+=3;toast('新图鉴：'+k);}save();}
@@ -540,7 +668,7 @@ function applyWorldMood(){
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
 setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
 function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();renderFieldStrip();}
-renderAll();applyWorldMood();renderWorldWeather();setInterval(function(){renderPlots();renderTasks();renderPasture();renderFieldStrip()},1000);setInterval(applyWorldMood,60000);
+renderAll();applyWorldMood();renderWorldWeather();bootAccount();setInterval(function(){renderPlots();renderTasks();renderPasture();renderFieldStrip()},1000);setInterval(applyWorldMood,60000);
 })();
 </script>
 </body></html>
