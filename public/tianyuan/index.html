@@ -8,7 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="向往田园">
 <meta name="format-detection" content="telephone=no">
-<title>向往田园 · 在线开源版</title>
+<link rel="manifest" href="/tianyuan/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/tianyuan/icon.svg">
+<meta name="mobile-web-app-capable" content="yes">
+<title>向往田园 5.0 · 在线网页 App</title>
 <style>
 :root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -44,16 +47,43 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .nav{border:0;background:transparent;padding:5px 1px;color:#70776f;font-size:9px;font-weight:800}.nav i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}.nav.active{color:#28533b}.toast{position:fixed;z-index:100;left:50%;bottom:95px;transform:translate(-50%,20px);opacity:0;background:#173324;color:#fff;padding:10px 14px;border-radius:999px;font-size:12px;transition:.22s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
 .modal{position:fixed;inset:0;z-index:90;background:rgba(9,17,12,.62);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modalbox{width:min(560px,100%);max-height:80vh;overflow:auto;background:#f8f5eb;border-radius:24px;padding:18px;box-shadow:0 35px 80px rgba(0,0,0,.35)}
 @media(max-width:760px){body{background:linear-gradient(180deg,#a9c1aa 0 180px,#e9e5d8 490px)}.hero{padding:8px}.scene{height:245px;border-radius:22px}.sceneCopy{left:15px;right:15px;bottom:14px}.sceneCopy h1{font-size:22px}.sceneCopy p{font-size:11px}.grid,.grid.equal{grid-template-columns:1fr;padding:2px 8px 9px;gap:8px}.card{border-radius:18px;padding:12px}.plots{grid-template-columns:repeat(2,1fr)}.plot{min-height:145px}.recipeGrid,.shopGrid,.friendGrid,.achievementGrid{grid-template-columns:1fr 1fr}.mergeGrid{grid-template-columns:repeat(6,1fr)}.cell{font-size:20px;border-radius:9px}.map,.roomGrid{grid-template-columns:repeat(2,1fr)}.room{height:145px}.statgrid{grid-template-columns:repeat(2,1fr)}.pill{font-size:10px;padding:6px 7px}.brand{font-size:13px}.bottom{grid-template-columns:repeat(7,1fr)}.nav{font-size:8px}.nav i{font-size:18px}}
+
+.installBar{display:none;margin:0 12px 10px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,#1a3827,#315c43);color:#fff;box-shadow:0 14px 34px rgba(20,49,33,.22);align-items:center;gap:10px}
+.installBar.show{display:flex}.installBar .grow{flex:1}.installBar b{display:block;font-size:13px}.installBar small{display:block;color:rgba(255,255,255,.7);font-size:10px;margin-top:2px}
+.installBar .btn{background:#f3ead8;color:#294031;box-shadow:none;white-space:nowrap}
+.worldWrap{padding:2px 12px 12px}
+.worldMap{height:540px;border-radius:26px;position:relative;overflow:hidden;background-image:url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=86');background-size:cover;background-position:center;box-shadow:0 28px 70px rgba(20,39,27,.2);isolation:isolate}
+.worldMap:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,25,17,.05),rgba(11,25,17,.06) 50%,rgba(11,25,17,.38));z-index:-1;pointer-events:none}
+.worldMap[data-daypart="night"]:before{background:linear-gradient(180deg,rgba(8,20,42,.28),rgba(8,18,38,.34),rgba(4,13,28,.62))}
+.worldMap[data-daypart="dawn"]:before{background:linear-gradient(180deg,rgba(213,128,71,.09),rgba(11,25,17,.04),rgba(11,25,17,.38))}
+.worldMap[data-daypart="evening"]:before{background:linear-gradient(180deg,rgba(220,108,60,.12),rgba(56,31,23,.13),rgba(11,25,17,.5))}
+.worldTitle{position:absolute;left:18px;top:16px;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.28);z-index:3}.worldTitle b{font-size:20px;display:block}.worldTitle small{font-size:10px;color:rgba(255,255,255,.8)}
+.worldActions{position:absolute;right:14px;top:14px;display:flex;gap:6px;z-index:4}.worldActions button{border:1px solid rgba(255,255,255,.28);background:rgba(17,38,25,.48);color:#fff;border-radius:999px;padding:7px 10px;font-size:10px;backdrop-filter:blur(9px)}
+.zone{position:absolute;border:0;background:rgba(17,39,26,.65);color:#fff;border:1px solid rgba(255,255,255,.34);border-radius:16px;padding:9px 11px;text-align:left;box-shadow:0 10px 24px rgba(0,0,0,.19);backdrop-filter:blur(8px);cursor:pointer;transition:.18s;z-index:3}
+.zone:hover{transform:translateY(-2px) scale(1.02);background:rgba(20,53,34,.78)}.zone b{display:block;font-size:12px}.zone small{display:block;font-size:9px;color:rgba(255,255,255,.72);margin-top:2px}
+.z-farm{left:9%;top:49%}.z-kitchen{left:42%;top:32%}.z-house{left:59%;top:18%}.z-merge{right:8%;top:48%}.z-explore{left:13%;top:18%}.z-friends{right:13%;top:72%}
+.mapNpc{position:absolute;width:52px;height:52px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.88);box-shadow:0 9px 22px rgba(0,0,0,.27);z-index:2;animation:walkFloat 4.8s ease-in-out infinite alternate;background:#ddd}.mapNpc img{width:100%;height:100%;object-fit:cover}.mapNpc:after{content:attr(data-name);position:absolute;left:50%;top:48px;transform:translateX(-50%);background:rgba(16,31,22,.76);color:#fff;border-radius:999px;padding:3px 6px;font-size:8px;white-space:nowrap}
+.npc1{left:30%;top:61%;animation-delay:-1s}.npc2{left:68%;top:45%;animation-delay:-2.1s}.npc3{left:48%;top:70%;animation-delay:-3s}
+@keyframes walkFloat{from{transform:translate(-8px,-2px)}to{transform:translate(10px,7px)}}
+.mapDock{position:absolute;left:14px;right:14px;bottom:13px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;z-index:4}.mapMetric{background:rgba(18,35,25,.68);border:1px solid rgba(255,255,255,.19);color:#fff;border-radius:13px;padding:8px 9px;backdrop-filter:blur(9px)}.mapMetric small{font-size:8px;color:rgba(255,255,255,.66);display:block}.mapMetric b{font-size:12px}
+.plotStage{position:absolute;z-index:3;left:8px;top:7px;background:rgba(25,45,31,.72);border:1px solid rgba(255,255,255,.18);padding:3px 6px;border-radius:999px;font-size:8px;color:#fff}.cropProgress{position:absolute;left:8px;right:8px;bottom:34px;z-index:3;height:4px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}.cropProgress i{display:block;height:100%;background:#e7dca6}
+.quickLife{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px 12px}.lifeCard{border:1px solid rgba(255,255,255,.7);background:rgba(250,247,239,.92);border-radius:17px;padding:11px;box-shadow:0 8px 22px rgba(20,39,27,.08)}.lifeCard b{font-size:12px;display:block}.lifeCard small{font-size:9px;color:var(--muted);display:block;margin-top:2px}
+@media(max-width:760px){.installBar{margin:0 8px 8px}.worldWrap{padding:0 8px 9px}.worldMap{height:455px;border-radius:20px;background-position:54% center}.zone{padding:8px 9px;border-radius:13px}.zone b{font-size:10px}.zone small{font-size:8px}.z-farm{left:5%;top:50%}.z-kitchen{left:39%;top:32%}.z-house{left:57%;top:19%}.z-merge{right:4%;top:51%}.z-explore{left:6%;top:21%}.z-friends{right:5%;top:70%}.mapNpc{width:43px;height:43px}.mapNpc:after{top:39px}.mapDock{grid-template-columns:repeat(2,1fr)}.quickLife{grid-template-columns:repeat(2,1fr);padding:0 8px 9px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="top"><div class="topin">
-<div class="brand">向往田园<small>ONLINE · OPEN SOURCE</small></div>
+<div class="brand">向往田园<small>5.0 · WEB APP</small></div>
 <div class="pill">🪙 <span id="coin">9,999,999,999,999</span></div>
 <div class="pill">💎 <span id="gem">9,999,999,999,999</span></div>
 <div class="pill">⚡ <span id="energy">9,999,999,999,999</span></div>
 </div></header>
+<div class="installBar" id="installBar">
+  <div class="grow"><b>安装“向往田园”到手机</b><small>全屏启动 · 独立图标 · 自动存档 · 可离线进入</small></div>
+  <button class="btn" onclick="installWebApp()">安装</button>
+  <button class="btn" onclick="hideInstallBar()">×</button>
+</div>
 
 <section class="hero">
 <div class="scene scene-home" id="heroScene">
@@ -64,6 +94,33 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 
 <main>
 <section class="page active" id="page-home">
+<div class="worldWrap">
+  <div class="worldMap" id="worldMap">
+    <div class="worldTitle"><b>云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small></div>
+    <div class="worldActions"><button onclick="claimDaily()">今日礼物</button><button onclick="openAbout()">安装到手机</button></div>
+    <button class="zone z-explore" onclick="goPage('explore')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
+    <button class="zone z-farm" onclick="goPage('farm')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
+    <button class="zone z-kitchen" onclick="goPage('kitchen')"><b>乡间厨房</b><small>烹饪 · 餐桌订单</small></button>
+    <button class="zone z-house" onclick="goPage('house')"><b>主屋与客舍</b><small>升级 · 布置 · 花房</small></button>
+    <button class="zone z-merge" onclick="goPage('merge')"><b>手作工坊</b><small>二合 · 收藏 · 制作</small></button>
+    <button class="zone z-friends" onclick="goPage('friends')"><b>村民来访</b><small>聊天 · 送礼 · 故事</small></button>
+    <div class="mapNpc npc1" data-name="林夏" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=76"></div>
+    <div class="mapNpc npc2" data-name="阿禾" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=76"></div>
+    <div class="mapNpc npc3" data-name="小满" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=76"></div>
+    <div class="mapDock">
+      <div class="mapMetric"><small>庄园等级</small><b id="mapLevel">Lv.1</b></div>
+      <div class="mapMetric"><small>繁荣度</small><b id="mapProsper">0</b></div>
+      <div class="mapMetric"><small>今日天气</small><b id="mapWeather">晴 · 24℃</b></div>
+      <div class="mapMetric"><small>季节</small><b id="mapSeason">春季</b></div>
+    </div>
+  </div>
+</div>
+<div class="quickLife">
+  <div class="lifeCard"><b>🌾 农田</b><small>四阶段真实生长表现</small></div>
+  <div class="lifeCard"><b>🍳 厨房</b><small>无限食材自由烹饪</small></div>
+  <div class="lifeCard"><b>🧺 工坊</b><small>48 格二合收藏</small></div>
+  <div class="lifeCard"><b>🛋️ 家园</b><small>房屋与家具持续升级</small></div>
+</div>
 <div class="grid">
 <div class="card">
 <div class="row between"><div><h2>庄园概况</h2><div class="sub">无限资源模式不会消耗金币、钻石、体力与基础物资。</div></div><button class="btn" onclick="claimDaily()">领取今日礼物</button></div>
@@ -161,6 +218,11 @@ var cropPhotos={
 '南瓜':'https://images.unsplash.com/photo-1509622905150-fa66d3906e09?auto=format&fit=crop&w=700&q=78',
 '葡萄':'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=700&q=78'
 };
+var growthStagePhotos=[
+'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=76',
+'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=700&q=76',
+'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=700&q=76'
+];
 var crops=[
 {name:'小麦',time:12,xp:8},{name:'玉米',time:18,xp:10},{name:'番茄',time:24,xp:12},{name:'胡萝卜',time:30,xp:14},
 {name:'草莓',time:38,xp:18},{name:'茶叶',time:48,xp:22},{name:'南瓜',time:60,xp:26},{name:'葡萄',time:75,xp:32}
@@ -236,21 +298,31 @@ function renderStats(){
  var need=state.level*100;document.getElementById('xpText').textContent=state.xp+' / '+need+' EXP';document.getElementById('xpBar').style.width=Math.min(100,state.xp/need*100)+'%';
  document.getElementById('mergeMax').textContent=state.mergeMax;document.getElementById('mergeCount').textContent=state.mergeCount;
  document.getElementById('story').textContent=story[state.story%story.length];
+ var ml=document.getElementById('mapLevel'),mp=document.getElementById('mapProsper');
+ if(ml)ml.textContent='Lv.'+state.level;if(mp)mp.textContent=state.prosper;
 }
 function renderSeeds(){
  var h='';crops.forEach(function(c,i){h+='<button class="seed '+(state.selectedCrop===i?'active':'')+'" onclick="selectCrop('+i+')"><img src="'+cropPhotos[c.name]+'" alt=""><span>'+c.name+' · '+c.time+'秒</span></button>';});document.getElementById('seedbar').innerHTML=h;
 }
 window.selectCrop=function(i){state.selectedCrop=i;save();renderSeeds();}
 function renderPlots(){
- var now=Date.now(),h='';state.plots.forEach(function(p,i){
-  if(!p){h+='<button class="plot" onclick="plotClick('+i+')" style="background:linear-gradient(135deg,#9e7448,#724e31)"><div class="plotText"><b>空土地</b><small>点击种下 '+crops[state.selectedCrop].name+'</small></div></button>';return;}
-  var c=crops[p.crop],left=Math.max(0,Math.ceil((p.ready-now)/1000)),ready=left<=0;
-  h+='<button class="plot" onclick="plotClick('+i+')"><img src="'+cropPhotos[c.name]+'"><div class="plotText"><b>'+c.name+(ready?' · 已成熟':'')+'</b><small>'+(ready?'点击收获':left+' 秒后成熟')+'</small></div></button>';
- });document.getElementById('plots').innerHTML=h;
+ var now=Date.now(),h='';
+ state.plots.forEach(function(p,i){
+  if(!p){
+    h+='<button class="plot" onclick="plotClick('+i+')" style="background:linear-gradient(135deg,#9e7448,#724e31)"><div class="plotText"><b>空土地</b><small>点击种下 '+crops[state.selectedCrop].name+'</small></div></button>';
+    return;
+  }
+  var c=crops[p.crop],start=p.planted||p.ready-c.time*1000,total=c.time*1000,progress=Math.max(0,Math.min(1,(now-start)/total));
+  var left=Math.max(0,Math.ceil((p.ready-now)/1000)),ready=left<=0,stage=ready?3:(progress<.18?0:(progress<.55?1:2));
+  var stageText=ready?'成熟':(stage===0?'刚播种':(stage===1?'幼苗期':'生长期'));
+  var photo=ready?cropPhotos[c.name]:growthStagePhotos[Math.min(2,stage)];
+  h+='<button class="plot" onclick="plotClick('+i+')"><img src="'+photo+'"><span class="plotStage">'+stageText+'</span><div class="cropProgress"><i style="width:'+Math.round(progress*100)+'%"></i></div><div class="plotText"><b>'+c.name+(ready?' · 已成熟':'')+'</b><small>'+(ready?'点击收获':left+' 秒后成熟')+'</small></div></button>';
+ });
+ document.getElementById('plots').innerHTML=h;
 }
 window.plotClick=function(i){
  var p=state.plots[i],now=Date.now();
- if(!p){var c=crops[state.selectedCrop];state.plots[i]={crop:state.selectedCrop,ready:now+c.time*1000};toast('种下 '+c.name);collect(c.name);save();renderPlots();return;}
+ if(!p){var c=crops[state.selectedCrop];state.plots[i]={crop:state.selectedCrop,ready:now+c.time*1000,planted:now};toast('种下 '+c.name);collect(c.name);save();renderPlots();return;}
  if(now>=p.ready){var c2=crops[p.crop];state.plots[i]=null;addXP(c2.xp);state.prosper+=2;collect(c2.name+'收获');toast('收获 '+c2.name);save();renderPlots();}else toast('还需要一点时间');
 }
 window.harvestAll=function(){var now=Date.now(),n=0;state.plots.forEach(function(p,i){if(p&&now>=p.ready){addXP(crops[p.crop].xp);collect(crops[p.crop].name+'收获');state.plots[i]=null;n++;}});save();renderPlots();toast(n?'收获 '+n+' 块农田':'暂无成熟作物');}
@@ -303,8 +375,30 @@ friends:['scene-friends','来客 · 村民','有人来，院子才热闹','聊�
 };return data[p];}
 function switchPage(p){document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active')});document.getElementById('page-'+p).classList.add('active');document.querySelectorAll('.nav').forEach(function(x){x.classList.toggle('active',x.dataset.page===p)});var d=sceneFor(p),s=document.getElementById('heroScene');s.className='scene '+d[0];document.getElementById('sceneTag').textContent=d[1];document.getElementById('sceneTitle').textContent=d[2];document.getElementById('sceneDesc').textContent=d[3];window.scrollTo({top:0,behavior:'smooth'});}
 document.querySelectorAll('.nav').forEach(function(n){n.addEventListener('click',function(){switchPage(n.dataset.page)})});
+window.goPage=function(p){switchPage(p);}
+var deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstallPrompt=e;showInstallBar();});
+function showInstallBar(){var el=document.getElementById('installBar');if(el&&!localStorage.getItem('tianyuan:hideInstall'))el.classList.add('show');}
+window.hideInstallBar=function(){var el=document.getElementById('installBar');if(el)el.classList.remove('show');localStorage.setItem('tianyuan:hideInstall','1');}
+window.installWebApp=async function(){
+ if(deferredInstallPrompt){deferredInstallPrompt.prompt();try{await deferredInstallPrompt.userChoice}catch(e){}deferredInstallPrompt=null;hideInstallBar();return;}
+ var isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ openModal('安装到手机',isiOS
+ ? '在 Safari 中轻点底部或顶部的“共享”按钮 → <b>添加到主屏幕</b> → 打开<b>“作为网页 App 打开”</b> → 添加。之后会出现独立图标，并以接近 App 的全屏窗口启动。'
+ : '在浏览器菜单中选择“安装应用”或“添加到主屏幕”。如果浏览器支持直接安装，这里也会出现系统安装提示。');
+}
+function applyWorldMood(){
+ var h=new Date().getHours(),part=h<6?'night':h<9?'dawn':h<17?'day':h<20?'evening':'night';
+ var wm=document.getElementById('worldMap');if(wm)wm.dataset.daypart=part;
+ var seasons=['冬季','春季','夏季','秋季'],m=new Date().getMonth(),season=seasons[Math.floor(((m+1)%12)/3)];
+ var s=document.getElementById('mapSeason');if(s)s.textContent=season;
+ var wc=document.getElementById('worldClock');if(wc)wc.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'})+' · '+(part==='night'?'夜色':part==='dawn'?'清晨':part==='evening'?'傍晚':'白昼');
+ var mw=document.getElementById('mapWeather');if(mw)mw.textContent='晴 · 24℃';
+}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
+setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
 function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();}
-renderAll();setInterval(function(){renderPlots();renderTasks()},1000);
+renderAll();applyWorldMood();setInterval(function(){renderPlots();renderTasks()},1000);setInterval(applyWorldMood,60000);
 })();
 </script>
 </body></html>
