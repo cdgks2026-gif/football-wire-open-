@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#15251c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="向往田园">
+<meta name="format-detection" content="telephone=no">
+<title>向往田园 · 在线开源版</title>
+<style>
+:root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#dfe6d9;color:var(--ink)}
+body{background:linear-gradient(180deg,#b9cfb7 0 280px,#e9e5d8 680px);overscroll-behavior:none}
+button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180px;margin:auto;min-height:100vh;padding-bottom:104px}
+.top{position:sticky;top:0;z-index:50;background:rgba(18,35,25,.9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.09);padding-top:env(safe-area-inset-top)}
+.topin{display:flex;align-items:center;gap:8px;overflow:auto;padding:9px 12px}.brand{color:#fff;font-weight:900;white-space:nowrap;margin-right:auto;letter-spacing:.4px}.brand small{display:block;color:rgba(255,255,255,.58);font-weight:600;font-size:10px}
+.pill{white-space:nowrap;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.09);color:#fff;border-radius:999px;padding:7px 9px;font-size:12px;font-weight:800}
+.hero{padding:12px}.scene{height:330px;border-radius:28px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 30px 70px rgba(14,30,20,.28);isolation:isolate}
+.scene:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,18,12,.04),rgba(8,18,12,.16) 50%,rgba(8,18,12,.72));z-index:-1}
+.scene-home{background-image:url('https://images.unsplash.com/photo-1470165301023-58dab8118cc9?auto=format&fit=crop&w=1800&q=82')}
+.scene-farm{background-image:url('https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1800&q=82')}
+.scene-kitchen{background-image:url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=82')}
+.scene-merge{background-image:url('https://images.unsplash.com/photo-1516211697506-8360dbcfe9a4?auto=format&fit=crop&w=1800&q=82')}
+.scene-explore{background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=82')}
+.scene-house{background-image:url('https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1800&q=82')}
+.scene-friends{background-image:url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=82')}
+.sceneCopy{position:absolute;left:22px;right:22px;bottom:20px;color:#fff;max-width:680px}.sceneCopy h1{font-size:30px;margin:0 0 6px;letter-spacing:.5px}.sceneCopy p{margin:0;color:rgba(255,255,255,.78);font-size:13px;line-height:1.6}.sceneTag{display:inline-block;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:rgba(16,34,23,.52);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);font-size:11px}
+.weather{position:absolute;right:16px;top:16px;padding:8px 10px;border-radius:14px;color:#fff;background:rgba(16,34,23,.52);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);font-size:12px}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;padding:4px 12px 12px}.grid.equal{grid-template-columns:1fr 1fr}.card{background:rgba(250,247,239,.96);border:1px solid rgba(255,255,255,.66);border-radius:22px;padding:15px;box-shadow:var(--shadow)}h2{font-size:18px;margin:0 0 10px}h3{font-size:14px;margin:0 0 7px}.sub{font-size:12px;color:var(--muted);line-height:1.55}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.between{justify-content:space-between}.divider{height:1px;background:var(--line);margin:12px 0}
+.btn{border:0;border-radius:13px;padding:10px 12px;background:var(--green);color:#fff;font-weight:850;cursor:pointer;box-shadow:0 6px 16px rgba(35,78,52,.18)}.btn.alt{background:#eee9dc;color:#344038;box-shadow:none}.btn.gold{background:#a67b3c}.btn:active{transform:scale(.98)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#f1eee3;border:1px solid var(--line);border-radius:15px;padding:11px}.stat b{display:block;font-size:17px}.stat small{font-size:10px;color:var(--muted)}
+.progress{height:8px;background:#e4dfd2;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#658d6f,#c6a563);border-radius:inherit}
+.seedbar{display:flex;gap:8px;overflow:auto;padding-bottom:8px}.seed{min-width:145px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:0;overflow:hidden;text-align:left;cursor:pointer}.seed img{width:100%;height:86px;object-fit:cover;display:block}.seed span{display:block;padding:8px;font-size:12px;font-weight:800}.seed.active{outline:2px solid #547b5e}
+.plots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.plot{position:relative;min-height:125px;border:0;border-radius:16px;overflow:hidden;background:#a77b4e;cursor:pointer;color:#fff;text-align:left;padding:0}.plot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.plot:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.64))}.plotText{position:absolute;left:9px;right:9px;bottom:8px;z-index:2}.plotText b{font-size:12px;display:block}.plotText small{font-size:10px;color:rgba(255,255,255,.78)}
+.recipeGrid,.shopGrid,.friendGrid,.achievementGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.recipe,.shop,.friend,.ach{border:1px solid var(--line);background:#fff;border-radius:16px;overflow:hidden}.recipe img,.shop img,.friend img{width:100%;height:110px;object-fit:cover}.inside{padding:10px}.inside b{display:block;font-size:13px}.inside small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}
+.orders{display:grid;gap:8px}.order{padding:11px;border-radius:15px;background:#fff;border:1px solid var(--line)}.order b{font-size:13px}.order small{display:block;color:var(--muted);font-size:10px;margin:4px 0 8px}
+.mergeGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.cell{aspect-ratio:1;border:1px solid var(--line);background:#f0ecdf;border-radius:12px;display:grid;place-items:center;font-size:24px;position:relative;cursor:pointer}.cell small{position:absolute;right:4px;bottom:3px;font-size:8px;background:#263b2f;color:#fff;border-radius:99px;padding:2px 4px}.cell.sel{outline:2px solid #c19855}
+.map{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{min-height:145px;border-radius:18px;position:relative;overflow:hidden;color:#fff;background-size:cover;background-position:center;cursor:pointer}.place:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.68))}.place div{position:absolute;z-index:2;left:10px;right:10px;bottom:9px}.place b{font-size:13px}.place small{display:block;font-size:10px;color:rgba(255,255,255,.75)}
+.roomGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.room{height:160px;border-radius:17px;background-size:cover;background-position:center;position:relative;overflow:hidden;color:#fff}.room:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.65))}.room span{position:absolute;z-index:2;left:10px;bottom:9px;font-weight:850;font-size:12px}
+.bottom{position:fixed;z-index:60;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1180px);display:grid;grid-template-columns:repeat(7,1fr);background:rgba(249,247,239,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(46,63,50,.12);padding:6px 5px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(22,36,26,.1)}
+.nav{border:0;background:transparent;padding:5px 1px;color:#70776f;font-size:9px;font-weight:800}.nav i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}.nav.active{color:#28533b}.toast{position:fixed;z-index:100;left:50%;bottom:95px;transform:translate(-50%,20px);opacity:0;background:#173324;color:#fff;padding:10px 14px;border-radius:999px;font-size:12px;transition:.22s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;z-index:90;background:rgba(9,17,12,.62);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modalbox{width:min(560px,100%);max-height:80vh;overflow:auto;background:#f8f5eb;border-radius:24px;padding:18px;box-shadow:0 35px 80px rgba(0,0,0,.35)}
+@media(max-width:760px){body{background:linear-gradient(180deg,#a9c1aa 0 180px,#e9e5d8 490px)}.hero{padding:8px}.scene{height:245px;border-radius:22px}.sceneCopy{left:15px;right:15px;bottom:14px}.sceneCopy h1{font-size:22px}.sceneCopy p{font-size:11px}.grid,.grid.equal{grid-template-columns:1fr;padding:2px 8px 9px;gap:8px}.card{border-radius:18px;padding:12px}.plots{grid-template-columns:repeat(2,1fr)}.plot{min-height:145px}.recipeGrid,.shopGrid,.friendGrid,.achievementGrid{grid-template-columns:1fr 1fr}.mergeGrid{grid-template-columns:repeat(6,1fr)}.cell{font-size:20px;border-radius:9px}.map,.roomGrid{grid-template-columns:repeat(2,1fr)}.room{height:145px}.statgrid{grid-template-columns:repeat(2,1fr)}.pill{font-size:10px;padding:6px 7px}.brand{font-size:13px}.bottom{grid-template-columns:repeat(7,1fr)}.nav{font-size:8px}.nav i{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="topin">
+<div class="brand">向往田园<small>ONLINE · OPEN SOURCE</small></div>
+<div class="pill">🪙 <span id="coin">9,999,999,999,999</span></div>
+<div class="pill">💎 <span id="gem">9,999,999,999,999</span></div>
+<div class="pill">⚡ <span id="energy">9,999,999,999,999</span></div>
+</div></header>
+
+<section class="hero">
+<div class="scene scene-home" id="heroScene">
+<div class="weather" id="weather">☀️ 晴 · 24℃</div>
+<div class="sceneCopy"><span class="sceneTag" id="sceneTag">今日 · 小院</span><h1 id="sceneTitle">把日子种进风里</h1><p id="sceneDesc">种田、做饭、装修、合成、探索。资源无限，但你的庄园仍需要一点点成长。</p></div>
+</div>
+</section>
+
+<main>
+<section class="page active" id="page-home">
+<div class="grid">
+<div class="card">
+<div class="row between"><div><h2>庄园概况</h2><div class="sub">无限资源模式不会消耗金币、钻石、体力与基础物资。</div></div><button class="btn" onclick="claimDaily()">领取今日礼物</button></div>
+<div class="statgrid" style="margin-top:12px">
+<div class="stat"><small>庄园等级</small><b id="level">1</b></div>
+<div class="stat"><small>繁荣度</small><b id="prosper">0</b></div>
+<div class="stat"><small>累计订单</small><b id="ordersDone">0</b></div>
+<div class="stat"><small>收藏图鉴</small><b id="collectionCount">0</b></div>
+</div>
+<div class="divider"></div>
+<h3>升级进度</h3><div class="row between"><span class="sub" id="xpText">0 / 100 EXP</span><span class="sub">下一等级</span></div><div class="progress"><i id="xpBar" style="width:0%"></i></div>
+<div class="divider"></div>
+<div class="row"><button class="btn gold" onclick="unlockAll()">🔓 一键全部解锁</button><button class="btn alt" onclick="exportSave()">导出存档</button><button class="btn alt" onclick="openAbout()">iPhone 使用说明</button></div>
+</div>
+<div class="card">
+<h2>今日委托</h2><div class="orders" id="dailyOrders"></div>
+</div>
+</div>
+<div class="grid equal">
+<div class="card"><h2>今日行程</h2><div class="achievementGrid" id="tasks"></div></div>
+<div class="card"><h2>庄园纪事</h2><div class="sub" id="story">第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。</div><div class="divider"></div><button class="btn" onclick="nextStory()">继续主线</button></div>
+</div>
+</section>
+
+<section class="page" id="page-farm">
+<div class="grid">
+<div class="card">
+<div class="row between"><div><h2>四季农田</h2><div class="sub">选种子，再点土地。成熟后再次点击收获。</div></div><button class="btn alt" onclick="harvestAll()">一键收获</button></div>
+<div class="seedbar" id="seedbar"></div><div class="plots" id="plots"></div>
+</div>
+<div class="card"><h2>牧场与果园</h2><div class="shopGrid" id="pasture"></div></div>
+</div>
+</section>
+
+<section class="page" id="page-kitchen">
+<div class="grid">
+<div class="card"><div class="row between"><div><h2>乡间厨房</h2><div class="sub">所有食材均为无限。烹饪用于提升等级、图鉴和订单进度。</div></div><button class="btn alt" onclick="cookRandom()">随机做一道</button></div><div class="recipeGrid" id="recipes"></div></div>
+<div class="card"><h2>餐桌订单</h2><div class="orders" id="foodOrders"></div></div>
+</div>
+</section>
+
+<section class="page" id="page-merge">
+<div class="grid">
+<div class="card"><div class="row between"><div><h2>二合工坊</h2><div class="sub">点击两个相同等级物品即可合成。生成不消耗任何资源。</div></div><div class="row"><button class="btn alt" onclick="spawnMerge()">生成</button><button class="btn alt" onclick="autoMerge()">自动合成</button></div></div><div class="mergeGrid" id="mergeGrid"></div></div>
+<div class="card"><h2>合成收藏</h2><div class="sub">从种子、食材、木作、器皿一路合成到稀有收藏。每发现一个新等级都会永久记入图鉴。</div><div class="divider"></div><div class="statgrid"><div class="stat"><small>最高合成等级</small><b id="mergeMax">1</b></div><div class="stat"><small>合成次数</small><b id="mergeCount">0</b></div></div></div>
+</div>
+</section>
+
+<section class="page" id="page-explore">
+<div class="grid">
+<div class="card"><h2>村落地图</h2><div class="map" id="map"></div></div>
+<div class="card"><h2>旅行背包</h2><div class="sub">采集、钓鱼和旅行手信均不会占用有限背包。稀有发现会记录到收藏图鉴。</div><div class="divider"></div><div class="achievementGrid" id="discoveries"></div></div>
+</div>
+</section>
+
+<section class="page" id="page-house">
+<div class="grid">
+<div class="card"><div class="row between"><div><h2>家园建设</h2><div class="sub">升级不会消耗资源，只影响外观与可玩内容。</div></div><button class="btn" onclick="upgradeAllBuildings()">一键升级当前建筑</button></div><div class="roomGrid" id="rooms"></div></div>
+<div class="card"><h2>家具商店</h2><div class="shopGrid" id="furniture"></div></div>
+</div>
+</section>
+
+<section class="page" id="page-friends">
+<div class="grid">
+<div class="card"><h2>村民来访</h2><div class="friendGrid" id="friends"></div></div>
+<div class="card"><h2>关系图鉴</h2><div class="sub">聊天和送礼都不会消耗道具。达到新的好感阶段会解锁人物小故事。</div><div class="divider"></div><div id="friendLog" class="sub">今天还没有和村民聊天。</div></div>
+</div>
+</section>
+</main>
+</div>
+
+<nav class="bottom">
+<button class="nav active" data-page="home"><i>🏡</i>庄园</button>
+<button class="nav" data-page="farm"><i>🌾</i>种植</button>
+<button class="nav" data-page="kitchen"><i>🍳</i>厨房</button>
+<button class="nav" data-page="merge"><i>🧺</i>合成</button>
+<button class="nav" data-page="explore"><i>🗺️</i>探索</button>
+<button class="nav" data-page="house"><i>🛋️</i>家园</button>
+<button class="nav" data-page="friends"><i>👥</i>好友</button>
+</nav>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="modalbox"><div class="row between"><h2 id="modalTitle">说明</h2><button class="btn alt" onclick="closeModal()">关闭</button></div><div id="modalBody" class="sub"></div></div></div>
+
+<script>
+(function(){
+var INF=9999999999999;
+var SAVE='tianyuan_online_v41';
+var cropPhotos={
+'小麦':'https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?auto=format&fit=crop&w=700&q=78',
+'玉米':'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=78',
+'番茄':'https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&w=700&q=78',
+'胡萝卜':'https://images.unsplash.com/photo-1447175008436-170170753b51?auto=format&fit=crop&w=700&q=78',
+'草莓':'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=700&q=78',
+'茶叶':'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=700&q=78',
+'南瓜':'https://images.unsplash.com/photo-1509622905150-fa66d3906e09?auto=format&fit=crop&w=700&q=78',
+'葡萄':'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=700&q=78'
+};
+var crops=[
+{name:'小麦',time:12,xp:8},{name:'玉米',time:18,xp:10},{name:'番茄',time:24,xp:12},{name:'胡萝卜',time:30,xp:14},
+{name:'草莓',time:38,xp:18},{name:'茶叶',time:48,xp:22},{name:'南瓜',time:60,xp:26},{name:'葡萄',time:75,xp:32}
+];
+var recipes=[
+{name:'田园吐司',photo:'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',xp:16,desc:'小麦 · 牛奶 · 蜂蜜'},
+{name:'番茄炒蛋',photo:'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80',xp:18,desc:'番茄 · 鸡蛋'},
+{name:'玉米浓汤',photo:'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80',xp:22,desc:'玉米 · 牛奶'},
+{name:'草莓蛋糕',photo:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=700&q=80',xp:28,desc:'草莓 · 小麦 · 牛奶'},
+{name:'山野炖锅',photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=700&q=80',xp:30,desc:'蘑菇 · 南瓜 · 胡萝卜'},
+{name:'茶香点心',photo:'https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=700&q=80',xp:35,desc:'茶叶 · 蜂蜜 · 小麦'}
+];
+var places=[
+{name:'河湾',desc:'钓鱼 · 河鲜',photo:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80'},
+{name:'松林',desc:'蘑菇 · 木材',photo:'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80'},
+{name:'茶山',desc:'茶叶 · 山泉',photo:'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=900&q=80'},
+{name:'老街',desc:'集市 · 随机事件',photo:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80'},
+{name:'果园',desc:'水果 · 手信',photo:'https://images.unsplash.com/photo-1444392061186-9fc38f84f726?auto=format&fit=crop&w=900&q=80'},
+{name:'观景台',desc:'摄影 · 稀有收藏',photo:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80'}
+];
+var furniture=[
+{name:'原木长桌',photo:'https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?auto=format&fit=crop&w=700&q=80'},
+{name:'亚麻沙发',photo:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80'},
+{name:'藤编躺椅',photo:'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=700&q=80'},
+{name:'陶土花器',photo:'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=700&q=80'}
+];
+var friends=[
+{name:'林夏',photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80',role:'民宿主理人'},
+{name:'阿禾',photo:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80',role:'木作匠人'},
+{name:'小满',photo:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=500&q=80',role:'山野向导'},
+{name:'陈叔',photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80',role:'老茶农'}
+];
+var rooms=[
+{name:'主屋',photo:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80'},
+{name:'乡间厨房',photo:'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80'},
+{name:'客舍',photo:'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'},
+{name:'玻璃花房',photo:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80'},
+{name:'手作工坊',photo:'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=900&q=80'},
+{name:'露台',photo:'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80'}
+];
+var mergeIcons=['🌱','🌿','🌾','🧺','🥣','🏺','🪴','🧰','🕯️','🎁'];
+var story=[
+'第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。',
+'第二章 · 第一场春雨落下，荒地变得松软。你决定把东边那块地改成果园。',
+'第三章 · 老街重新开集，村民们开始把自家的菜和手作摆到一起。',
+'第四章 · 河湾出现了一尾很少见的锦鲤，关于它的故事传遍了整个村子。',
+'第五章 · 客舍迎来了第一批远方来客，小院的灯一直亮到很晚。',
+'第六章 · 茶山进入采摘季，陈叔教你分辨清晨第一批嫩芽。',
+'第七章 · 手作工坊修好以后，旧木料和陶片都有了新的用途。',
+'第八章 · 夏夜露台办起了长桌晚餐，所有人都带来了一道自己的拿手菜。',
+'第九章 · 果园第一次丰收，团子背着小包去邻村送了一篮葡萄。',
+'第十章 · 秋风吹过麦田，你发现这座庄园终于有了自己独特的样子。',
+'第十一章 · 冬天来了，山里变安静，屋内却比任何时候都热闹。',
+'第十二章 · 新的一年从重新翻土开始。故事没有结束，只是又到了春天。'
+];
+
+function fresh(){
+ return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),
+ merge:Array.from({length:48},function(){return null}),mergeSel:null,mergeCount:0,mergeMax:1,story:0,
+ collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0};
+}
+var state=fresh();
+try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}}
+function fmt(){return '9,999,999,999,999';}
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){e.classList.remove('show')},1600)}
+function addXP(n){state.xp+=n;while(state.xp>=state.level*100){state.xp-=state.level*100;state.level++;state.prosper+=25;toast('庄园升到 '+state.level+' 级');}save();renderStats();}
+function collect(k){if(!state.collection[k]){state.collection[k]=1;state.prosper+=3;toast('新图鉴：'+k);}save();}
+function renderStats(){
+ document.getElementById('coin').textContent=fmt();document.getElementById('gem').textContent=fmt();document.getElementById('energy').textContent=fmt();
+ document.getElementById('level').textContent=state.level;document.getElementById('prosper').textContent=state.prosper;
+ document.getElementById('ordersDone').textContent=state.ordersDone;document.getElementById('collectionCount').textContent=Object.keys(state.collection).length;
+ var need=state.level*100;document.getElementById('xpText').textContent=state.xp+' / '+need+' EXP';document.getElementById('xpBar').style.width=Math.min(100,state.xp/need*100)+'%';
+ document.getElementById('mergeMax').textContent=state.mergeMax;document.getElementById('mergeCount').textContent=state.mergeCount;
+ document.getElementById('story').textContent=story[state.story%story.length];
+}
+function renderSeeds(){
+ var h='';crops.forEach(function(c,i){h+='<button class="seed '+(state.selectedCrop===i?'active':'')+'" onclick="selectCrop('+i+')"><img src="'+cropPhotos[c.name]+'" alt=""><span>'+c.name+' · '+c.time+'秒</span></button>';});document.getElementById('seedbar').innerHTML=h;
+}
+window.selectCrop=function(i){state.selectedCrop=i;save();renderSeeds();}
+function renderPlots(){
+ var now=Date.now(),h='';state.plots.forEach(function(p,i){
+  if(!p){h+='<button class="plot" onclick="plotClick('+i+')" style="background:linear-gradient(135deg,#9e7448,#724e31)"><div class="plotText"><b>空土地</b><small>点击种下 '+crops[state.selectedCrop].name+'</small></div></button>';return;}
+  var c=crops[p.crop],left=Math.max(0,Math.ceil((p.ready-now)/1000)),ready=left<=0;
+  h+='<button class="plot" onclick="plotClick('+i+')"><img src="'+cropPhotos[c.name]+'"><div class="plotText"><b>'+c.name+(ready?' · 已成熟':'')+'</b><small>'+(ready?'点击收获':left+' 秒后成熟')+'</small></div></button>';
+ });document.getElementById('plots').innerHTML=h;
+}
+window.plotClick=function(i){
+ var p=state.plots[i],now=Date.now();
+ if(!p){var c=crops[state.selectedCrop];state.plots[i]={crop:state.selectedCrop,ready:now+c.time*1000};toast('种下 '+c.name);collect(c.name);save();renderPlots();return;}
+ if(now>=p.ready){var c2=crops[p.crop];state.plots[i]=null;addXP(c2.xp);state.prosper+=2;collect(c2.name+'收获');toast('收获 '+c2.name);save();renderPlots();}else toast('还需要一点时间');
+}
+window.harvestAll=function(){var now=Date.now(),n=0;state.plots.forEach(function(p,i){if(p&&now>=p.ready){addXP(crops[p.crop].xp);collect(crops[p.crop].name+'收获');state.plots[i]=null;n++;}});save();renderPlots();toast(n?'收获 '+n+' 块农田':'暂无成熟作物');}
+function renderPasture(){var arr=[['散养鸡舍','鸡蛋','https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80'],['奶牛牧场','鲜奶','https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80'],['蜂箱','蜂蜜','https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=700&q=80'],['葡萄园','葡萄','https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=700&q=80']];document.getElementById('pasture').innerHTML=arr.map(function(x,i){return '<div class="shop"><img src="'+x[2]+'"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' × '+fmt()+'</small><button class="btn" style="margin-top:8px" onclick="pastureAction('+i+')">采集</button></div></div>';}).join('');}
+window.pastureAction=function(i){var names=['鸡蛋','鲜奶','蜂蜜','葡萄'];collect(names[i]);addXP(10+i*3);toast('获得无限 '+names[i]);}
+function renderRecipes(){document.getElementById('recipes').innerHTML=recipes.map(function(r,i){return '<div class="recipe"><img src="'+r.photo+'"><div class="inside"><b>'+r.name+'</b><small>'+r.desc+'</small><button class="btn" style="margin-top:8px" onclick="cook('+i+')">烹饪</button></div></div>';}).join('');}
+window.cook=function(i){var r=recipes[i];collect(r.name);addXP(r.xp);state.prosper+=2;save();toast(r.name+' 完成');}
+window.cookRandom=function(){window.cook(Math.floor(Math.random()*recipes.length));}
+function newOrders(){
+ var h='',hf='';for(var i=0;i<3;i++){var c=crops[(state.level+i*2)%crops.length];h+='<div class="order"><b>田园委托 · '+c.name+'</b><small>提交 '+c.name+' × '+(3+i)+' · 奖励资源仍保持无限</small><button class="btn" onclick="finishOrder(this,\''+c.name+'\')">完成委托</button></div>';}
+ for(var j=0;j<3;j++){var r=recipes[(state.level+j)%recipes.length];hf+='<div class="order"><b>餐桌订单 · '+r.name+'</b><small>无限食材即时制作 · 获得经验与繁荣度</small><button class="btn" onclick="finishFoodOrder(this,\''+r.name+'\')">交付</button></div>';}
+ document.getElementById('dailyOrders').innerHTML=h;document.getElementById('foodOrders').innerHTML=hf;
+}
+window.finishOrder=function(btn,name){btn.disabled=true;btn.textContent='已完成';state.ordersDone++;state.prosper+=8;collect('订单：'+name);addXP(20);save();}
+window.finishFoodOrder=function(btn,name){btn.disabled=true;btn.textContent='已交付';state.ordersDone++;state.prosper+=10;collect('料理订单：'+name);addXP(28);save();}
+function renderTasks(){var arr=[['完成 3 次收获',Math.min(state.ordersDone,3),3],['发现 5 个图鉴',Math.min(Object.keys(state.collection).length,5),5],['庄园达到 5 级',Math.min(state.level,5),5],['完成 10 个订单',Math.min(state.ordersDone,10),10]];document.getElementById('tasks').innerHTML=arr.map(function(x){var done=x[1]>=x[2];return '<div class="ach"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' / '+x[2]+'</small><div class="progress" style="margin-top:8px"><i style="width:'+Math.min(100,x[1]/x[2]*100)+'%"></i></div>'+(done?'<small style="color:#42734f;margin-top:6px">已完成</small>':'')+'</div></div>';}).join('');}
+function renderMerge(){
+ var h='';state.merge.forEach(function(v,i){h+='<button class="cell '+(state.mergeSel===i?'sel':'')+'" onclick="mergeClick('+i+')">'+(v?mergeIcons[Math.min(mergeIcons.length-1,v-1)]:'')+(v?'<small>Lv.'+v+'</small>':'')+'</button>';});document.getElementById('mergeGrid').innerHTML=h;renderStats();
+}
+window.spawnMerge=function(){var empt=[];state.merge.forEach(function(v,i){if(!v)empt.push(i)});if(!empt.length){toast('合成盘已满');return;}for(var n=0;n<Math.min(5,empt.length);n++){var ix=empt.splice(Math.floor(Math.random()*empt.length),1)[0];state.merge[ix]=1;}collect('合成素材 Lv.1');save();renderMerge();}
+window.mergeClick=function(i){var v=state.merge[i];if(!v){state.merge[i]=1;collect('合成素材 Lv.1');save();renderMerge();return;}if(state.mergeSel===null){state.mergeSel=i;renderMerge();return;}var a=state.mergeSel;if(a===i){state.mergeSel=null;renderMerge();return;}if(state.merge[a]===state.merge[i]){var nv=state.merge[i]+1;state.merge[a]=null;state.merge[i]=nv;state.mergeSel=null;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,nv);state.prosper+=nv;collect('合成收藏 Lv.'+nv);addXP(8*nv);save();renderMerge();toast('合成 Lv.'+nv);}else{state.mergeSel=i;renderMerge();}}
+window.autoMerge=function(){var changed=0;for(var lv=1;lv<10;lv++){var ids=[];state.merge.forEach(function(v,i){if(v===lv)ids.push(i)});while(ids.length>=2){var a=ids.pop(),b=ids.pop();state.merge[a]=null;state.merge[b]=lv+1;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,lv+1);collect('合成收藏 Lv.'+(lv+1));changed++;}}state.mergeSel=null;state.prosper+=changed*2;save();renderMerge();toast(changed?'自动合成 '+changed+' 次':'没有可合成物品');}
+function renderMap(){document.getElementById('map').innerHTML=places.map(function(p,i){return '<div class="place" onclick="explore('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small></div></div>';}).join('');}
+window.explore=function(i){var p=places[i],finds=[['鲤鱼','河蚌','芦苇'],['松茸','野花','木材'],['明前茶','山泉水','竹叶'],['旧邮票','手作杯','老照片'],['水蜜桃','果酱','葡萄篮'],['山顶日落','云海照片','观星卡']][i];var f=finds[Math.floor(Math.random()*finds.length)];state.discoveries[f]=1;collect(f);addXP(18+i*2);state.prosper+=3;save();renderDiscoveries();toast(p.name+' 发现：'+f);}
+function renderDiscoveries(){var ks=Object.keys(state.discoveries);document.getElementById('discoveries').innerHTML=(ks.length?ks:['尚未发现']).slice(-8).map(function(k){return '<div class="ach"><div class="inside"><b>'+k+'</b><small>'+(k==='尚未发现'?'去地图探索看看':'已收入旅行图鉴')+'</small></div></div>';}).join('');}
+function renderRooms(){document.getElementById('rooms').innerHTML=rooms.map(function(r,i){var lv=state.buildings[r.name]||1;return '<div class="room" onclick="upgradeRoom('+i+')" style="background-image:url(\''+r.photo+'\')"><span>'+r.name+' · Lv.'+lv+'</span></div>';}).join('');}
+window.upgradeRoom=function(i){var n=rooms[i].name;state.buildings[n]=(state.buildings[n]||1)+1;state.prosper+=12;addXP(20);save();renderRooms();toast(n+' 升到 Lv.'+state.buildings[n]);}
+window.upgradeAllBuildings=function(){rooms.forEach(function(r){state.buildings[r.name]=(state.buildings[r.name]||1)+1});state.prosper+=rooms.length*10;addXP(60);save();renderRooms();toast('全部建筑提升 1 级');}
+function renderFurniture(){document.getElementById('furniture').innerHTML=furniture.map(function(f,i){var own=!!state.furniture[f.name];return '<div class="shop"><img src="'+f.photo+'"><div class="inside"><b>'+f.name+'</b><small>'+(own?'已摆放在家园':'无限资源免费领取')+'</small><button class="btn" style="margin-top:8px" onclick="buyFurniture('+i+')">'+(own?'已拥有':'领取')+'</button></div></div>';}).join('');}
+window.buyFurniture=function(i){var f=furniture[i];state.furniture[f.name]=1;collect(f.name);state.prosper+=6;save();renderFurniture();toast(f.name+' 已加入家园');}
+function renderFriends(){document.getElementById('friends').innerHTML=friends.map(function(f,i){var v=state.friends[f.name]||0;return '<div class="friend"><img src="'+f.photo+'"><div class="inside"><b>'+f.name+' · '+f.role+'</b><small>好感度 '+v+'</small><div class="progress" style="margin-top:7px"><i style="width:'+Math.min(100,v)+'%"></i></div><div class="row" style="margin-top:8px"><button class="btn" onclick="talk('+i+')">聊天</button><button class="btn alt" onclick="gift('+i+')">送礼</button></div></div></div>';}).join('');}
+window.talk=function(i){var f=friends[i];state.friends[f.name]=(state.friends[f.name]||0)+5;document.getElementById('friendLog').textContent=f.name+' 和你聊了聊最近村里的变化，好感度 +5。';collect('关系：'+f.name);save();renderFriends();}
+window.gift=function(i){var f=friends[i];state.friends[f.name]=(state.friends[f.name]||0)+12;document.getElementById('friendLog').textContent='你送给 '+f.name+' 一份无限资源礼物，好感度 +12。';collect('礼物：'+f.name);save();renderFriends();}
+window.nextStory=function(){state.story=(state.story+1)%story.length;state.prosper+=10;addXP(25);collect('主线第'+(state.story+1)+'章');save();renderStats();toast('主线推进');}
+window.claimDaily=function(){var d=new Date().toDateString();if(state.daily===d){toast('今天已经领取');return;}state.daily=d;state.prosper+=20;addXP(40);collect('今日礼物 '+d);save();toast('今日礼物已领取，资源保持无限');}
+window.unlockAll=function(){state.level=Math.max(state.level,99);state.prosper=Math.max(state.prosper,9999);rooms.forEach(function(r){state.buildings[r.name]=10});furniture.forEach(function(f){state.furniture[f.name]=1});friends.forEach(function(f){state.friends[f.name]=100});story.forEach(function(_,i){state.collection['主线第'+(i+1)+'章']=1});crops.forEach(function(c){state.collection[c.name]=1});recipes.forEach(function(r){state.collection[r.name]=1});state.mergeMax=10;save();renderAll();toast('全部内容已解锁');}
+window.exportSave=function(){var code=btoa(unescape(encodeURIComponent(JSON.stringify(state))));navigator.clipboard&&navigator.clipboard.writeText(code);openModal('存档码','已生成存档码并尝试复制到剪贴板：<br><br><textarea style="width:100%;min-height:120px">'+code+'</textarea>');}
+window.openAbout=function(){openModal('iPhone 使用说明','这是在线网页版本，Safari 直接打开即可完整运行。想像 App 一样使用：点击 Safari 分享按钮 → “添加到主屏幕”。存档保存在当前浏览器的本地存储中。<br><br>本项目为原创开源网页游戏，通用经营玩法自行实现，不包含第三方商业游戏代码或商业素材。');}
+function openModal(t,b){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modal').classList.add('show');}
+window.closeModal=function(){document.getElementById('modal').classList.remove('show');}
+window.openModal=openModal;
+function sceneFor(p){var data={
+home:['scene-home','今日 · 小院','把日子种进风里','种田、做饭、装修、合成、探索。资源无限，但庄园仍需要一点点成长。'],
+farm:['scene-farm','四季 · 农田','今天适合下地','真实田园画面与成长循环结合，点击土地即可播种和收获。'],
+kitchen:['scene-kitchen','烟火 · 厨房','晚饭从一锅热气开始','无限食材，不限次数烹饪。完成菜谱图鉴与餐桌订单。'],
+merge:['scene-merge','手作 · 工坊','旧东西也能长出新故事','二合合成、发现新等级，把普通材料一路合成为稀有收藏。'],
+explore:['scene-explore','山野 · 河湾','去村子外面走走','钓鱼、采集、果园和观景台，每次探索都有随机发现。'],
+house:['scene-house','家园 · 建设','把屋子住成喜欢的样子','升级房屋、领取家具、布置属于自己的乡间生活。'],
+friends:['scene-friends','来客 · 村民','有人来，院子才热闹','聊天、送礼、提升好感，解锁每个村民的小故事。']
+};return data[p];}
+function switchPage(p){document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active')});document.getElementById('page-'+p).classList.add('active');document.querySelectorAll('.nav').forEach(function(x){x.classList.toggle('active',x.dataset.page===p)});var d=sceneFor(p),s=document.getElementById('heroScene');s.className='scene '+d[0];document.getElementById('sceneTag').textContent=d[1];document.getElementById('sceneTitle').textContent=d[2];document.getElementById('sceneDesc').textContent=d[3];window.scrollTo({top:0,behavior:'smooth'});}
+document.querySelectorAll('.nav').forEach(function(n){n.addEventListener('click',function(){switchPage(n.dataset.page)})});
+function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();}
+renderAll();setInterval(function(){renderPlots();renderTasks()},1000);
+})();
+</script>
+</body></html>
