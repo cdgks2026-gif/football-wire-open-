@@ -1,0 +1,14 @@
+{
+  "name":"向往田园 5.0",
+  "short_name":"向往田园",
+  "description":"原创田园经营网页游戏：种植、烹饪、合成、探索、家园与村民互动。",
+  "start_url":"/tianyuan/",
+  "scope":"/tianyuan/",
+  "display":"standalone",
+  "orientation":"portrait-primary",
+  "background_color":"#e9e5d8",
+  "theme_color":"#173324",
+  "icons":[
+    {"src":"/tianyuan/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
