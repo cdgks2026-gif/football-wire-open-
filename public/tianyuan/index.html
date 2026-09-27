@@ -11,7 +11,7 @@
 <link rel="manifest" href="/tianyuan/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/tianyuan/icon.svg">
 <meta name="mobile-web-app-capable" content="yes">
-<title>向往田园 5.0 · 在线网页 App</title>
+<title>向往田园 5.1 · 沉浸田园版</title>
 <style>
 :root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -69,12 +69,43 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .plotStage{position:absolute;z-index:3;left:8px;top:7px;background:rgba(25,45,31,.72);border:1px solid rgba(255,255,255,.18);padding:3px 6px;border-radius:999px;font-size:8px;color:#fff}.cropProgress{position:absolute;left:8px;right:8px;bottom:34px;z-index:3;height:4px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}.cropProgress i{display:block;height:100%;background:#e7dca6}
 .quickLife{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px 12px}.lifeCard{border:1px solid rgba(255,255,255,.7);background:rgba(250,247,239,.92);border-radius:17px;padding:11px;box-shadow:0 8px 22px rgba(20,39,27,.08)}.lifeCard b{font-size:12px;display:block}.lifeCard small{font-size:9px;color:var(--muted);display:block;margin-top:2px}
 @media(max-width:760px){.installBar{margin:0 8px 8px}.worldWrap{padding:0 8px 9px}.worldMap{height:455px;border-radius:20px;background-position:54% center}.zone{padding:8px 9px;border-radius:13px}.zone b{font-size:10px}.zone small{font-size:8px}.z-farm{left:5%;top:50%}.z-kitchen{left:39%;top:32%}.z-house{left:57%;top:19%}.z-merge{right:4%;top:51%}.z-explore{left:6%;top:21%}.z-friends{right:5%;top:70%}.mapNpc{width:43px;height:43px}.mapNpc:after{top:39px}.mapDock{grid-template-columns:repeat(2,1fr)}.quickLife{grid-template-columns:repeat(2,1fr);padding:0 8px 9px}}
+
+/* 5.1 沉浸式休闲界面：压低报表感与任务感 */
+.top{background:linear-gradient(180deg,rgba(18,35,25,.78),rgba(18,35,25,.35));border-bottom:0;position:fixed;left:0;right:0;top:0}
+.topin{max-width:1180px;margin:auto;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+.brand{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:16px;text-shadow:0 2px 12px rgba(0,0,0,.22)}
+.brand small{font-family:system-ui,-apple-system,sans-serif;letter-spacing:2px;font-size:8px;opacity:.72}
+.pill{background:rgba(20,38,27,.30);border:1px solid rgba(255,255,255,.14);font-size:11px;padding:6px 8px;box-shadow:none}
+.hero{padding:0}.scene{height:365px;border-radius:0;box-shadow:none}.sceneCopy{bottom:26px}.sceneCopy h1{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-weight:800;font-size:34px;letter-spacing:1px}
+.sceneTag{background:rgba(19,38,27,.25);border-color:rgba(255,255,255,.16)}
+.installBar{display:none!important}
+.worldWrap{margin-top:-64px;position:relative;z-index:4}.worldMap{border-radius:28px;min-height:560px;border:1px solid rgba(255,255,255,.68);box-shadow:0 24px 70px rgba(21,40,29,.18)}
+.worldTitle{top:20px}.worldTitle b{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:24px}
+.worldActions button{width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:grid;place-items:center;background:rgba(19,35,25,.35)}
+.zone{background:rgba(22,42,29,.36);border:1px solid rgba(255,255,255,.24);box-shadow:0 8px 24px rgba(0,0,0,.12);padding:8px 10px;border-radius:12px}
+.zone small{display:none}.zone b{font-family:"Songti SC","STSong",serif;font-size:12px;letter-spacing:.5px}
+.zone:hover{background:rgba(22,48,32,.54)}
+.mapDock{display:none}.quickLife{display:none}
+.homeDiary{padding:10px 12px 15px}.diaryPaper{max-width:760px;margin:auto;padding:17px 18px 19px;border-radius:20px;background:rgba(250,247,239,.86);border:1px solid rgba(255,255,255,.75);box-shadow:0 12px 34px rgba(32,51,37,.09);backdrop-filter:blur(10px)}
+.diaryPaper .date{font-size:9px;letter-spacing:2px;color:#8f8d83;text-transform:uppercase}.diaryPaper p{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:15px;line-height:1.85;margin:7px 0 0;color:#4f554f}
+.diaryActions{display:flex;gap:7px;margin-top:12px}.diaryActions button{border:0;background:rgba(49,92,67,.08);padding:7px 10px;border-radius:999px;color:#47604f;font-size:10px}
+.gameStateSink{display:none!important}
+.card{background:rgba(250,247,239,.88);box-shadow:0 10px 35px rgba(29,48,34,.08);border-color:rgba(255,255,255,.75)}
+.card h2{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:20px}
+.sub{color:#777b73}.btn{box-shadow:none}
+.bottom{background:rgba(248,246,239,.88);border-top:1px solid rgba(70,81,72,.08);box-shadow:0 -4px 22px rgba(23,38,28,.06)}
+.nav{filter:saturate(.7);opacity:.82}.nav.active{opacity:1}.nav i{font-size:19px}
+.ambient{position:absolute;pointer-events:none;z-index:1;opacity:.78}.leafA,.leafB,.leafC{width:8px;height:18px;background:#d8dd8e;border-radius:100% 0 100% 0;animation:drift 8s linear infinite}.leafA{left:25%;top:15%}.leafB{left:72%;top:28%;animation-delay:-3s;animation-duration:10s}.leafC{left:48%;top:10%;animation-delay:-6s;animation-duration:12s}
+@keyframes drift{0%{transform:translate(0,-15px) rotate(0deg);opacity:0}15%{opacity:.75}100%{transform:translate(90px,390px) rotate(420deg);opacity:0}}
+.pondGlow{position:absolute;left:6%;bottom:14%;width:130px;height:34px;border-radius:50%;background:rgba(184,218,212,.18);filter:blur(3px);animation:pond 4s ease-in-out infinite alternate;z-index:1}
+@keyframes pond{from{transform:scaleX(.92);opacity:.48}to{transform:scaleX(1.08);opacity:.78}}
+@media(max-width:760px){.topin{padding-left:9px;padding-right:9px}.brand small{display:none}.pill{font-size:10px}.scene{height:310px}.sceneCopy{bottom:58px}.sceneCopy h1{font-size:26px}.sceneCopy p{display:none}.worldWrap{margin-top:-48px}.worldMap{height:520px;min-height:520px;border-radius:22px}.worldTitle b{font-size:20px}.homeDiary{padding:7px 8px 10px}.diaryPaper{padding:14px 15px}.diaryPaper p{font-size:14px}.zone b{font-size:11px}.bottom{padding-bottom:calc(5px + env(safe-area-inset-bottom))}.nav{font-size:0}.nav i{font-size:21px;margin:0}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="top"><div class="topin">
-<div class="brand">向往田园<small>5.0 · WEB APP</small></div>
+<div class="brand">向往田园<small>田园日常</small></div>
 <div class="pill">🪙 <span id="coin">9,999,999,999,999</span></div>
 <div class="pill">💎 <span id="gem">9,999,999,999,999</span></div>
 <div class="pill">⚡ <span id="energy">9,999,999,999,999</span></div>
@@ -97,7 +128,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 <div class="worldWrap">
   <div class="worldMap" id="worldMap">
     <div class="worldTitle"><b>云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small></div>
-    <div class="worldActions"><button onclick="claimDaily()">今日礼物</button><button onclick="openAbout()">安装到手机</button></div>
+    <div class="worldActions"><button aria-label="更多" onclick="openCozyMenu()">···</button></div>
     <button class="zone z-explore" onclick="goPage('explore')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
     <button class="zone z-farm" onclick="goPage('farm')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
     <button class="zone z-kitchen" onclick="goPage('kitchen')"><b>乡间厨房</b><small>烹饪 · 餐桌订单</small></button>
@@ -107,41 +138,26 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
     <div class="mapNpc npc1" data-name="林夏" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=76"></div>
     <div class="mapNpc npc2" data-name="阿禾" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=76"></div>
     <div class="mapNpc npc3" data-name="小满" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=76"></div>
-    <div class="mapDock">
-      <div class="mapMetric"><small>庄园等级</small><b id="mapLevel">Lv.1</b></div>
-      <div class="mapMetric"><small>繁荣度</small><b id="mapProsper">0</b></div>
-      <div class="mapMetric"><small>今日天气</small><b id="mapWeather">晴 · 24℃</b></div>
-      <div class="mapMetric"><small>季节</small><b id="mapSeason">春季</b></div>
+    <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div><div class="pondGlow"></div>
+    <div class="gameStateSink">
+      <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
     </div>
   </div>
 </div>
-<div class="quickLife">
-  <div class="lifeCard"><b>🌾 农田</b><small>四阶段真实生长表现</small></div>
-  <div class="lifeCard"><b>🍳 厨房</b><small>无限食材自由烹饪</small></div>
-  <div class="lifeCard"><b>🧺 工坊</b><small>48 格二合收藏</small></div>
-  <div class="lifeCard"><b>🛋️ 家园</b><small>房屋与家具持续升级</small></div>
+<div class="homeDiary">
+  <div class="diaryPaper">
+    <div class="date" id="diaryDate">TODAY IN YUNXI</div>
+    <p id="story">第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。</p>
+    <div class="diaryActions">
+      <button onclick="nextStory()">翻一页</button>
+      <button onclick="claimDaily()">收下今天的小礼物</button>
+    </div>
+  </div>
 </div>
-<div class="grid">
-<div class="card">
-<div class="row between"><div><h2>庄园概况</h2><div class="sub">无限资源模式不会消耗金币、钻石、体力与基础物资。</div></div><button class="btn" onclick="claimDaily()">领取今日礼物</button></div>
-<div class="statgrid" style="margin-top:12px">
-<div class="stat"><small>庄园等级</small><b id="level">1</b></div>
-<div class="stat"><small>繁荣度</small><b id="prosper">0</b></div>
-<div class="stat"><small>累计订单</small><b id="ordersDone">0</b></div>
-<div class="stat"><small>收藏图鉴</small><b id="collectionCount">0</b></div>
-</div>
-<div class="divider"></div>
-<h3>升级进度</h3><div class="row between"><span class="sub" id="xpText">0 / 100 EXP</span><span class="sub">下一等级</span></div><div class="progress"><i id="xpBar" style="width:0%"></i></div>
-<div class="divider"></div>
-<div class="row"><button class="btn gold" onclick="unlockAll()">🔓 一键全部解锁</button><button class="btn alt" onclick="exportSave()">导出存档</button><button class="btn alt" onclick="openAbout()">iPhone 使用说明</button></div>
-</div>
-<div class="card">
-<h2>今日委托</h2><div class="orders" id="dailyOrders"></div>
-</div>
-</div>
-<div class="grid equal">
-<div class="card"><h2>今日行程</h2><div class="achievementGrid" id="tasks"></div></div>
-<div class="card"><h2>庄园纪事</h2><div class="sub" id="story">第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。</div><div class="divider"></div><button class="btn" onclick="nextStory()">继续主线</button></div>
+<div class="gameStateSink">
+  <span id="level">1</span><span id="prosper">0</span><span id="ordersDone">0</span><span id="collectionCount">0</span>
+  <span id="xpText">0 / 100 EXP</span><div class="progress"><i id="xpBar"></i></div>
+  <div id="dailyOrders"></div><div id="tasks"></div>
 </div>
 </section>
 
@@ -287,7 +303,7 @@ function fresh(){
 var state=fresh();
 try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(state));}catch(e){}}
-function fmt(){return '9,999,999,999,999';}
+function fmt(){return '∞';}
 function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){e.classList.remove('show')},1600)}
 function addXP(n){state.xp+=n;while(state.xp>=state.level*100){state.xp-=state.level*100;state.level++;state.prosper+=25;toast('庄园升到 '+state.level+' 级');}save();renderStats();}
 function collect(k){if(!state.collection[k]){state.collection[k]=1;state.prosper+=3;toast('新图鉴：'+k);}save();}
@@ -360,6 +376,16 @@ window.nextStory=function(){state.story=(state.story+1)%story.length;state.prosp
 window.claimDaily=function(){var d=new Date().toDateString();if(state.daily===d){toast('今天已经领取');return;}state.daily=d;state.prosper+=20;addXP(40);collect('今日礼物 '+d);save();toast('今日礼物已领取，资源保持无限');}
 window.unlockAll=function(){state.level=Math.max(state.level,99);state.prosper=Math.max(state.prosper,9999);rooms.forEach(function(r){state.buildings[r.name]=10});furniture.forEach(function(f){state.furniture[f.name]=1});friends.forEach(function(f){state.friends[f.name]=100});story.forEach(function(_,i){state.collection['主线第'+(i+1)+'章']=1});crops.forEach(function(c){state.collection[c.name]=1});recipes.forEach(function(r){state.collection[r.name]=1});state.mergeMax=10;save();renderAll();toast('全部内容已解锁');}
 window.exportSave=function(){var code=btoa(unescape(encodeURIComponent(JSON.stringify(state))));navigator.clipboard&&navigator.clipboard.writeText(code);openModal('存档码','已生成存档码并尝试复制到剪贴板：<br><br><textarea style="width:100%;min-height:120px">'+code+'</textarea>');}
+window.openCozyMenu=function(){
+ openModal('小院里的小抽屉',
+ '<div style="display:grid;gap:8px">'+
+ '<button class="btn" onclick="claimDaily();closeModal()">收下今日小礼物</button>'+
+ '<button class="btn alt" onclick="installWebApp()">放到手机桌面</button>'+
+ '<button class="btn alt" onclick="exportSave()">备份这段生活</button>'+
+ '<button class="btn alt" onclick="unlockAll();closeModal()">悄悄打开所有地方</button>'+
+ '<div style="margin-top:7px;color:#8a8b84;font-size:10px">金币、钻石、体力和基础材料实际均为 9,999,999,999,999，并保持无限。</div>'+
+ '</div>');
+}
 window.openAbout=function(){openModal('iPhone 使用说明','这是在线网页版本，Safari 直接打开即可完整运行。想像 App 一样使用：点击 Safari 分享按钮 → “添加到主屏幕”。存档保存在当前浏览器的本地存储中。<br><br>本项目为原创开源网页游戏，通用经营玩法自行实现，不包含第三方商业游戏代码或商业素材。');}
 function openModal(t,b){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modal').classList.add('show');}
 window.closeModal=function(){document.getElementById('modal').classList.remove('show');}
@@ -394,6 +420,7 @@ function applyWorldMood(){
  var s=document.getElementById('mapSeason');if(s)s.textContent=season;
  var wc=document.getElementById('worldClock');if(wc)wc.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'})+' · '+(part==='night'?'夜色':part==='dawn'?'清晨':part==='evening'?'傍晚':'白昼');
  var mw=document.getElementById('mapWeather');if(mw)mw.textContent='晴 · 24℃';
+ var dd=document.getElementById('diaryDate');if(dd)dd.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
 }
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
 setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
