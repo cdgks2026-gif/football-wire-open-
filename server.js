@@ -12,6 +12,7 @@ import { initStore, storeStatus, persistStories, getStory as getStoredStory, sea
 import { assignStoryIds, applyEditorial, ensureEditor, editStory } from "./src/editor.js";
 import { notifyNewImportant } from "./src/notify.js";
 import { registerFeatureRoutes } from "./src/features.js";
+import { initTianyuanAccounts, registerTianyuanRoutes } from "./src/tianyuan_accounts.js";
 import { renderPluginRss, isPluginSource } from "./src/source_plugins.js";
 import { subscribeWebSubSources, webSubChallenge } from "./src/websub.js";
 
@@ -19,6 +20,7 @@ const app=express();
 app.use(express.json({limit:"1mb"}));
 app.use(express.urlencoded({extended:false}));
 app.use((_req,res,next)=>{res.set({"X-Content-Type-Options":"nosniff","X-Frame-Options":"DENY","Referrer-Policy":"strict-origin-when-cross-origin","Permissions-Policy":"camera=(), microphone=(), geolocation=()"});next()});
+registerTianyuanRoutes(app);
 const PORT=Number(process.env.PORT||8088);
 const PUBLIC_URL=(process.env.PUBLIC_URL||"https://football-wire-production.up.railway.app").replace(/\/$/,"");
 const sseClients=new Set();
@@ -933,7 +935,8 @@ function publishProcessed(processed,extraMetrics={}){
 async function setup(){
   ensureEditor(state);
   const db=await initStore();
-  state.metrics={...(state.metrics||{}),store:db};
+  const tianyuanAccounts=await initTianyuanAccounts();
+  state.metrics={...(state.metrics||{}),store:db,tianyuanAccounts};
   if(db.enabled){
     try{
       const saved=await loadOverrides();
