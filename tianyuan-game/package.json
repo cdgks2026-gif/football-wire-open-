@@ -1,0 +1,13 @@
+{
+  "name": "tianyuan-game",
+  "version": "4.1.0",
+  "private": false,
+  "description": "向往田园 - 原创田园经营网页游戏在线开源版",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
