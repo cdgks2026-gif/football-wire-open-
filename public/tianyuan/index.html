@@ -11,7 +11,7 @@
 <link rel="manifest" href="/tianyuan/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/tianyuan/icon.svg">
 <meta name="mobile-web-app-capable" content="yes">
-<title>向往田园 5.1 · 沉浸田园版</title>
+<title>向往田园 5.2 · 沉浸互动版</title>
 <style>
 :root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -100,6 +100,34 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .pondGlow{position:absolute;left:6%;bottom:14%;width:130px;height:34px;border-radius:50%;background:rgba(184,218,212,.18);filter:blur(3px);animation:pond 4s ease-in-out infinite alternate;z-index:1}
 @keyframes pond{from{transform:scaleX(.92);opacity:.48}to{transform:scaleX(1.08);opacity:.78}}
 @media(max-width:760px){.topin{padding-left:9px;padding-right:9px}.brand small{display:none}.pill{font-size:10px}.scene{height:310px}.sceneCopy{bottom:58px}.sceneCopy h1{font-size:26px}.sceneCopy p{display:none}.worldWrap{margin-top:-48px}.worldMap{height:520px;min-height:520px;border-radius:22px}.worldTitle b{font-size:20px}.homeDiary{padding:7px 8px 10px}.diaryPaper{padding:14px 15px}.diaryPaper p{font-size:14px}.zone b{font-size:11px}.bottom{padding-bottom:calc(5px + env(safe-area-inset-bottom))}.nav{font-size:0}.nav i{font-size:21px;margin:0}}
+
+/* 5.2 互动与真实感 */
+.playerActor{position:absolute;left:50%;top:58%;width:48px;height:58px;z-index:8;transition:left .85s cubic-bezier(.2,.8,.2,1),top .85s cubic-bezier(.2,.8,.2,1);pointer-events:none;filter:drop-shadow(0 8px 7px rgba(0,0,0,.28))}
+.playerActor .head{position:absolute;left:14px;top:1px;width:20px;height:20px;border-radius:50%;background:#c99b78;border:2px solid rgba(255,255,255,.85)}
+.playerActor .body{position:absolute;left:9px;top:18px;width:30px;height:31px;border-radius:13px 13px 9px 9px;background:linear-gradient(#6d8368,#445e4d);border:2px solid rgba(255,255,255,.74)}
+.playerActor .leg{position:absolute;top:46px;width:8px;height:12px;border-radius:5px;background:#3d423d}.playerActor .l{left:13px}.playerActor .r{right:13px}
+.playerActor.walking{animation:actorBob .22s ease-in-out infinite alternate}
+@keyframes actorBob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.actionBubble{position:absolute;z-index:10;min-width:150px;max-width:210px;background:rgba(247,244,235,.96);border:1px solid rgba(255,255,255,.85);box-shadow:0 14px 36px rgba(0,0,0,.18);border-radius:18px;padding:11px;display:none;color:#334039;backdrop-filter:blur(12px)}
+.actionBubble.show{display:block;animation:popIn .18s ease-out}.actionBubble b{font-family:"Songti SC","STSong",serif;font-size:14px}.actionBubble small{display:block;color:#7c817a;font-size:9px;line-height:1.45;margin-top:3px}.actionBubble .row{margin-top:8px}.actionBubble button{border:0;border-radius:999px;padding:7px 9px;background:#315c43;color:#fff;font-size:9px}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.worldRain{position:absolute;inset:0;z-index:2;pointer-events:none;display:none;background-image:repeating-linear-gradient(105deg,transparent 0 12px,rgba(224,239,246,.35) 13px,transparent 14px 26px);background-size:36px 90px;animation:rainMove .5s linear infinite}
+.worldMap.weather-rain .worldRain{display:block}.worldMap.weather-rain{filter:saturate(.78) brightness(.88)}.worldMap.weather-cloud{filter:saturate(.84) brightness(.96)}.worldMap.weather-wind .leafA,.worldMap.weather-wind .leafB,.worldMap.weather-wind .leafC{animation-duration:3.2s}
+@keyframes rainMove{from{background-position:0 -90px}to{background-position:-18px 0}}
+.weatherBadge{position:absolute;right:16px;bottom:18px;z-index:7;background:rgba(15,32,22,.52);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:7px 10px;font-size:9px;backdrop-filter:blur(10px)}
+.fieldStrip{position:absolute;left:8%;bottom:20%;width:34%;height:15%;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;z-index:2;transform:skewY(-7deg);pointer-events:none}
+.fieldTile{border-radius:4px;background:linear-gradient(135deg,#7a5537,#926a45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.fieldTile.growing{background:linear-gradient(135deg,#567146,#75965d)}.fieldTile.ripe{background:linear-gradient(135deg,#9c8c42,#d0bc62)}
+.interactiveNote{font-size:10px;color:#7e827a;margin-top:6px}
+.fishingScene{position:relative;height:255px;border-radius:20px;overflow:hidden;background:url('https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1100&q=82') center/cover}
+.fishingScene:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,27,37,.04),rgba(12,27,37,.48))}
+.bobber{position:absolute;left:50%;top:58%;z-index:3;width:12px;height:18px;border-radius:8px 8px 4px 4px;background:linear-gradient(#f7e9d7 0 42%,#b74136 43%);box-shadow:0 3px 8px rgba(0,0,0,.3);transform:translate(-50%,-50%);transition:.18s}
+.bobber.bite{animation:bite .25s ease-in-out infinite alternate}@keyframes bite{from{transform:translate(-50%,-50%) translateY(-2px)}to{transform:translate(-50%,-50%) translateY(7px)}}
+.fishHud{position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:rgba(12,29,21,.74);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px;color:#fff;backdrop-filter:blur(8px)}
+.fishMeter{height:10px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;position:relative;margin:8px 0}.fishGood{position:absolute;left:42%;width:18%;top:0;bottom:0;background:rgba(159,225,143,.68)}.fishNeedle{position:absolute;top:-2px;width:4px;height:14px;background:#fff;border-radius:4px;left:0}
+.kitchenStage{height:220px;border-radius:20px;background:url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1100&q=82') center/cover;position:relative;overflow:hidden}.kitchenStage:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.54))}.steam{position:absolute;left:50%;top:50%;z-index:3;width:80px;height:80px;opacity:0;filter:blur(7px);background:radial-gradient(circle,rgba(255,255,255,.7),transparent 60%)}.steam.on{opacity:1;animation:steamUp 1s ease-out infinite}@keyframes steamUp{from{transform:translate(-50%,10px) scale(.8);opacity:.1}to{transform:translate(-50%,-50px) scale(1.35);opacity:.65}}
+.animalMood{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:#eef1e7;color:#657064;font-size:9px}
+@media(max-width:760px){.playerActor{width:42px;height:52px}.playerActor .head{left:12px}.playerActor .body{left:7px}.weatherBadge{right:10px;bottom:12px}.fieldStrip{left:4%;bottom:19%;width:42%}.actionBubble{min-width:135px}.fishingScene,.kitchenStage{height:220px}}
 </style>
 </head>
 <body>
@@ -129,15 +157,20 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
   <div class="worldMap" id="worldMap">
     <div class="worldTitle"><b>云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small></div>
     <div class="worldActions"><button aria-label="更多" onclick="openCozyMenu()">···</button></div>
-    <button class="zone z-explore" onclick="goPage('explore')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
-    <button class="zone z-farm" onclick="goPage('farm')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
-    <button class="zone z-kitchen" onclick="goPage('kitchen')"><b>乡间厨房</b><small>烹饪 · 餐桌订单</small></button>
-    <button class="zone z-house" onclick="goPage('house')"><b>主屋与客舍</b><small>升级 · 布置 · 花房</small></button>
-    <button class="zone z-merge" onclick="goPage('merge')"><b>手作工坊</b><small>二合 · 收藏 · 制作</small></button>
-    <button class="zone z-friends" onclick="goPage('friends')"><b>村民来访</b><small>聊天 · 送礼 · 故事</small></button>
+    <button class="zone z-explore" onclick="walkToZone('explore',18,24,'河湾与山林')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
+    <button class="zone z-farm" onclick="walkToZone('farm',17,58,'四季农田')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
+    <button class="zone z-kitchen" onclick="walkToZone('kitchen',47,40,'乡间厨房')"><b>乡间厨房</b><small>烹饪 · 餐桌订单</small></button>
+    <button class="zone z-house" onclick="walkToZone('house',64,28,'主屋与客舍')"><b>主屋与客舍</b><small>升级 · 布置 · 花房</small></button>
+    <button class="zone z-merge" onclick="walkToZone('merge',80,57,'手作工坊')"><b>手作工坊</b><small>二合 · 收藏 · 制作</small></button>
+    <button class="zone z-friends" onclick="walkToZone('friends',76,73,'村民来访')"><b>村民来访</b><small>聊天 · 送礼 · 故事</small></button>
     <div class="mapNpc npc1" data-name="林夏" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=76"></div>
     <div class="mapNpc npc2" data-name="阿禾" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=76"></div>
     <div class="mapNpc npc3" data-name="小满" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=76"></div>
+    <div class="playerActor" id="playerActor"><span class="head"></span><span class="body"></span><span class="leg l"></span><span class="leg r"></span></div>
+    <div class="actionBubble" id="actionBubble"><b id="actionTitle">去哪儿</b><small id="actionDesc">走近一点再看看。</small><div class="row"><button id="actionGo">进入</button><button onclick="hideActionBubble()" style="background:#e9e5da;color:#566057">先逛逛</button></div></div>
+    <div class="fieldStrip" id="fieldStrip"></div>
+    <div class="worldRain"></div>
+    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div>
     <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div><div class="pondGlow"></div>
     <div class="gameStateSink">
       <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
@@ -187,7 +220,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 
 <section class="page" id="page-explore">
 <div class="grid">
-<div class="card"><h2>村落地图</h2><div class="map" id="map"></div></div>
+<div class="card"><div class="row between"><div><h2>村落地图</h2><div class="sub">不是每次出门都会有收获，但偶尔会碰到意外。</div></div><button class="btn alt" onclick="startFishing()">去河边钓鱼</button></div><div class="map" id="map"></div></div>
 <div class="card"><h2>旅行背包</h2><div class="sub">采集、钓鱼和旅行手信均不会占用有限背包。稀有发现会记录到收藏图鉴。</div><div class="divider"></div><div class="achievementGrid" id="discoveries"></div></div>
 </div>
 </section>
@@ -298,7 +331,7 @@ var story=[
 function fresh(){
  return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),
  merge:Array.from({length:48},function(){return null}),mergeSel:null,mergeCount:0,mergeMax:1,story:0,
- collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0};
+ collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0,animals:{chicken:{fedAt:0,readyAt:0},cow:{fedAt:0,readyAt:0},bee:{fedAt:0,readyAt:0},grape:{fedAt:0,readyAt:0}},weather:null};
 }
 var state=fresh();
 try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
@@ -342,10 +375,32 @@ window.plotClick=function(i){
  if(now>=p.ready){var c2=crops[p.crop];state.plots[i]=null;addXP(c2.xp);state.prosper+=2;collect(c2.name+'收获');toast('收获 '+c2.name);save();renderPlots();}else toast('还需要一点时间');
 }
 window.harvestAll=function(){var now=Date.now(),n=0;state.plots.forEach(function(p,i){if(p&&now>=p.ready){addXP(crops[p.crop].xp);collect(crops[p.crop].name+'收获');state.plots[i]=null;n++;}});save();renderPlots();toast(n?'收获 '+n+' 块农田':'暂无成熟作物');}
-function renderPasture(){var arr=[['散养鸡舍','鸡蛋','https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80'],['奶牛牧场','鲜奶','https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80'],['蜂箱','蜂蜜','https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=700&q=80'],['葡萄园','葡萄','https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=700&q=80']];document.getElementById('pasture').innerHTML=arr.map(function(x,i){return '<div class="shop"><img src="'+x[2]+'"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' × '+fmt()+'</small><button class="btn" style="margin-top:8px" onclick="pastureAction('+i+')">采集</button></div></div>';}).join('');}
-window.pastureAction=function(i){var names=['鸡蛋','鲜奶','蜂蜜','葡萄'];collect(names[i]);addXP(10+i*3);toast('获得无限 '+names[i]);}
+function renderPasture(){
+ var arr=[
+  ['散养鸡舍','鸡蛋','https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80','chicken'],
+  ['奶牛牧场','鲜奶','https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80','cow'],
+  ['蜂箱','蜂蜜','https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=700&q=80','bee'],
+  ['葡萄园','葡萄','https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=700&q=80','grape']
+ ];
+ var now=Date.now();
+ document.getElementById('pasture').innerHTML=arr.map(function(x,i){
+  var a=state.animals[x[3]]||{fedAt:0,readyAt:0},ready=a.readyAt&&now>=a.readyAt,waiting=a.readyAt&&now<a.readyAt;
+  var mood=ready?'可以收取了':waiting?'正在慢慢产出':'今天还没照料';
+  var action=ready?'收取':waiting?Math.max(1,Math.ceil((a.readyAt-now)/1000))+'秒':'喂养';
+  return '<div class="shop"><img src="'+x[2]+'"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' · '+fmt()+'</small><span class="animalMood">'+mood+'</span><button class="btn" style="margin-top:8px" onclick="pastureAction('+i+')">'+action+'</button></div></div>';
+ }).join('');
+}
+window.pastureAction=function(i){
+ var keys=['chicken','cow','bee','grape'],names=['鸡蛋','鲜奶','蜂蜜','葡萄'],key=keys[i],now=Date.now();
+ state.animals[key]=state.animals[key]||{fedAt:0,readyAt:0};
+ var a=state.animals[key];
+ if(a.readyAt&&now>=a.readyAt){a.fedAt=0;a.readyAt=0;collect(names[i]);addXP(12+i*3);toast('收好了 '+names[i]);}
+ else if(a.readyAt&&now<a.readyAt){toast('还在慢慢产出');}
+ else{a.fedAt=now;a.readyAt=now+(12+i*4)*1000;toast(i===0?'撒了一把谷子':i===1?'添好了草料':i===2?'检查了蜂箱':'给葡萄藤浇了水');}
+ save();renderPasture();
+}
 function renderRecipes(){document.getElementById('recipes').innerHTML=recipes.map(function(r,i){return '<div class="recipe"><img src="'+r.photo+'"><div class="inside"><b>'+r.name+'</b><small>'+r.desc+'</small><button class="btn" style="margin-top:8px" onclick="cook('+i+')">烹饪</button></div></div>';}).join('');}
-window.cook=function(i){var r=recipes[i];collect(r.name);addXP(r.xp);state.prosper+=2;save();toast(r.name+' 完成');}
+window.cook=function(i){var r=recipes[i];openCookingScene(i,r);}
 window.cookRandom=function(){window.cook(Math.floor(Math.random()*recipes.length));}
 function newOrders(){
  var h='',hf='';for(var i=0;i<3;i++){var c=crops[(state.level+i*2)%crops.length];h+='<div class="order"><b>田园委托 · '+c.name+'</b><small>提交 '+c.name+' × '+(3+i)+' · 奖励资源仍保持无限</small><button class="btn" onclick="finishOrder(this,\''+c.name+'\')">完成委托</button></div>';}
@@ -362,7 +417,7 @@ window.spawnMerge=function(){var empt=[];state.merge.forEach(function(v,i){if(!v
 window.mergeClick=function(i){var v=state.merge[i];if(!v){state.merge[i]=1;collect('合成素材 Lv.1');save();renderMerge();return;}if(state.mergeSel===null){state.mergeSel=i;renderMerge();return;}var a=state.mergeSel;if(a===i){state.mergeSel=null;renderMerge();return;}if(state.merge[a]===state.merge[i]){var nv=state.merge[i]+1;state.merge[a]=null;state.merge[i]=nv;state.mergeSel=null;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,nv);state.prosper+=nv;collect('合成收藏 Lv.'+nv);addXP(8*nv);save();renderMerge();toast('合成 Lv.'+nv);}else{state.mergeSel=i;renderMerge();}}
 window.autoMerge=function(){var changed=0;for(var lv=1;lv<10;lv++){var ids=[];state.merge.forEach(function(v,i){if(v===lv)ids.push(i)});while(ids.length>=2){var a=ids.pop(),b=ids.pop();state.merge[a]=null;state.merge[b]=lv+1;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,lv+1);collect('合成收藏 Lv.'+(lv+1));changed++;}}state.mergeSel=null;state.prosper+=changed*2;save();renderMerge();toast(changed?'自动合成 '+changed+' 次':'没有可合成物品');}
 function renderMap(){document.getElementById('map').innerHTML=places.map(function(p,i){return '<div class="place" onclick="explore('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small></div></div>';}).join('');}
-window.explore=function(i){var p=places[i],finds=[['鲤鱼','河蚌','芦苇'],['松茸','野花','木材'],['明前茶','山泉水','竹叶'],['旧邮票','手作杯','老照片'],['水蜜桃','果酱','葡萄篮'],['山顶日落','云海照片','观星卡']][i];var f=finds[Math.floor(Math.random()*finds.length)];state.discoveries[f]=1;collect(f);addXP(18+i*2);state.prosper+=3;save();renderDiscoveries();toast(p.name+' 发现：'+f);}
+window.explore=function(i){if(i===0){startFishing();return;}var p=places[i],finds=[['鲤鱼','河蚌','芦苇'],['松茸','野花','木材'],['明前茶','山泉水','竹叶'],['旧邮票','手作杯','老照片'],['水蜜桃','果酱','葡萄篮'],['山顶日落','云海照片','观星卡']][i];var f=finds[Math.floor(Math.random()*finds.length)];state.discoveries[f]=1;collect(f);addXP(18+i*2);state.prosper+=3;save();renderDiscoveries();toast(p.name+' 发现：'+f);}
 function renderDiscoveries(){var ks=Object.keys(state.discoveries);document.getElementById('discoveries').innerHTML=(ks.length?ks:['尚未发现']).slice(-8).map(function(k){return '<div class="ach"><div class="inside"><b>'+k+'</b><small>'+(k==='尚未发现'?'去地图探索看看':'已收入旅行图鉴')+'</small></div></div>';}).join('');}
 function renderRooms(){document.getElementById('rooms').innerHTML=rooms.map(function(r,i){var lv=state.buildings[r.name]||1;return '<div class="room" onclick="upgradeRoom('+i+')" style="background-image:url(\''+r.photo+'\')"><span>'+r.name+' · Lv.'+lv+'</span></div>';}).join('');}
 window.upgradeRoom=function(i){var n=rooms[i].name;state.buildings[n]=(state.buildings[n]||1)+1;state.prosper+=12;addXP(20);save();renderRooms();toast(n+' 升到 Lv.'+state.buildings[n]);}
@@ -376,6 +431,66 @@ window.nextStory=function(){state.story=(state.story+1)%story.length;state.prosp
 window.claimDaily=function(){var d=new Date().toDateString();if(state.daily===d){toast('今天已经领取');return;}state.daily=d;state.prosper+=20;addXP(40);collect('今日礼物 '+d);save();toast('今日礼物已领取，资源保持无限');}
 window.unlockAll=function(){state.level=Math.max(state.level,99);state.prosper=Math.max(state.prosper,9999);rooms.forEach(function(r){state.buildings[r.name]=10});furniture.forEach(function(f){state.furniture[f.name]=1});friends.forEach(function(f){state.friends[f.name]=100});story.forEach(function(_,i){state.collection['主线第'+(i+1)+'章']=1});crops.forEach(function(c){state.collection[c.name]=1});recipes.forEach(function(r){state.collection[r.name]=1});state.mergeMax=10;save();renderAll();toast('全部内容已解锁');}
 window.exportSave=function(){var code=btoa(unescape(encodeURIComponent(JSON.stringify(state))));navigator.clipboard&&navigator.clipboard.writeText(code);openModal('存档码','已生成存档码并尝试复制到剪贴板：<br><br><textarea style="width:100%;min-height:120px">'+code+'</textarea>');}
+
+var pendingPage=null,fishTimer=null,fishNeedleTimer=null,fishPos=0,fishDir=1,fishBiting=false;
+window.walkToZone=function(page,x,y,label){
+ var actor=document.getElementById('playerActor');if(!actor){switchPage(page);return;}
+ hideActionBubble();pendingPage=page;actor.classList.add('walking');actor.style.left=x+'%';actor.style.top=y+'%';
+ setTimeout(function(){actor.classList.remove('walking');showActionBubble(label,page,x,y);},860);
+}
+function showActionBubble(label,page,x,y){
+ var b=document.getElementById('actionBubble');if(!b)return;
+ document.getElementById('actionTitle').textContent=label;document.getElementById('actionDesc').textContent=page==='farm'?'风里有泥土和草叶的味道。':page==='kitchen'?'屋里正有一点热气。':page==='explore'?'河面今天很安静。':'走近以后能听见生活的声音。';
+ b.style.left=Math.min(72,Math.max(5,x))+'%';b.style.top=Math.min(70,Math.max(12,y-16))+'%';b.classList.add('show');
+ document.getElementById('actionGo').onclick=function(){hideActionBubble();switchPage(page);};
+}
+window.hideActionBubble=function(){var b=document.getElementById('actionBubble');if(b)b.classList.remove('show');}
+
+function weatherForToday(){
+ var d=new Date(),key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(),n=(key*9301+49297)%233280,roll=n/233280;
+ return roll<.18?'rain':roll<.42?'cloud':roll<.63?'wind':'sun';
+}
+function renderWorldWeather(){
+ var w=state.weather||weatherForToday();state.weather=w;var wm=document.getElementById('worldMap');if(!wm)return;
+ wm.classList.remove('weather-rain','weather-cloud','weather-wind');if(w!=='sun')wm.classList.add('weather-'+w);
+ var labels={sun:'晴 · 风很轻',rain:'小雨 · 泥土湿润',cloud:'阴天 · 云层很低',wind:'有风 · 树叶沙沙响'};
+ var badge=document.getElementById('weatherBadge');if(badge)badge.textContent=labels[w];
+ var mw=document.getElementById('mapWeather');if(mw)mw.textContent=labels[w];
+}
+function renderFieldStrip(){
+ var el=document.getElementById('fieldStrip');if(!el)return;var now=Date.now(),out='';
+ for(var i=0;i<8;i++){var p=state.plots[i],cls='fieldTile';if(p){cls+=' '+(now>=p.ready?'ripe':'growing');}out+='<span class="'+cls+'"></span>';}el.innerHTML=out;
+}
+
+window.startFishing=function(){
+ closeModal();openModal('河湾钓鱼','<div class="fishingScene"><div class="bobber" id="bobber"></div><div class="fishHud"><b id="fishStatus">把浮漂甩到水面上……</b><div class="fishMeter"><span class="fishGood"></span><span class="fishNeedle" id="fishNeedle"></span></div><button class="btn" id="fishButton" onclick="fishAction()">抛竿</button><div class="interactiveNote" style="color:rgba(255,255,255,.72)">鱼咬钩时再收杆，白色指针落在绿色区域更容易钓到稀有鱼。</div></div></div>');
+ fishBiting=false;fishPos=0;fishDir=1;if(fishTimer)clearTimeout(fishTimer);if(fishNeedleTimer)clearInterval(fishNeedleTimer);
+}
+window.fishAction=function(){
+ var btn=document.getElementById('fishButton'),status=document.getElementById('fishStatus'),bob=document.getElementById('bobber');if(!btn||!status)return;
+ if(btn.dataset.state!=='waiting'&&!fishBiting){
+  btn.dataset.state='waiting';btn.textContent='等鱼咬钩…';btn.disabled=true;status.textContent='水面只有一点风声。';
+  var wait=1800+Math.random()*3200;fishTimer=setTimeout(function(){fishBiting=true;btn.disabled=false;btn.textContent='现在收杆';status.textContent='浮漂猛地往下一沉！';bob&&bob.classList.add('bite');startFishNeedle();},wait);return;
+ }
+ if(fishBiting){
+  fishBiting=false;btn.disabled=true;if(fishNeedleTimer)clearInterval(fishNeedleTimer);bob&&bob.classList.remove('bite');
+  var rare=fishPos>=42&&fishPos<=60,names=rare?['锦鲤','鳟鱼','大鲈鱼']:['鲫鱼','鲤鱼','小河虾'];var name=names[Math.floor(Math.random()*names.length)];
+  state.discoveries[name]=1;collect(name);addXP(rare?34:18);state.prosper+=rare?8:3;save();renderDiscoveries();status.textContent='钓到了 '+name+(rare?'，这一杆很漂亮。':'。');btn.textContent='再来一杆';btn.disabled=false;delete btn.dataset.state;toast('钓到 '+name);
+ }
+}
+function startFishNeedle(){
+ fishPos=0;fishDir=1;fishNeedleTimer=setInterval(function(){fishPos+=fishDir*3;if(fishPos>=98||fishPos<=0)fishDir*=-1;var n=document.getElementById('fishNeedle');if(n)n.style.left=fishPos+'%';},28);
+}
+function openCookingScene(i,r){
+ openModal(r.name,'<div class="kitchenStage"><div class="steam" id="cookSteam"></div><div class="fishHud"><b id="cookStatus">食材已经备好。</b><button class="btn" id="cookButton" onclick="finishCooking('+i+')">开始做饭</button><div class="interactiveNote" style="color:rgba(255,255,255,.72)">切配、加热、起锅需要一点时间，不再瞬间完成。</div></div></div>');
+}
+window.finishCooking=function(i){
+ var r=recipes[i],btn=document.getElementById('cookButton'),st=document.getElementById('cookStatus'),steam=document.getElementById('cookSteam');if(!btn||btn.disabled)return;
+ btn.disabled=true;btn.textContent='烹饪中…';st.textContent='锅里开始有了香味。';steam&&steam.classList.add('on');
+ setTimeout(function(){st.textContent='火候刚好，再等一会。';},900);
+ setTimeout(function(){collect(r.name);addXP(r.xp);state.prosper+=2;save();st.textContent=r.name+' 做好了。';btn.textContent='端上桌';btn.disabled=false;btn.onclick=function(){closeModal();toast(r.name+' 已上桌');};steam&&steam.classList.remove('on');},1900);
+}
+
 window.openCozyMenu=function(){
  openModal('小院里的小抽屉',
  '<div style="display:grid;gap:8px">'+
@@ -419,13 +534,13 @@ function applyWorldMood(){
  var seasons=['冬季','春季','夏季','秋季'],m=new Date().getMonth(),season=seasons[Math.floor(((m+1)%12)/3)];
  var s=document.getElementById('mapSeason');if(s)s.textContent=season;
  var wc=document.getElementById('worldClock');if(wc)wc.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'})+' · '+(part==='night'?'夜色':part==='dawn'?'清晨':part==='evening'?'傍晚':'白昼');
- var mw=document.getElementById('mapWeather');if(mw)mw.textContent='晴 · 24℃';
+ renderWorldWeather();
  var dd=document.getElementById('diaryDate');if(dd)dd.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
 }
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
 setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
-function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();}
-renderAll();applyWorldMood();setInterval(function(){renderPlots();renderTasks()},1000);setInterval(applyWorldMood,60000);
+function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();renderFieldStrip();}
+renderAll();applyWorldMood();renderWorldWeather();setInterval(function(){renderPlots();renderTasks();renderPasture();renderFieldStrip()},1000);setInterval(applyWorldMood,60000);
 })();
 </script>
 </body></html>
