@@ -156,6 +156,8 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .verifiedPlace{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:5px 8px;border-radius:999px;background:#edf3e9;color:#44604d;font-size:9px}
 .quickPlace{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:14px;padding:10px 11px;text-align:left;cursor:pointer}
 .quickPlace b{display:block;font-size:11px;color:#334038}.quickPlace small{display:block;margin-top:3px;font-size:9px;color:#7c817a}
+
+.gaogongTag{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.14);font-size:8px;color:rgba(255,255,255,.86)}
 </style>
 </head>
 <body>
@@ -569,7 +571,38 @@ function renderMerge(){
 window.spawnMerge=function(){var empt=[];state.merge.forEach(function(v,i){if(!v)empt.push(i)});if(!empt.length){toast('合成盘已满');return;}for(var n=0;n<Math.min(5,empt.length);n++){var ix=empt.splice(Math.floor(Math.random()*empt.length),1)[0];state.merge[ix]=1;}collect('合成素材 Lv.1');save();renderMerge();}
 window.mergeClick=function(i){var v=state.merge[i];if(!v){state.merge[i]=1;collect('合成素材 Lv.1');save();renderMerge();return;}if(state.mergeSel===null){state.mergeSel=i;renderMerge();return;}var a=state.mergeSel;if(a===i){state.mergeSel=null;renderMerge();return;}if(state.merge[a]===state.merge[i]){var nv=state.merge[i]+1;state.merge[a]=null;state.merge[i]=nv;state.mergeSel=null;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,nv);state.prosper+=nv;collect('合成收藏 Lv.'+nv);addXP(8*nv);save();renderMerge();toast('合成 Lv.'+nv);}else{state.mergeSel=i;renderMerge();}}
 window.autoMerge=function(){var changed=0;for(var lv=1;lv<10;lv++){var ids=[];state.merge.forEach(function(v,i){if(v===lv)ids.push(i)});while(ids.length>=2){var a=ids.pop(),b=ids.pop();state.merge[a]=null;state.merge[b]=lv+1;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,lv+1);collect('合成收藏 Lv.'+(lv+1));changed++;}}state.mergeSel=null;state.prosper+=changed*2;save();renderMerge();toast(changed?'自动合成 '+changed+' 次':'没有可合成物品');}
-function renderMap(){document.getElementById('map').innerHTML=places.map(function(p,i){return '<div class="place" onclick="explore('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small></div></div>';}).join('');}
+function isGaogongVillage(){
+ var l=state.location||{};return l.province==='山西省'&&l.city==='临汾市'&&l.county==='洪洞县'&&l.town==='万安镇'&&l.village==='高公村';
+}
+function renderMap(){
+ var el=document.getElementById('map');if(!el)return;
+ if(isGaogongVillage()){
+  var gp=[
+   {name:'高公村 · 村内实景',desc:'本村公开报道现场图',photo:'/api/tianyuan/gaogong-image/0',type:'photo'},
+   {name:'主干水网',desc:'2022年改造，581户实现24小时供水',photo:'/api/tianyuan/gaogong-image/1',type:'photo'},
+   {name:'联手说事',desc:'本村基层治理现场',photo:'/api/tianyuan/gaogong-image/2',type:'photo'},
+   {name:'文化活动',desc:'村民文化活动与艺术节',photo:'/api/tianyuan/gaogong-image/3',type:'photo'},
+   {name:'万安区域养老中心',desc:'原高公小学改造 · 60张床位',photo:'/api/tianyuan/gaogong-image/0',type:'text'},
+   {name:'数字乡村指挥中心',desc:'安防、广播、村务直播等',photo:'/api/tianyuan/gaogong-image/0',type:'text'}
+  ];
+  el.innerHTML=gp.map(function(p,i){return '<div class="place" onclick="visitGaogong('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small><span class="gaogongTag">'+(p.type==='photo'?'本村公开现场图':'公开资料提及')+'</span></div></div>';}).join('');
+  return;
+ }
+ el.innerHTML=places.map(function(p,i){return '<div class="place" onclick="explore('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small></div></div>';}).join('');
+}
+window.visitGaogong=function(i){
+ var items=[
+  {title:'高公村 · 村内实景',body:'这里展示的是公开报道中明确指向洪洞县万安镇高公村的现场资料。',img:'/api/tianyuan/gaogong-image/0'},
+  {title:'高公村主干水网',body:'公开资料记载，高公村完成深井和主干水网改造，581户实现24小时供水，并安装智能水表。',img:'/api/tianyuan/gaogong-image/1'},
+  {title:'洪洞“联手说事”',body:'高公村通过“联手说事”等方式处理村内排水巷等长期问题，是本村基层治理的重要场景。',img:'/api/tianyuan/gaogong-image/2'},
+  {title:'高公村文化活动',body:'公开资料记载，高公村组建锣鼓队、舞蹈团、合唱团，并连续举办文化艺术节。',img:'/api/tianyuan/gaogong-image/3'},
+  {title:'万安区域养老中心',body:'公开资料记载，2023年投资改造原高公小学，设60张床位并配套幸福食堂，服务周边老人。',img:null},
+  {title:'数字乡村指挥中心',body:'公开资料记载，高公村建设数字乡村指挥中心，接入安防监控、应急广播、4K闭路电视、村级电视台与村务直播。',img:null}
+ ];
+ var x=items[i]||items[0],media=x.img?'<img src="'+x.img+'" style="width:100%;height:210px;object-fit:cover;border-radius:16px;margin:8px 0 10px" onerror="this.style.display=\'none\'">':'';
+ openModal(x.title,media+'<div style="font-size:11px;line-height:1.7;color:#666">'+x.body+'</div><div style="margin-top:10px"><a href="https://www.sohu.com/a/979391380_121106991" target="_blank" rel="noopener" style="font-size:10px;color:#315c43">查看公开资料来源</a></div>');
+ collect('高公村：'+x.title);save();
+}
 window.explore=function(i){if(i===0){startFishing();return;}var p=places[i],finds=[['鲤鱼','河蚌','芦苇'],['松茸','野花','木材'],['明前茶','山泉水','竹叶'],['旧邮票','手作杯','老照片'],['水蜜桃','果酱','葡萄篮'],['山顶日落','云海照片','观星卡']][i];var f=finds[Math.floor(Math.random()*finds.length)];state.discoveries[f]=1;collect(f);addXP(18+i*2);state.prosper+=3;save();renderDiscoveries();toast(p.name+' 发现：'+f);}
 function renderDiscoveries(){var ks=Object.keys(state.discoveries);document.getElementById('discoveries').innerHTML=(ks.length?ks:['尚未发现']).slice(-8).map(function(k){return '<div class="ach"><div class="inside"><b>'+k+'</b><small>'+(k==='尚未发现'?'去地图探索看看':'已收入旅行图鉴')+'</small></div></div>';}).join('');}
 function renderRooms(){document.getElementById('rooms').innerHTML=rooms.map(function(r,i){var lv=state.buildings[r.name]||1;return '<div class="room" onclick="upgradeRoom('+i+')" style="background-image:url(\''+r.photo+'\')"><span>'+r.name+' · Lv.'+lv+'</span></div>';}).join('');}
@@ -764,7 +797,7 @@ window.saveLocationChoice=async function(){
   var p=await apiJSON('/api/tianyuan/place-photo?q='+encodeURIComponent(q));
   loc.photo=p.photo||null;
  }catch(e){loc.photo=null;}
- state.location=loc;save();applyLocationScene();closeModal();toast('以后这里就是你的小院了');
+ state.location=loc;save();applyLocationScene();renderMap();closeModal();toast('以后这里就是你的小院了');
 }
 function activeLocationPhoto(){
  var loc=state.location||{},g=loc.photo?.gallery;
@@ -790,7 +823,7 @@ function applyLocationScene(){
 }
 window.nextVillageScene=function(){
  var g=state.location?.photo?.gallery;if(!Array.isArray(g)||g.length<2)return;
- state.location.galleryIndex=(Number(state.location.galleryIndex||0)+1)%g.length;save();applyLocationScene();
+ state.location.galleryIndex=(Number(state.location.galleryIndex||0)+1)%g.length;save();applyLocationScene();renderMap();
  var p=activeLocationPhoto();toast(p?.caption||'切换了一张本村实景');
 }
 window.openCozyMenu=function(){
