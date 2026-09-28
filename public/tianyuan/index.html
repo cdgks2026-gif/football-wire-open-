@@ -150,6 +150,12 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .photoCredit{position:absolute;right:10px;bottom:10px;z-index:8;padding:5px 7px;border-radius:999px;background:rgba(10,25,17,.46);color:#fff;font-size:8px;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);text-decoration:none;max-width:52%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .localFlavor{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.localFlavor span{padding:5px 7px;border-radius:999px;background:#eef0e7;color:#5e6b60;font-size:9px}
 @media(max-width:560px){.locRow{grid-template-columns:76px 1fr}.placePreview{height:160px}}
+
+.sceneGalleryBtn{position:absolute;right:16px;bottom:50px;z-index:8;border:1px solid rgba(255,255,255,.18);background:rgba(12,30,20,.52);color:#fff;border-radius:999px;padding:7px 10px;font-size:9px;backdrop-filter:blur(8px);display:none}
+.sceneGalleryBtn.show{display:block}
+.verifiedPlace{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:5px 8px;border-radius:999px;background:#edf3e9;color:#44604d;font-size:9px}
+.quickPlace{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:14px;padding:10px 11px;text-align:left;cursor:pointer}
+.quickPlace b{display:block;font-size:11px;color:#334038}.quickPlace small{display:block;margin-top:3px;font-size:9px;color:#7c817a}
 </style>
 </head>
 <body>
@@ -212,7 +218,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
     <div class="actionBubble" id="actionBubble"><b id="actionTitle">去哪儿</b><small id="actionDesc">走近一点再看看。</small><div class="row"><button id="actionGo">进入</button><button onclick="hideActionBubble()" style="background:#e9e5da;color:#566057">先逛逛</button></div></div>
     <div class="fieldStrip" id="fieldStrip"></div>
     <div class="worldRain"></div>
-    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div><a class="photoCredit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">实景图来源</a>
+    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div><button class="sceneGalleryBtn" id="sceneGalleryBtn" onclick="nextVillageScene()">实景 1/1</button><a class="photoCredit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">实景图来源</a>
     <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div><div class="pondGlow"></div>
     <div class="gameStateSink">
       <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
@@ -691,6 +697,7 @@ window.openLocationPicker=async function(){
   '<div class="locRow"><label>县/区</label><select id="locCounty" onchange="locationCountyChanged()"><option value="">先选城市</option></select></div>'+
   '<div class="locRow"><label>镇/街道</label><select id="locTown" onchange="locationTownChanged()"><option value="">先选县区</option></select></div>'+
   '<div class="locRow"><label>村/社区</label><input id="locVillage" value="'+escapeAttr(locationDraft.village||'')+'" placeholder="填写村、里、社区或自然村名" oninput="locationVillageChanged()"></div>'+
+  '<div class="quickPlace" onclick="chooseGaogongVillage()"><b>直接选择：山西洪洞 · 高公村</b><small>山西省 → 临汾市 → 洪洞县 → 万安镇 → 高公村 · 已有人工核对实景资料</small></div>'+
   '<div class="locHint">省、市、县/区、镇/街道使用开源区划数据联动；村级名称数量很大，为保证手机加载速度采用搜索/填写方式。台湾省入口已加入，同样可以保存到账号云存档。</div>'+
   '<div class="localFlavor" id="localFlavor"></div>'+
   '<button class="btn" onclick="saveLocationChoice()">住到这里</button>'+
@@ -734,6 +741,15 @@ window.locationCountyChanged=async function(){
 }
 window.locationTownChanged=function(){locationDraft.town=document.getElementById('locTown').value;updateLocationPreview();}
 window.locationVillageChanged=function(){locationDraft.village=document.getElementById('locVillage').value.trim();updateLocationPreview();}
+window.chooseGaogongVillage=async function(){
+ locationDraft={province:'山西省',city:'临汾市',county:'洪洞县',town:'万安镇',village:'高公村'};
+ var p=document.getElementById('locProvince');if(p)p.value='山西省';
+ try{await populateLocationFromDraft();}catch(e){}
+ var c=document.getElementById('locCity'),co=document.getElementById('locCounty'),t=document.getElementById('locTown'),v=document.getElementById('locVillage');
+ if(c)c.value='临汾市';if(co)co.value='洪洞县';if(t)t.value='万安镇';if(v)v.value='高公村';
+ updateLocationPreview();
+ toast('已定位到高公村');
+}
 function updateLocationPreview(){
  var txt=locationText(locationDraft)||'还没有选择地方';
  var name=document.getElementById('placePreviewName'),sub=document.getElementById('placePreviewSub');if(name)name.textContent=locationDraft.village||locationDraft.town||locationDraft.county||locationDraft.city||locationDraft.province||'选一个地方';if(sub)sub.textContent=txt;
@@ -742,7 +758,7 @@ function updateLocationPreview(){
 window.saveLocationChoice=async function(){
  if(!locationDraft.province){toast('先选一个省份');return;}
  var btn=document.querySelector('.locationPicker .btn');if(btn){btn.disabled=true;btn.textContent='正在找实景…';}
- var loc=Object.assign({},locationDraft);loc.village=(document.getElementById('locVillage')?.value||'').trim();
+ var loc=Object.assign({},locationDraft);loc.village=(document.getElementById('locVillage')?.value||'').trim();loc.galleryIndex=0;
  try{
   var q=[loc.village,loc.town,loc.county,loc.city,loc.province].filter(Boolean).join(' ');
   var p=await apiJSON('/api/tianyuan/place-photo?q='+encodeURIComponent(q));
@@ -750,18 +766,32 @@ window.saveLocationChoice=async function(){
  }catch(e){loc.photo=null;}
  state.location=loc;save();applyLocationScene();closeModal();toast('以后这里就是你的小院了');
 }
+function activeLocationPhoto(){
+ var loc=state.location||{},g=loc.photo?.gallery;
+ if(Array.isArray(g)&&g.length)return g[Math.max(0,Math.min(g.length-1,Number(loc.galleryIndex||0)))]||g[0];
+ return loc.photo||null;
+}
 function applyLocationScene(){
- var loc=state.location||{},title=document.getElementById('worldPlaceTitle'),badge=document.getElementById('locationBadge'),wm=document.getElementById('worldMap'),credit=document.getElementById('photoCredit');
+ var loc=state.location||{},photo=activeLocationPhoto(),title=document.getElementById('worldPlaceTitle'),badge=document.getElementById('locationBadge'),wm=document.getElementById('worldMap'),credit=document.getElementById('photoCredit'),gb=document.getElementById('sceneGalleryBtn');
  var short=loc.village||loc.town||loc.county||loc.city||loc.province||'云溪';
  if(title)title.textContent=short+' · 小院';
- if(badge)badge.textContent=loc.province?'📍 '+[loc.province,loc.city,loc.county].filter(Boolean).slice(-2).join(' · '):'📍 选择落脚地';
- if(wm&&loc.photo?.url)wm.style.backgroundImage="url('"+String(loc.photo.url).replace(/'/g,"%27")+"')";
+ if(badge)badge.textContent=loc.province?'📍 '+[loc.province,loc.city,loc.county,loc.town,loc.village].filter(Boolean).slice(-3).join(' · '):'📍 选择落脚地';
+ if(wm&&photo?.url)wm.style.backgroundImage="url('"+String(photo.url).replace(/'/g,"%27")+"')";
  if(credit){
-  if(loc.photo?.url){credit.style.display='block';credit.href=loc.photo.sourceUrl||'#';credit.textContent='实景 · '+(loc.photo.license||'Wikimedia Commons');}
+  if(photo?.url){credit.style.display='block';credit.href=photo.sourceUrl||'#';credit.textContent=(loc.photo?.gallery?'本村实景 · ':'实景 · ')+(photo.license||'来源资料');}
   else credit.style.display='none';
  }
- var scene=document.getElementById('heroScene');if(scene&&loc.photo?.url&&document.getElementById('page-home')?.classList.contains('active'))scene.style.backgroundImage="url('"+String(loc.photo.url).replace(/'/g,"%27")+"')";
+ if(gb){
+  var count=Array.isArray(loc.photo?.gallery)?loc.photo.gallery.length:0;
+  if(count>1){gb.classList.add('show');gb.textContent='本村实景 '+(Number(loc.galleryIndex||0)+1)+'/'+count;}else gb.classList.remove('show');
+ }
+ var scene=document.getElementById('heroScene');if(scene&&photo?.url&&document.getElementById('page-home')?.classList.contains('active'))scene.style.backgroundImage="url('"+String(photo.url).replace(/'/g,"%27")+"')";
  var d=document.getElementById('diaryDate');if(d&&loc.province)d.textContent=(loc.village||loc.town||loc.county||loc.city||loc.province)+' · '+new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
+}
+window.nextVillageScene=function(){
+ var g=state.location?.photo?.gallery;if(!Array.isArray(g)||g.length<2)return;
+ state.location.galleryIndex=(Number(state.location.galleryIndex||0)+1)%g.length;save();applyLocationScene();
+ var p=activeLocationPhoto();toast(p?.caption||'切换了一张本村实景');
 }
 window.openCozyMenu=function(){
  openModal('小院里的小抽屉',
