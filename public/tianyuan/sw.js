@@ -1,4 +1,4 @@
-const CACHE='tianyuan-v5.6.0';
+const CACHE='tianyuan-v6.0.0';
 const CORE=['/tianyuan/','/tianyuan/manifest.webmanifest','/tianyuan/icon.svg'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
