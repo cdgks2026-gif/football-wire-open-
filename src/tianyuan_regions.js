@@ -45,6 +45,44 @@ export function registerTianyuanRegionRoutes(app){
   app.get("/api/tianyuan/place-photo",async(req,res)=>{
     const q=String(req.query.q||"").trim().slice(0,120);
     if(!q)return res.status(400).json({ok:false,error:"query-required"});
+    if(/(?:山西省?\s*)?(?:临汾市?\s*)?洪洞县?.*万安镇.*高公村/.test(q)||(/高公村/.test(q)&&/洪洞|万安/.test(q))){
+      const sourceUrl="https://www.sohu.com/a/979391380_121106991";
+      const gallery=[
+        {
+          url:"https://q8.itc.cn/q_70/images03/20260123/aad6a4fd1e234b03a543bcd697f0f603.jpeg",
+          sourceUrl,
+          title:"高公村公开报道现场图",
+          artist:"中部城市生活指南 / 千万工程工作专班",
+          license:"来源媒体公开发布",
+          caption:"高公村实景资料图"
+        },
+        {
+          url:"https://q5.itc.cn/q_70/images03/20260123/f642de6006084a908f2ea898eb011169.png",
+          sourceUrl,
+          title:"高公村主干水网改造",
+          artist:"中部城市生活指南 / 千万工程工作专班",
+          license:"来源媒体公开发布",
+          caption:"高公村主干水网改造现场"
+        },
+        {
+          url:"https://q3.itc.cn/q_70/images03/20260123/60a9137393f64a869d665dd97a2fbd3d.png",
+          sourceUrl,
+          title:"高公村联手说事",
+          artist:"中部城市生活指南 / 千万工程工作专班",
+          license:"来源媒体公开发布",
+          caption:"高公村基层治理现场"
+        },
+        {
+          url:"https://q2.itc.cn/q_70/images03/20260123/cc367ff4eaf74aec8f475bf159bdbafe.png",
+          sourceUrl,
+          title:"高公村文化活动",
+          artist:"中部城市生活指南 / 千万工程工作专班",
+          license:"来源媒体公开发布",
+          caption:"高公村文化活动现场"
+        }
+      ];
+      return res.json({ok:true,verified:true,place:"山西省 临汾市 洪洞县 万安镇 高公村",photo:{...gallery[0],gallery}});
+    }
     try{
       const params=new URLSearchParams({
         action:"query",generator:"search",gsrsearch:q+" 乡村 风景",gsrnamespace:"6",gsrlimit:"6",
