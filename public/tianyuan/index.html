@@ -3,886 +3,236 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#15251c">
+<meta name="theme-color" content="#173324">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="向往田园">
-<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="/tianyuan/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/tianyuan/icon.svg">
-<meta name="mobile-web-app-capable" content="yes">
-<title>向往田园 5.3 · 云端生活版</title>
+<title>向往田园 · 中国实景</title>
 <style>
-:root{--bg:#e9e5d8;--paper:#faf7ef;--paper2:#fffdf8;--ink:#2a322b;--muted:#7b7d73;--deep:#173324;--green:#315c43;--green2:#6e9274;--gold:#c59b56;--line:rgba(45,58,48,.13);--shadow:0 18px 55px rgba(23,40,29,.14)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#dfe6d9;color:var(--ink)}
-body{background:linear-gradient(180deg,#b9cfb7 0 280px,#e9e5d8 680px);overscroll-behavior:none}
-button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180px;margin:auto;min-height:100vh;padding-bottom:104px}
-.top{position:sticky;top:0;z-index:50;background:rgba(18,35,25,.9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.09);padding-top:env(safe-area-inset-top)}
-.topin{display:flex;align-items:center;gap:8px;overflow:auto;padding:9px 12px}.brand{color:#fff;font-weight:900;white-space:nowrap;margin-right:auto;letter-spacing:.4px}.brand small{display:block;color:rgba(255,255,255,.58);font-weight:600;font-size:10px}
-.pill{white-space:nowrap;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.09);color:#fff;border-radius:999px;padding:7px 9px;font-size:12px;font-weight:800}
-.hero{padding:12px}.scene{height:330px;border-radius:28px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 30px 70px rgba(14,30,20,.28);isolation:isolate}
-.scene:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,18,12,.04),rgba(8,18,12,.16) 50%,rgba(8,18,12,.72));z-index:-1}
-.scene-home{background-image:url('https://images.unsplash.com/photo-1470165301023-58dab8118cc9?auto=format&fit=crop&w=1800&q=82')}
-.scene-farm{background-image:url('https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1800&q=82')}
-.scene-kitchen{background-image:url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=82')}
-.scene-merge{background-image:url('https://images.unsplash.com/photo-1516211697506-8360dbcfe9a4?auto=format&fit=crop&w=1800&q=82')}
-.scene-explore{background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=82')}
-.scene-house{background-image:url('https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1800&q=82')}
-.scene-friends{background-image:url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=82')}
-.sceneCopy{position:absolute;left:22px;right:22px;bottom:20px;color:#fff;max-width:680px}.sceneCopy h1{font-size:30px;margin:0 0 6px;letter-spacing:.5px}.sceneCopy p{margin:0;color:rgba(255,255,255,.78);font-size:13px;line-height:1.6}.sceneTag{display:inline-block;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:rgba(16,34,23,.52);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);font-size:11px}
-.weather{position:absolute;right:16px;top:16px;padding:8px 10px;border-radius:14px;color:#fff;background:rgba(16,34,23,.52);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);font-size:12px}
-.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;padding:4px 12px 12px}.grid.equal{grid-template-columns:1fr 1fr}.card{background:rgba(250,247,239,.96);border:1px solid rgba(255,255,255,.66);border-radius:22px;padding:15px;box-shadow:var(--shadow)}h2{font-size:18px;margin:0 0 10px}h3{font-size:14px;margin:0 0 7px}.sub{font-size:12px;color:var(--muted);line-height:1.55}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.between{justify-content:space-between}.divider{height:1px;background:var(--line);margin:12px 0}
-.btn{border:0;border-radius:13px;padding:10px 12px;background:var(--green);color:#fff;font-weight:850;cursor:pointer;box-shadow:0 6px 16px rgba(35,78,52,.18)}.btn.alt{background:#eee9dc;color:#344038;box-shadow:none}.btn.gold{background:#a67b3c}.btn:active{transform:scale(.98)}
-.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#f1eee3;border:1px solid var(--line);border-radius:15px;padding:11px}.stat b{display:block;font-size:17px}.stat small{font-size:10px;color:var(--muted)}
-.progress{height:8px;background:#e4dfd2;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#658d6f,#c6a563);border-radius:inherit}
-.seedbar{display:flex;gap:8px;overflow:auto;padding-bottom:8px}.seed{min-width:145px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:0;overflow:hidden;text-align:left;cursor:pointer}.seed img{width:100%;height:86px;object-fit:cover;display:block}.seed span{display:block;padding:8px;font-size:12px;font-weight:800}.seed.active{outline:2px solid #547b5e}
-.plots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.plot{position:relative;min-height:125px;border:0;border-radius:16px;overflow:hidden;background:#a77b4e;cursor:pointer;color:#fff;text-align:left;padding:0}.plot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.plot:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.64))}.plotText{position:absolute;left:9px;right:9px;bottom:8px;z-index:2}.plotText b{font-size:12px;display:block}.plotText small{font-size:10px;color:rgba(255,255,255,.78)}
-.recipeGrid,.shopGrid,.friendGrid,.achievementGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.recipe,.shop,.friend,.ach{border:1px solid var(--line);background:#fff;border-radius:16px;overflow:hidden}.recipe img,.shop img,.friend img{width:100%;height:110px;object-fit:cover}.inside{padding:10px}.inside b{display:block;font-size:13px}.inside small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}
-.orders{display:grid;gap:8px}.order{padding:11px;border-radius:15px;background:#fff;border:1px solid var(--line)}.order b{font-size:13px}.order small{display:block;color:var(--muted);font-size:10px;margin:4px 0 8px}
-.mergeGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.cell{aspect-ratio:1;border:1px solid var(--line);background:#f0ecdf;border-radius:12px;display:grid;place-items:center;font-size:24px;position:relative;cursor:pointer}.cell small{position:absolute;right:4px;bottom:3px;font-size:8px;background:#263b2f;color:#fff;border-radius:99px;padding:2px 4px}.cell.sel{outline:2px solid #c19855}
-.map{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.place{min-height:145px;border-radius:18px;position:relative;overflow:hidden;color:#fff;background-size:cover;background-position:center;cursor:pointer}.place:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.68))}.place div{position:absolute;z-index:2;left:10px;right:10px;bottom:9px}.place b{font-size:13px}.place small{display:block;font-size:10px;color:rgba(255,255,255,.75)}
-.roomGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.room{height:160px;border-radius:17px;background-size:cover;background-position:center;position:relative;overflow:hidden;color:#fff}.room:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.65))}.room span{position:absolute;z-index:2;left:10px;bottom:9px;font-weight:850;font-size:12px}
-.bottom{position:fixed;z-index:60;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1180px);display:grid;grid-template-columns:repeat(7,1fr);background:rgba(249,247,239,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(46,63,50,.12);padding:6px 5px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(22,36,26,.1)}
-.nav{border:0;background:transparent;padding:5px 1px;color:#70776f;font-size:9px;font-weight:800}.nav i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}.nav.active{color:#28533b}.toast{position:fixed;z-index:100;left:50%;bottom:95px;transform:translate(-50%,20px);opacity:0;background:#173324;color:#fff;padding:10px 14px;border-radius:999px;font-size:12px;transition:.22s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
-.modal{position:fixed;inset:0;z-index:90;background:rgba(9,17,12,.62);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modalbox{width:min(560px,100%);max-height:80vh;overflow:auto;background:#f8f5eb;border-radius:24px;padding:18px;box-shadow:0 35px 80px rgba(0,0,0,.35)}
-@media(max-width:760px){body{background:linear-gradient(180deg,#a9c1aa 0 180px,#e9e5d8 490px)}.hero{padding:8px}.scene{height:245px;border-radius:22px}.sceneCopy{left:15px;right:15px;bottom:14px}.sceneCopy h1{font-size:22px}.sceneCopy p{font-size:11px}.grid,.grid.equal{grid-template-columns:1fr;padding:2px 8px 9px;gap:8px}.card{border-radius:18px;padding:12px}.plots{grid-template-columns:repeat(2,1fr)}.plot{min-height:145px}.recipeGrid,.shopGrid,.friendGrid,.achievementGrid{grid-template-columns:1fr 1fr}.mergeGrid{grid-template-columns:repeat(6,1fr)}.cell{font-size:20px;border-radius:9px}.map,.roomGrid{grid-template-columns:repeat(2,1fr)}.room{height:145px}.statgrid{grid-template-columns:repeat(2,1fr)}.pill{font-size:10px;padding:6px 7px}.brand{font-size:13px}.bottom{grid-template-columns:repeat(7,1fr)}.nav{font-size:8px}.nav i{font-size:18px}}
-
-.installBar{display:none;margin:0 12px 10px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,#1a3827,#315c43);color:#fff;box-shadow:0 14px 34px rgba(20,49,33,.22);align-items:center;gap:10px}
-.installBar.show{display:flex}.installBar .grow{flex:1}.installBar b{display:block;font-size:13px}.installBar small{display:block;color:rgba(255,255,255,.7);font-size:10px;margin-top:2px}
-.installBar .btn{background:#f3ead8;color:#294031;box-shadow:none;white-space:nowrap}
-.worldWrap{padding:2px 12px 12px}
-.worldMap{height:540px;border-radius:26px;position:relative;overflow:hidden;background-image:url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=86');background-size:cover;background-position:center;box-shadow:0 28px 70px rgba(20,39,27,.2);isolation:isolate}
-.worldMap:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,25,17,.05),rgba(11,25,17,.06) 50%,rgba(11,25,17,.38));z-index:-1;pointer-events:none}
-.worldMap[data-daypart="night"]:before{background:linear-gradient(180deg,rgba(8,20,42,.28),rgba(8,18,38,.34),rgba(4,13,28,.62))}
-.worldMap[data-daypart="dawn"]:before{background:linear-gradient(180deg,rgba(213,128,71,.09),rgba(11,25,17,.04),rgba(11,25,17,.38))}
-.worldMap[data-daypart="evening"]:before{background:linear-gradient(180deg,rgba(220,108,60,.12),rgba(56,31,23,.13),rgba(11,25,17,.5))}
-.worldTitle{position:absolute;left:18px;top:16px;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.28);z-index:3}.worldTitle b{font-size:20px;display:block}.worldTitle small{font-size:10px;color:rgba(255,255,255,.8)}
-.worldActions{position:absolute;right:14px;top:14px;display:flex;gap:6px;z-index:4}.worldActions button{border:1px solid rgba(255,255,255,.28);background:rgba(17,38,25,.48);color:#fff;border-radius:999px;padding:7px 10px;font-size:10px;backdrop-filter:blur(9px)}
-.zone{position:absolute;border:0;background:rgba(17,39,26,.65);color:#fff;border:1px solid rgba(255,255,255,.34);border-radius:16px;padding:9px 11px;text-align:left;box-shadow:0 10px 24px rgba(0,0,0,.19);backdrop-filter:blur(8px);cursor:pointer;transition:.18s;z-index:3}
-.zone:hover{transform:translateY(-2px) scale(1.02);background:rgba(20,53,34,.78)}.zone b{display:block;font-size:12px}.zone small{display:block;font-size:9px;color:rgba(255,255,255,.72);margin-top:2px}
-.z-farm{left:9%;top:49%}.z-kitchen{left:42%;top:32%}.z-house{left:59%;top:18%}.z-merge{right:8%;top:48%}.z-explore{left:13%;top:18%}.z-friends{right:13%;top:72%}
-.mapNpc{position:absolute;width:52px;height:52px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.88);box-shadow:0 9px 22px rgba(0,0,0,.27);z-index:2;animation:walkFloat 4.8s ease-in-out infinite alternate;background:#ddd}.mapNpc img{width:100%;height:100%;object-fit:cover}.mapNpc:after{content:attr(data-name);position:absolute;left:50%;top:48px;transform:translateX(-50%);background:rgba(16,31,22,.76);color:#fff;border-radius:999px;padding:3px 6px;font-size:8px;white-space:nowrap}
-.npc1{left:30%;top:61%;animation-delay:-1s}.npc2{left:68%;top:45%;animation-delay:-2.1s}.npc3{left:48%;top:70%;animation-delay:-3s}
-@keyframes walkFloat{from{transform:translate(-8px,-2px)}to{transform:translate(10px,7px)}}
-.mapDock{position:absolute;left:14px;right:14px;bottom:13px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;z-index:4}.mapMetric{background:rgba(18,35,25,.68);border:1px solid rgba(255,255,255,.19);color:#fff;border-radius:13px;padding:8px 9px;backdrop-filter:blur(9px)}.mapMetric small{font-size:8px;color:rgba(255,255,255,.66);display:block}.mapMetric b{font-size:12px}
-.plotStage{position:absolute;z-index:3;left:8px;top:7px;background:rgba(25,45,31,.72);border:1px solid rgba(255,255,255,.18);padding:3px 6px;border-radius:999px;font-size:8px;color:#fff}.cropProgress{position:absolute;left:8px;right:8px;bottom:34px;z-index:3;height:4px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}.cropProgress i{display:block;height:100%;background:#e7dca6}
-.quickLife{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px 12px}.lifeCard{border:1px solid rgba(255,255,255,.7);background:rgba(250,247,239,.92);border-radius:17px;padding:11px;box-shadow:0 8px 22px rgba(20,39,27,.08)}.lifeCard b{font-size:12px;display:block}.lifeCard small{font-size:9px;color:var(--muted);display:block;margin-top:2px}
-@media(max-width:760px){.installBar{margin:0 8px 8px}.worldWrap{padding:0 8px 9px}.worldMap{height:455px;border-radius:20px;background-position:54% center}.zone{padding:8px 9px;border-radius:13px}.zone b{font-size:10px}.zone small{font-size:8px}.z-farm{left:5%;top:50%}.z-kitchen{left:39%;top:32%}.z-house{left:57%;top:19%}.z-merge{right:4%;top:51%}.z-explore{left:6%;top:21%}.z-friends{right:5%;top:70%}.mapNpc{width:43px;height:43px}.mapNpc:after{top:39px}.mapDock{grid-template-columns:repeat(2,1fr)}.quickLife{grid-template-columns:repeat(2,1fr);padding:0 8px 9px}}
-
-/* 5.1 沉浸式休闲界面：压低报表感与任务感 */
-.top{background:linear-gradient(180deg,rgba(18,35,25,.78),rgba(18,35,25,.35));border-bottom:0;position:fixed;left:0;right:0;top:0}
-.topin{max-width:1180px;margin:auto;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
-.brand{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:16px;text-shadow:0 2px 12px rgba(0,0,0,.22)}
-.brand small{font-family:system-ui,-apple-system,sans-serif;letter-spacing:2px;font-size:8px;opacity:.72}
-.pill{background:rgba(20,38,27,.30);border:1px solid rgba(255,255,255,.14);font-size:11px;padding:6px 8px;box-shadow:none}
-.hero{padding:0}.scene{height:365px;border-radius:0;box-shadow:none}.sceneCopy{bottom:26px}.sceneCopy h1{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-weight:800;font-size:34px;letter-spacing:1px}
-.sceneTag{background:rgba(19,38,27,.25);border-color:rgba(255,255,255,.16)}
-.installBar{display:none!important}
-.worldWrap{margin-top:-64px;position:relative;z-index:4}.worldMap{border-radius:28px;min-height:560px;border:1px solid rgba(255,255,255,.68);box-shadow:0 24px 70px rgba(21,40,29,.18)}
-.worldTitle{top:20px}.worldTitle b{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:24px}
-.worldActions button{width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:grid;place-items:center;background:rgba(19,35,25,.35)}
-.zone{background:rgba(22,42,29,.36);border:1px solid rgba(255,255,255,.24);box-shadow:0 8px 24px rgba(0,0,0,.12);padding:8px 10px;border-radius:12px}
-.zone small{display:none}.zone b{font-family:"Songti SC","STSong",serif;font-size:12px;letter-spacing:.5px}
-.zone:hover{background:rgba(22,48,32,.54)}
-.mapDock{display:none}.quickLife{display:none}
-.homeDiary{padding:10px 12px 15px}.diaryPaper{max-width:760px;margin:auto;padding:17px 18px 19px;border-radius:20px;background:rgba(250,247,239,.86);border:1px solid rgba(255,255,255,.75);box-shadow:0 12px 34px rgba(32,51,37,.09);backdrop-filter:blur(10px)}
-.diaryPaper .date{font-size:9px;letter-spacing:2px;color:#8f8d83;text-transform:uppercase}.diaryPaper p{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:15px;line-height:1.85;margin:7px 0 0;color:#4f554f}
-.diaryActions{display:flex;gap:7px;margin-top:12px}.diaryActions button{border:0;background:rgba(49,92,67,.08);padding:7px 10px;border-radius:999px;color:#47604f;font-size:10px}
-.gameStateSink{display:none!important}
-.card{background:rgba(250,247,239,.88);box-shadow:0 10px 35px rgba(29,48,34,.08);border-color:rgba(255,255,255,.75)}
-.card h2{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:20px}
-.sub{color:#777b73}.btn{box-shadow:none}
-.bottom{background:rgba(248,246,239,.88);border-top:1px solid rgba(70,81,72,.08);box-shadow:0 -4px 22px rgba(23,38,28,.06)}
-.nav{filter:saturate(.7);opacity:.82}.nav.active{opacity:1}.nav i{font-size:19px}
-.ambient{position:absolute;pointer-events:none;z-index:1;opacity:.78}.leafA,.leafB,.leafC{width:8px;height:18px;background:#d8dd8e;border-radius:100% 0 100% 0;animation:drift 8s linear infinite}.leafA{left:25%;top:15%}.leafB{left:72%;top:28%;animation-delay:-3s;animation-duration:10s}.leafC{left:48%;top:10%;animation-delay:-6s;animation-duration:12s}
-@keyframes drift{0%{transform:translate(0,-15px) rotate(0deg);opacity:0}15%{opacity:.75}100%{transform:translate(90px,390px) rotate(420deg);opacity:0}}
-.pondGlow{position:absolute;left:6%;bottom:14%;width:130px;height:34px;border-radius:50%;background:rgba(184,218,212,.18);filter:blur(3px);animation:pond 4s ease-in-out infinite alternate;z-index:1}
-@keyframes pond{from{transform:scaleX(.92);opacity:.48}to{transform:scaleX(1.08);opacity:.78}}
-@media(max-width:760px){.topin{padding-left:9px;padding-right:9px}.brand small{display:none}.pill{font-size:10px}.scene{height:310px}.sceneCopy{bottom:58px}.sceneCopy h1{font-size:26px}.sceneCopy p{display:none}.worldWrap{margin-top:-48px}.worldMap{height:520px;min-height:520px;border-radius:22px}.worldTitle b{font-size:20px}.homeDiary{padding:7px 8px 10px}.diaryPaper{padding:14px 15px}.diaryPaper p{font-size:14px}.zone b{font-size:11px}.bottom{padding-bottom:calc(5px + env(safe-area-inset-bottom))}.nav{font-size:0}.nav i{font-size:21px;margin:0}}
-
-/* 5.2 互动与真实感 */
-.playerActor{position:absolute;left:50%;top:58%;width:48px;height:58px;z-index:8;transition:left .85s cubic-bezier(.2,.8,.2,1),top .85s cubic-bezier(.2,.8,.2,1);pointer-events:none;filter:drop-shadow(0 8px 7px rgba(0,0,0,.28))}
-.playerActor .head{position:absolute;left:14px;top:1px;width:20px;height:20px;border-radius:50%;background:#c99b78;border:2px solid rgba(255,255,255,.85)}
-.playerActor .body{position:absolute;left:9px;top:18px;width:30px;height:31px;border-radius:13px 13px 9px 9px;background:linear-gradient(#6d8368,#445e4d);border:2px solid rgba(255,255,255,.74)}
-.playerActor .leg{position:absolute;top:46px;width:8px;height:12px;border-radius:5px;background:#3d423d}.playerActor .l{left:13px}.playerActor .r{right:13px}
-.playerActor.walking{animation:actorBob .22s ease-in-out infinite alternate}
-@keyframes actorBob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
-.actionBubble{position:absolute;z-index:10;min-width:150px;max-width:210px;background:rgba(247,244,235,.96);border:1px solid rgba(255,255,255,.85);box-shadow:0 14px 36px rgba(0,0,0,.18);border-radius:18px;padding:11px;display:none;color:#334039;backdrop-filter:blur(12px)}
-.actionBubble.show{display:block;animation:popIn .18s ease-out}.actionBubble b{font-family:"Songti SC","STSong",serif;font-size:14px}.actionBubble small{display:block;color:#7c817a;font-size:9px;line-height:1.45;margin-top:3px}.actionBubble .row{margin-top:8px}.actionBubble button{border:0;border-radius:999px;padding:7px 9px;background:#315c43;color:#fff;font-size:9px}
-@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
-.worldRain{position:absolute;inset:0;z-index:2;pointer-events:none;display:none;background-image:repeating-linear-gradient(105deg,transparent 0 12px,rgba(224,239,246,.35) 13px,transparent 14px 26px);background-size:36px 90px;animation:rainMove .5s linear infinite}
-.worldMap.weather-rain .worldRain{display:block}.worldMap.weather-rain{filter:saturate(.78) brightness(.88)}.worldMap.weather-cloud{filter:saturate(.84) brightness(.96)}.worldMap.weather-wind .leafA,.worldMap.weather-wind .leafB,.worldMap.weather-wind .leafC{animation-duration:3.2s}
-@keyframes rainMove{from{background-position:0 -90px}to{background-position:-18px 0}}
-.weatherBadge{position:absolute;right:16px;bottom:18px;z-index:7;background:rgba(15,32,22,.52);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:7px 10px;font-size:9px;backdrop-filter:blur(10px)}
-.fieldStrip{position:absolute;left:8%;bottom:20%;width:34%;height:15%;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;z-index:2;transform:skewY(-7deg);pointer-events:none}
-.fieldTile{border-radius:4px;background:linear-gradient(135deg,#7a5537,#926a45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.fieldTile.growing{background:linear-gradient(135deg,#567146,#75965d)}.fieldTile.ripe{background:linear-gradient(135deg,#9c8c42,#d0bc62)}
-.interactiveNote{font-size:10px;color:#7e827a;margin-top:6px}
-.fishingScene{position:relative;height:255px;border-radius:20px;overflow:hidden;background:url('https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1100&q=82') center/cover}
-.fishingScene:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,27,37,.04),rgba(12,27,37,.48))}
-.bobber{position:absolute;left:50%;top:58%;z-index:3;width:12px;height:18px;border-radius:8px 8px 4px 4px;background:linear-gradient(#f7e9d7 0 42%,#b74136 43%);box-shadow:0 3px 8px rgba(0,0,0,.3);transform:translate(-50%,-50%);transition:.18s}
-.bobber.bite{animation:bite .25s ease-in-out infinite alternate}@keyframes bite{from{transform:translate(-50%,-50%) translateY(-2px)}to{transform:translate(-50%,-50%) translateY(7px)}}
-.fishHud{position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:rgba(12,29,21,.74);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px;color:#fff;backdrop-filter:blur(8px)}
-.fishMeter{height:10px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;position:relative;margin:8px 0}.fishGood{position:absolute;left:42%;width:18%;top:0;bottom:0;background:rgba(159,225,143,.68)}.fishNeedle{position:absolute;top:-2px;width:4px;height:14px;background:#fff;border-radius:4px;left:0}
-.kitchenStage{height:220px;border-radius:20px;background:url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1100&q=82') center/cover;position:relative;overflow:hidden}.kitchenStage:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.54))}.steam{position:absolute;left:50%;top:50%;z-index:3;width:80px;height:80px;opacity:0;filter:blur(7px);background:radial-gradient(circle,rgba(255,255,255,.7),transparent 60%)}.steam.on{opacity:1;animation:steamUp 1s ease-out infinite}@keyframes steamUp{from{transform:translate(-50%,10px) scale(.8);opacity:.1}to{transform:translate(-50%,-50px) scale(1.35);opacity:.65}}
-.animalMood{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:#eef1e7;color:#657064;font-size:9px}
-@media(max-width:760px){.playerActor{width:42px;height:52px}.playerActor .head{left:12px}.playerActor .body{left:7px}.weatherBadge{right:10px;bottom:12px}.fieldStrip{left:4%;bottom:19%;width:42%}.actionBubble{min-width:135px}.fishingScene,.kitchenStage{height:220px}}
-
-/* 5.3 账号、角色、云存档 */
-.accountChip{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.09);color:#fff;border-radius:999px;padding:5px 8px 5px 6px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;white-space:nowrap}
-.accountAvatar{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(245,239,220,.96);color:#315c43;font-size:14px;box-shadow:inset 0 0 0 1px rgba(48,73,55,.1)}
-.authScreen{position:fixed;inset:0;z-index:500;background:linear-gradient(180deg,rgba(12,28,19,.22),rgba(12,28,19,.72)),url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=86') center/cover;display:grid;place-items:center;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:calc(18px + env(safe-area-inset-bottom))}
-.authScreen.hidden{display:none}.authPanel{width:min(520px,100%);max-height:92vh;overflow:auto;border-radius:28px;background:rgba(249,246,237,.94);border:1px solid rgba(255,255,255,.8);box-shadow:0 34px 90px rgba(7,20,12,.38);backdrop-filter:blur(22px);padding:22px}
-.authPanel h1{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:29px;margin:0;color:#263a2c}.authPanel .lead{color:#72786f;font-size:11px;line-height:1.65;margin:7px 0 15px}
-.authTabs{display:grid;grid-template-columns:1fr 1fr;background:#ebe8de;border-radius:13px;padding:3px;margin-bottom:14px}.authTabs button{border:0;background:transparent;border-radius:10px;padding:9px;font-size:11px;color:#7b7c76}.authTabs button.active{background:#fff;color:#315c43;font-weight:900;box-shadow:0 4px 12px rgba(39,56,43,.07)}
-.authForm{display:grid;gap:9px}.authForm input{width:100%;border:1px solid rgba(62,78,66,.14);background:#fff;color:#29362e;border-radius:14px;padding:12px 13px;font-size:14px;outline:none}.authForm input:focus{border-color:#77957d;box-shadow:0 0 0 3px rgba(70,108,80,.08)}
-.characterTitle{font-family:"Songti SC","STSong",serif;font-size:14px;margin:3px 0 7px;color:#425047}.characterGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.charCard{border:1px solid rgba(55,75,60,.12);background:#fff;border-radius:16px;padding:10px 5px;text-align:center;cursor:pointer}.charCard.active{outline:2px solid #62816a;background:#f4f5ed}.charCard .face{font-size:25px;display:block;margin-bottom:4px}.charCard b{display:block;font-size:10px}.charCard small{display:block;font-size:8px;color:#8a8c85;margin-top:2px}.authSubmit{border:0;background:#315c43;color:white;border-radius:14px;padding:12px 14px;font-weight:900;margin-top:3px}.authError{min-height:18px;color:#9d4e44;font-size:10px;text-align:center}.authFoot{font-size:9px;color:#92938e;line-height:1.5;text-align:center;margin-top:10px}
-.accountCard{display:flex;align-items:center;gap:12px;padding:12px;border-radius:17px;background:#efeee5;border:1px solid rgba(67,82,70,.09)}.accountBigAvatar{width:54px;height:54px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:29px}.accountMeta b{display:block;font-size:14px}.accountMeta small{display:block;color:#7b8078;font-size:9px;margin-top:3px}.roleEditGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.roleEdit{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:13px;padding:8px 4px;text-align:center;font-size:19px}.roleEdit.active{outline:2px solid #66856f}.cloudStatus{font-size:9px;color:#7d837b;margin-top:8px;min-height:14px}
-@media(max-width:560px){.authPanel{border-radius:23px;padding:17px}.authPanel h1{font-size:25px}.characterGrid,.roleEditGrid{grid-template-columns:repeat(2,1fr)}.charCard{padding:10px 6px}.accountChip{padding-right:6px}.accountChip .accountName{display:none}}
-
-/* 5.4 中国地区与实景 */
-.locationBadge{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:6px 9px;border-radius:999px;background:rgba(18,36,25,.38);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:9px;backdrop-filter:blur(8px);cursor:pointer}
-.locationPicker{display:grid;gap:9px}.locRow{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:8px}.locRow label{font-size:10px;color:#72786f}.locRow select,.locRow input{width:100%;border:1px solid rgba(61,80,65,.14);background:#fff;border-radius:12px;padding:10px 11px;font-size:12px;color:#334038;outline:none}
-.locHint{font-size:9px;color:#898d86;line-height:1.55}.placePreview{height:190px;border-radius:18px;background:#d9ddcf center/cover;position:relative;overflow:hidden;border:1px solid rgba(65,83,69,.12)}
-.placePreview:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.5))}
-.placePreviewText{position:absolute;left:12px;right:12px;bottom:10px;z-index:2;color:#fff}.placePreviewText b{display:block;font-family:"Songti SC","STSong",serif;font-size:16px}.placePreviewText small{display:block;margin-top:3px;font-size:9px;color:rgba(255,255,255,.75)}
-.photoCredit{position:absolute;right:10px;bottom:10px;z-index:8;padding:5px 7px;border-radius:999px;background:rgba(10,25,17,.46);color:#fff;font-size:8px;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);text-decoration:none;max-width:52%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.localFlavor{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.localFlavor span{padding:5px 7px;border-radius:999px;background:#eef0e7;color:#5e6b60;font-size:9px}
-@media(max-width:560px){.locRow{grid-template-columns:76px 1fr}.placePreview{height:160px}}
-
-.sceneGalleryBtn{position:absolute;right:16px;bottom:50px;z-index:8;border:1px solid rgba(255,255,255,.18);background:rgba(12,30,20,.52);color:#fff;border-radius:999px;padding:7px 10px;font-size:9px;backdrop-filter:blur(8px);display:none}
-.sceneGalleryBtn.show{display:block}
-.verifiedPlace{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:5px 8px;border-radius:999px;background:#edf3e9;color:#44604d;font-size:9px}
-.quickPlace{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:14px;padding:10px 11px;text-align:left;cursor:pointer}
-.quickPlace b{display:block;font-size:11px;color:#334038}.quickPlace small{display:block;margin-top:3px;font-size:9px;color:#7c817a}
-
-.gaogongTag{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.14);font-size:8px;color:rgba(255,255,255,.86)}
-
-.monitorHero{border-radius:22px;padding:16px;background:linear-gradient(135deg,#172820,#314f3b);color:#fff;box-shadow:0 16px 36px rgba(18,40,27,.15)}
-.monitorHero b{display:block;font-size:18px;font-family:"Songti SC","STSong",serif}.monitorHero small{display:block;margin-top:5px;color:rgba(255,255,255,.72);line-height:1.55;font-size:10px}
-.monitorGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.cameraCard{position:relative;min-height:180px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#24332b,#101713);border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(11,25,17,.12)}
-.cameraCard video,.cameraCard iframe{width:100%;height:100%;min-height:180px;border:0;object-fit:cover;background:#0c120f}.cameraEmpty{min-height:180px;display:grid;place-items:center;text-align:center;color:#d9dfd8;padding:18px}.cameraEmpty b{font-size:12px}.cameraEmpty small{display:block;margin-top:6px;font-size:9px;color:#8e9b92;line-height:1.5}
-.cameraLabel{position:absolute;left:10px;top:10px;z-index:4;background:rgba(9,20,14,.65);color:#fff;border-radius:999px;padding:5px 8px;font-size:9px;backdrop-filter:blur(7px)}
-.cameraStatus{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.cameraDot{padding:7px;border-radius:12px;background:#eef1eb;color:#637067;font-size:9px;text-align:center}.cameraDot.live{background:#e4f1e6;color:#356140}
-.villageOnlyZone{position:absolute;border:1px solid rgba(255,255,255,.28);background:rgba(18,38,26,.46);color:#fff;border-radius:14px;padding:9px 11px;backdrop-filter:blur(8px);z-index:4;box-shadow:0 10px 24px rgba(0,0,0,.15)}.villageOnlyZone b{display:block;font-size:12px}.villageOnlyZone small{display:block;margin-top:2px;font-size:8px;color:rgba(255,255,255,.72)}.v-real{left:8%;top:58%}.v-monitor{right:8%;top:34%}.v-info{left:40%;top:22%}
-@media(max-width:760px){.monitorGrid{grid-template-columns:1fr}.cameraStatus{grid-template-columns:repeat(4,1fr)}.v-real{left:4%;top:60%}.v-monitor{right:4%;top:38%}.v-info{left:36%;top:22%}}
+:root{--green:#173324;--green2:#2f5a42;--paper:#f4f0e4;--ink:#28372e;--muted:#7b827b;--line:rgba(45,66,51,.13)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#e9e4d7;color:var(--ink)}button,input,select{font:inherit}
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+.top{position:fixed;left:0;right:0;top:0;z-index:20;height:calc(58px + env(safe-area-inset-top));padding:calc(8px + env(safe-area-inset-top)) 12px 8px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(18,40,27,.88),rgba(18,40,27,.46),transparent);color:white;pointer-events:none}
+.brand,.topActions{pointer-events:auto}.brand b{display:block;font-family:"Songti SC","STSong",serif;font-size:17px;letter-spacing:.04em}.brand small{display:block;font-size:9px;color:rgba(255,255,255,.72);margin-top:2px}
+.topActions{display:flex;gap:7px}.chip{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.11);color:white;border-radius:999px;padding:7px 9px;font-size:10px;backdrop-filter:blur(10px)}
+main{max-width:1080px;margin:auto}.page{display:none}.page.active{display:block}
+.hero{position:relative;height:min(64vh,620px);min-height:470px;overflow:hidden;background:linear-gradient(145deg,#233a2c,#6e7b62);background-size:cover;background-position:center}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,24,15,.04),rgba(8,24,15,.12) 45%,rgba(8,24,15,.72))}
+.heroInner{position:absolute;z-index:3;left:22px;right:22px;bottom:30px;color:#fff}.heroKicker{font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.72)}.hero h1{font-family:"Songti SC","STSong",serif;font-size:34px;margin:7px 0 6px;line-height:1.15}.hero p{max-width:620px;font-size:11px;line-height:1.65;color:rgba(255,255,255,.8);margin:0}
+.heroBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.heroBtn{border:0;border-radius:999px;padding:10px 13px;font-size:10px;font-weight:800;background:#f5efe1;color:#26382d}.heroBtn.alt{background:rgba(255,255,255,.13);color:white;border:1px solid rgba(255,255,255,.22)}
+.liveDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ec5a4c;margin-right:5px;box-shadow:0 0 0 4px rgba(236,90,76,.16);animation:pulse 1.7s infinite}@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(236,90,76,0)}}
+.section{padding:16px 14px}.section h2{font-family:"Songti SC","STSong",serif;margin:0 0 4px;font-size:20px}.sub{font-size:10px;line-height:1.6;color:var(--muted)}
+.featured{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:11px}.liveCard{min-height:165px;border-radius:20px;padding:15px;display:flex;flex-direction:column;justify-content:space-between;color:white;background:linear-gradient(145deg,#244431,#54725a);box-shadow:0 10px 28px rgba(35,54,41,.12);position:relative;overflow:hidden}.liveCard:nth-child(2n){background:linear-gradient(145deg,#3e5363,#6f8291)}.liveCard:nth-child(3n){background:linear-gradient(145deg,#6c5738,#927557)}.liveCard:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 10%,rgba(255,255,255,.16),transparent 35%)}
+.liveCard>*{position:relative;z-index:1}.liveCard b{font-family:"Songti SC","STSong",serif;font-size:18px}.liveCard small{font-size:9px;color:rgba(255,255,255,.72);line-height:1.45}.liveMeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.tag{padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.14);font-size:8px}.openBtn{align-self:flex-start;border:0;border-radius:999px;padding:8px 10px;background:rgba(255,255,255,.92);color:#26382d;font-size:9px;font-weight:900;margin-top:14px}
+.card{background:rgba(248,245,236,.94);border:1px solid rgba(255,255,255,.7);border-radius:22px;padding:15px;box-shadow:0 12px 34px rgba(44,54,47,.08)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.filter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 9px;font-size:9px;color:#69736b}.filter.active{background:var(--green2);color:white;border-color:transparent}
+.list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.sourceCard{border:1px solid var(--line);background:#fff;border-radius:18px;padding:13px}.sourceCard b{display:block;font-size:13px}.sourceCard small{display:block;font-size:9px;color:#7c837d;line-height:1.55;margin-top:4px}.sourceFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:11px}.provider{font-size:8px;color:#708177}.btn{border:0;border-radius:999px;padding:8px 10px;background:var(--green2);color:white;font-size:9px;font-weight:800}.btn.alt{background:#eceae1;color:#59645b}
+.picker{display:grid;gap:9px;margin-top:12px}.row{display:grid;grid-template-columns:88px 1fr;gap:8px;align-items:center}.row label{font-size:10px;color:#707870}.row select,.row input{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px 11px;color:#314037;outline:none}
+.photo{height:280px;border-radius:20px;background:linear-gradient(135deg,#879681,#536a59) center/cover;position:relative;overflow:hidden}.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,24,16,.72))}.photoText{position:absolute;left:14px;right:14px;bottom:12px;z-index:2;color:white}.photoText b{display:block;font-family:"Songti SC","STSong",serif;font-size:20px}.photoText small{display:block;font-size:9px;color:rgba(255,255,255,.72);margin-top:4px}.credit{display:inline-block;margin-top:6px;color:rgba(255,255,255,.72);font-size:8px;text-decoration:none}
+.profile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.role{border:1px solid var(--line);background:#fff;border-radius:15px;padding:10px 6px;text-align:center}.role.active{outline:2px solid #65816b;background:#f3f4eb}.role span{font-size:25px;display:block}.role b{font-size:9px;display:block;margin-top:3px}
+.bottom{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:30;display:grid;grid-template-columns:repeat(3,1fr);max-width:520px;margin:auto;padding:5px;border-radius:20px;background:rgba(20,39,28,.88);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(18px);box-shadow:0 12px 36px rgba(0,0,0,.2)}.nav{border:0;background:transparent;color:rgba(255,255,255,.58);border-radius:15px;padding:8px 5px;font-size:9px}.nav i{font-style:normal;font-size:17px;display:block;margin-bottom:2px}.nav.active{background:rgba(255,255,255,.13);color:#fff}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(7,15,10,.62);display:none;align-items:center;justify-content:center;padding:14px}.modal.show{display:flex}.modalBox{width:min(760px,100%);max-height:90vh;overflow:auto;background:#f5f1e7;border-radius:24px;padding:15px}.modalHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.modalHead h2{font-family:"Songti SC","STSong",serif;margin:0;font-size:19px}.frameWrap{height:min(62vh,520px);border-radius:17px;overflow:hidden;background:#17221b}.frameWrap iframe{width:100%;height:100%;border:0;background:#fff}.notice{font-size:9px;color:#7d827c;line-height:1.55;margin-top:9px}.toast{position:fixed;left:50%;bottom:100px;z-index:120;transform:translateX(-50%) translateY(10px);background:rgba(18,34,24,.91);color:#fff;border-radius:999px;padding:8px 12px;font-size:9px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:680px){.featured,.list{grid-template-columns:1fr}.hero{height:58vh;min-height:430px}.hero h1{font-size:29px}.section{padding:14px 10px}.row{grid-template-columns:76px 1fr}.photo{height:220px}.profile{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<div class="authScreen" id="authScreen">
-  <div class="authPanel">
-    <h1>回到云溪小院</h1>
-    <div class="lead">选一个喜欢的角色，给自己的小院留一个账号。以后换手机、换浏览器，也能继续之前的生活。</div>
-    <div class="authTabs"><button id="authLoginTab" class="active" onclick="setAuthMode('login')">登录</button><button id="authRegisterTab" onclick="setAuthMode('register')">第一次来</button></div>
-    <div id="registerCharacterBlock" style="display:none">
-      <div class="characterTitle">今天想以什么身份住进小院？</div>
-      <div class="characterGrid" id="authCharacterGrid"></div>
-      <div style="height:10px"></div>
-    </div>
-    <div class="authForm">
-      <input id="authUsername" autocomplete="username" placeholder="账号（3–24位）">
-      <input id="authPassword" autocomplete="current-password" type="password" placeholder="密码（至少6位）">
-      <button class="authSubmit" id="authSubmit" onclick="submitAuth()">进入小院</button>
-      <div class="authError" id="authError"></div>
-    </div>
-    <div class="authFoot">账号密码只用于这个游戏的云存档。密码在服务器中以加盐哈希保存，不会写进存档或网页源码。</div>
-  </div>
-</div>
-<div class="app">
-<header class="top"><div class="topin">
-<div class="brand">向往田园<small>田园日常</small></div>
-<div class="pill">🪙 <span id="coin">9,999,999,999,999</span></div>
-<div class="pill">💎 <span id="gem">9,999,999,999,999</span></div>
-<div class="pill">⚡ <span id="energy">9,999,999,999,999</span></div>
-<button class="accountChip" id="accountChip" onclick="openAccountPanel()"><span class="accountAvatar" id="accountAvatar">🌱</span><span class="accountName" id="accountName">未登录</span></button>
-</div></header>
-<div class="installBar" id="installBar">
-  <div class="grow"><b>安装“向往田园”到手机</b><small>全屏启动 · 独立图标 · 自动存档 · 可离线进入</small></div>
-  <button class="btn" onclick="installWebApp()">安装</button>
-  <button class="btn" onclick="hideInstallBar()">×</button>
-</div>
-
-<section class="hero">
-<div class="scene scene-home" id="heroScene">
-<div class="weather" id="weather">☀️ 晴 · 24℃</div>
-<div class="sceneCopy"><span class="sceneTag" id="sceneTag">今日 · 小院</span><h1 id="sceneTitle">把日子种进风里</h1><p id="sceneDesc">种田、做饭、装修、合成、探索。资源无限，但你的庄园仍需要一点点成长。</p></div>
-</div>
-</section>
+<header class="top">
+  <div class="brand"><b>向往田园</b><small>中国实景 · 公开直播</small></div>
+  <div class="topActions"><button class="chip" id="roleChip" onclick="openProfile()">🌿 山野旅人</button></div>
+</header>
 
 <main>
 <section class="page active" id="page-home">
-<div class="worldWrap">
-  <div class="worldMap" id="worldMap">
-    <div class="worldTitle"><b id="worldPlaceTitle">云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small><button class="locationBadge" id="locationBadge" onclick="openLocationPicker()">📍 选择落脚地</button></div>
-    <div class="worldActions"><button aria-label="更多" onclick="openCozyMenu()">···</button></div>
-    <button class="villageOnlyZone v-real" onclick="goPage('explore')"><b>高公村实景</b><small>村内现场 · 水网 · 文化活动</small></button>
-    <button class="villageOnlyZone v-monitor" onclick="goPage('monitor');renderMonitor()"><b>监控中心</b><small>32路安防 · 授权流接入</small></button>
-    <button class="villageOnlyZone v-info" onclick="openGaogongVillageInfo()"><b>村务资料</b><small>数字乡村 · 养老 · 基础设施</small></button>
-    
-    <div class="worldRain"></div>
-    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div><button class="sceneGalleryBtn" id="sceneGalleryBtn" onclick="nextVillageScene()">实景 1/1</button><a class="photoCredit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">实景图来源</a>
-    <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div>
-    <div class="gameStateSink">
-      <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
+  <div class="hero" id="hero">
+    <div class="heroInner">
+      <div class="heroKicker"><span class="liveDot"></span>PUBLIC LIVE · CHINA</div>
+      <h1 id="heroTitle">现在，看看中国正在发生什么</h1>
+      <p id="heroDesc">只接公开面向公众的官方实景直播，不接住宅、小区、村庄安防或任何需要绕过权限的摄像头。</p>
+      <div class="heroBtns">
+        <button class="heroBtn" onclick="goPage('live')">打开实时直播</button>
+        <button class="heroBtn alt" onclick="goPage('scene')">选择中国实景</button>
+      </div>
     </div>
   </div>
-</div>
-<div class="homeDiary">
-  <div class="diaryPaper">
-    <div class="date" id="diaryDate">TODAY IN YUNXI</div>
-    <p id="story">高公村 · 村里的道路、水网、文化活动和数字乡村建设，都从这里进入。</p>
-    <div class="diaryActions">
-      <button onclick="nextStory()">翻一页</button>
-      <button onclick="claimDaily()">收下今天的小礼物</button>
-    </div>
+  <div class="section">
+    <h2>正在直播</h2><div class="sub">央视网公开实时源，点击即可进入官方直播。</div>
+    <div class="featured" id="featured"></div>
   </div>
-</div>
-<div class="gameStateSink">
-  <span id="level">1</span><span id="prosper">0</span><span id="ordersDone">0</span><span id="collectionCount">0</span>
-  <span id="xpText">0 / 100 EXP</span><div class="progress"><i id="xpBar"></i></div>
-  <div id="dailyOrders"></div><div id="tasks"></div>
-</div>
 </section>
 
-<section class="page" id="page-explore">
-<div class="grid">
-<div class="card"><div class="row between"><div><h2>高公村实景</h2><div class="sub">只保留与高公村直接相关、来源明确的现场资料。</div></div><a class="btn alt" href="https://www.sohu.com/a/979391380_121106991" target="_blank" rel="noopener">公开来源</a></div><div class="map" id="map"></div></div>
-</div>
+<section class="page" id="page-scene">
+  <div class="section" style="padding-top:calc(72px + env(safe-area-inset-top))">
+    <div class="card">
+      <h2>我的中国实景</h2>
+      <div class="sub">省、市、县/区、镇/街道逐级选择；背景照片来自公开图库并保留来源。</div>
+      <div class="picker">
+        <div class="row"><label>省/地区</label><select id="province" onchange="provinceChanged()"></select></div>
+        <div class="row"><label>市/州</label><select id="city" onchange="cityChanged()"></select></div>
+        <div class="row"><label>县/区</label><select id="county" onchange="countyChanged()"></select></div>
+        <div class="row"><label>镇/街道</label><select id="town" onchange="townChanged()"></select></div>
+        <div class="row"><label>村/社区</label><input id="village" placeholder="可选：输入村、社区或自然村" oninput="villageChanged()"></div>
+        <button class="btn" onclick="loadPlacePhoto()">查看这里的实景</button>
+      </div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="photo" id="placePhoto">
+      <div class="photoText"><b id="placeName">还没有选择地方</b><small id="placePath">从上面选一个地区</small><a class="credit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">查看图片来源</a></div>
+    </div>
+  </div>
 </section>
 
-<section class="page" id="page-monitor">
-<div class="grid">
-  <div class="card">
-    <div class="monitorHero">
-      <b>高公村 · 实时监控中心</b>
-      <small>公开资料显示，高公村建有32路高清安防监控并全天候运行。当前网页只显示获得明确授权的公开视频流；未授权通道不会尝试连接。</small>
-    </div>
-    <div id="monitorSummary" class="sub" style="margin-top:10px">正在读取监控接入状态…</div>
-    <div class="monitorGrid" id="monitorGrid"></div>
-    <div class="cameraStatus" id="cameraStatus"></div>
+<section class="page" id="page-live">
+  <div class="section" style="padding-top:calc(72px + env(safe-area-inset-top))">
+    <h2>中国公开实时直播</h2>
+    <div class="sub">当前只收录官方公开页面。部分央视页面可能限制第三方内嵌，遇到黑屏时直接点“官方直播”即可。</div>
+    <div class="filters" id="filters"></div>
+    <div class="list" id="liveList"></div>
   </div>
-</div>
 </section>
 </main>
-</div>
 
 <nav class="bottom">
-<button class="nav active" data-page="home"><i>🏘️</i>高公村</button>
-<button class="nav" data-page="explore"><i>📷</i>实景</button>
-<button class="nav" data-page="monitor"><i>📹</i>监控</button>
+  <button class="nav active" data-page="home" onclick="goPage('home')"><i>🏞️</i>首页</button>
+  <button class="nav" data-page="scene" onclick="goPage('scene')"><i>📍</i>实景</button>
+  <button class="nav" data-page="live" onclick="goPage('live')"><i>📡</i>直播</button>
 </nav>
+
+<div class="modal" id="modal">
+  <div class="modalBox">
+    <div class="modalHead"><h2 id="modalTitle">直播</h2><button class="btn alt" onclick="closeModal()">关闭</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
-<div class="modal" id="modal"><div class="modalbox"><div class="row between"><h2 id="modalTitle">说明</h2><button class="btn alt" onclick="closeModal()">关闭</button></div><div id="modalBody" class="sub"></div></div></div>
 
 <script>
 (function(){
-var INF=9999999999999;
-var SAVE='tianyuan_online_v41';
-var AUTH_TOKEN_KEY='tianyuan_auth_token_v1';
-var authToken=localStorage.getItem(AUTH_TOKEN_KEY)||'';
-var currentUser=null,authMode='login',selectedCharacter='farmer',cloudSaveTimer=null,cloudLoading=false;
-var CHARACTER_META={
- farmer:{name:'田野少年',icon:'🌾',desc:'喜欢土地和四季'},
- cook:{name:'灶台食客',icon:'🍲',desc:'喜欢烟火和料理'},
- angler:{name:'河湾钓客',icon:'🎣',desc:'喜欢河风和水声'},
- gardener:{name:'花房园丁',icon:'🌿',desc:'喜欢花草和院子'}
+const STORE="tianyuan_china_live_v1";
+const ROLES={
+  traveler:{icon:"🌿",name:"山野旅人"},
+  observer:{icon:"🔭",name:"生态观察员"},
+  photographer:{icon:"📷",name:"实景记录者"},
+  wanderer:{icon:"🧭",name:"中国漫游者"}
 };
-var cropPhotos={
-'小麦':'https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?auto=format&fit=crop&w=700&q=78',
-'玉米':'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=78',
-'番茄':'https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&w=700&q=78',
-'胡萝卜':'https://images.unsplash.com/photo-1447175008436-170170753b51?auto=format&fit=crop&w=700&q=78',
-'草莓':'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=700&q=78',
-'茶叶':'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=700&q=78',
-'南瓜':'https://images.unsplash.com/photo-1509622905150-fa66d3906e09?auto=format&fit=crop&w=700&q=78',
-'葡萄':'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=700&q=78'
-};
-var growthStagePhotos=[
-'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=76',
-'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=700&q=76',
-'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=700&q=76'
-];
-var crops=[
-{name:'小麦',time:12,xp:8},{name:'玉米',time:18,xp:10},{name:'番茄',time:24,xp:12},{name:'胡萝卜',time:30,xp:14},
-{name:'草莓',time:38,xp:18},{name:'茶叶',time:48,xp:22},{name:'南瓜',time:60,xp:26},{name:'葡萄',time:75,xp:32}
-];
-var recipes=[
-{name:'田园吐司',photo:'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',xp:16,desc:'小麦 · 牛奶 · 蜂蜜'},
-{name:'番茄炒蛋',photo:'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80',xp:18,desc:'番茄 · 鸡蛋'},
-{name:'玉米浓汤',photo:'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80',xp:22,desc:'玉米 · 牛奶'},
-{name:'草莓蛋糕',photo:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=700&q=80',xp:28,desc:'草莓 · 小麦 · 牛奶'},
-{name:'山野炖锅',photo:'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=700&q=80',xp:30,desc:'蘑菇 · 南瓜 · 胡萝卜'},
-{name:'茶香点心',photo:'https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=700&q=80',xp:35,desc:'茶叶 · 蜂蜜 · 小麦'}
-];
-var places=[
-{name:'河湾',desc:'钓鱼 · 河鲜',photo:'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80'},
-{name:'松林',desc:'蘑菇 · 木材',photo:'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80'},
-{name:'茶山',desc:'茶叶 · 山泉',photo:'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=900&q=80'},
-{name:'老街',desc:'集市 · 随机事件',photo:'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80'},
-{name:'果园',desc:'水果 · 手信',photo:'https://images.unsplash.com/photo-1444392061186-9fc38f84f726?auto=format&fit=crop&w=900&q=80'},
-{name:'观景台',desc:'摄影 · 稀有收藏',photo:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80'}
-];
-var furniture=[
-{name:'原木长桌',photo:'https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?auto=format&fit=crop&w=700&q=80'},
-{name:'亚麻沙发',photo:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80'},
-{name:'藤编躺椅',photo:'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=700&q=80'},
-{name:'陶土花器',photo:'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=700&q=80'}
-];
-var friends=[
-{name:'林夏',photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80',role:'民宿主理人'},
-{name:'阿禾',photo:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80',role:'木作匠人'},
-{name:'小满',photo:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=500&q=80',role:'山野向导'},
-{name:'陈叔',photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80',role:'老茶农'}
-];
-var rooms=[
-{name:'主屋',photo:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80'},
-{name:'乡间厨房',photo:'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80'},
-{name:'客舍',photo:'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'},
-{name:'玻璃花房',photo:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80'},
-{name:'手作工坊',photo:'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=900&q=80'},
-{name:'露台',photo:'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80'}
-];
-var mergeIcons=['🌱','🌿','🌾','🧺','🥣','🏺','🪴','🧰','🕯️','🎁'];
-var story=[
-'第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。',
-'第二章 · 第一场春雨落下，荒地变得松软。你决定把东边那块地改成果园。',
-'第三章 · 老街重新开集，村民们开始把自家的菜和手作摆到一起。',
-'第四章 · 河湾出现了一尾很少见的锦鲤，关于它的故事传遍了整个村子。',
-'第五章 · 客舍迎来了第一批远方来客，小院的灯一直亮到很晚。',
-'第六章 · 茶山进入采摘季，陈叔教你分辨清晨第一批嫩芽。',
-'第七章 · 手作工坊修好以后，旧木料和陶片都有了新的用途。',
-'第八章 · 夏夜露台办起了长桌晚餐，所有人都带来了一道自己的拿手菜。',
-'第九章 · 果园第一次丰收，团子背着小包去邻村送了一篮葡萄。',
-'第十章 · 秋风吹过麦田，你发现这座庄园终于有了自己独特的样子。',
-'第十一章 · 冬天来了，山里变安静，屋内却比任何时候都热闹。',
-'第十二章 · 新的一年从重新翻土开始。故事没有结束，只是又到了春天。'
-];
+let state={role:"traveler",location:{province:"",city:"",county:"",town:"",village:"",photo:null},filter:"全部"};
+let lives=[];
 
-function fresh(){
- return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),location:{province:'',city:'',county:'',town:'',village:'',photo:null},
- merge:Array.from({length:48},function(){return null}),mergeSel:null,mergeCount:0,mergeMax:1,story:0,
- collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0,profile:{lastCloudSync:0},animals:{chicken:{fedAt:0,readyAt:0},cow:{fedAt:0,readyAt:0},bee:{fedAt:0,readyAt:0},grape:{fedAt:0,readyAt:0}},weather:null};
-}
-var state=fresh();
-try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
-state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;state.location=state.location||fresh().location;
-function localSaveKey(){return currentUser?SAVE+':user:'+currentUser.id:SAVE;}
-function save(){try{localStorage.setItem(localSaveKey(),JSON.stringify(state));}catch(e){}if(currentUser&&!cloudLoading)scheduleCloudSave();}
-function fmt(){return '∞';}
-
-function authHeaders(){return authToken?{'Content-Type':'application/json','Authorization':'Bearer '+authToken}:{'Content-Type':'application/json'};}
-async function apiJSON(url,opts){
- var res=await fetch(url,Object.assign({headers:authHeaders()},opts||{}));
- var data={};try{data=await res.json();}catch(e){}
- if(!res.ok){var err=new Error(data.error||('HTTP '+res.status));err.status=res.status;throw err;}return data;
-}
-function renderCharacterChoices(){
- var el=document.getElementById('authCharacterGrid');if(!el)return;
- el.innerHTML=Object.keys(CHARACTER_META).map(function(k){var c=CHARACTER_META[k];return '<button class="charCard '+(selectedCharacter===k?'active':'')+'" onclick="chooseCharacter(\''+k+'\')"><span class="face">'+c.icon+'</span><b>'+c.name+'</b><small>'+c.desc+'</small></button>';}).join('');
-}
-window.chooseCharacter=function(k){if(!CHARACTER_META[k])return;selectedCharacter=k;renderCharacterChoices();}
-window.setAuthMode=function(mode){
- authMode=mode==='register'?'register':'login';
- document.getElementById('authLoginTab').classList.toggle('active',authMode==='login');
- document.getElementById('authRegisterTab').classList.toggle('active',authMode==='register');
- document.getElementById('registerCharacterBlock').style.display=authMode==='register'?'block':'none';
- document.getElementById('authSubmit').textContent=authMode==='register'?'住进小院':'进入小院';
- document.getElementById('authPassword').autocomplete=authMode==='register'?'new-password':'current-password';
- document.getElementById('authError').textContent='';
- renderCharacterChoices();
-}
-function authErrorText(code){
- return ({'username-invalid':'账号需为3–24位中文、字母、数字或下划线','password-invalid':'密码至少6位','username-exists':'这个账号已经有人用了','invalid-credentials':'账号或密码不对','too-many-attempts':'尝试太频繁，稍后再试','account-service-unavailable':'云存档服务暂时不可用'}[code]||'暂时没能进入小院，请再试一次');
-}
-window.submitAuth=async function(){
- var u=document.getElementById('authUsername').value.trim(),p=document.getElementById('authPassword').value;
- var btn=document.getElementById('authSubmit'),err=document.getElementById('authError');err.textContent='';btn.disabled=true;btn.textContent='正在开门…';
- try{
-  var body={username:u,password:p};if(authMode==='register')body.character=selectedCharacter;
-  var data=await apiJSON('/api/tianyuan/'+(authMode==='register'?'register':'login'),{method:'POST',body:JSON.stringify(body)});
-  authToken=data.token;currentUser=data.user;localStorage.setItem(AUTH_TOKEN_KEY,authToken);
-  selectedCharacter=currentUser.character||'farmer';await afterLogin();
- }catch(e){err.textContent=authErrorText(e.message);}
- finally{btn.disabled=false;btn.textContent=authMode==='register'?'住进小院':'进入小院';}
-}
-async function afterLogin(){
- document.getElementById('authScreen').classList.add('hidden');renderAccountChip();
- var accountLocal=null;
- try{var lr=localStorage.getItem(SAVE+':user:'+currentUser.id);if(lr)accountLocal=JSON.parse(lr);}catch(e){}
- try{
-  cloudLoading=true;
-  var data=await apiJSON('/api/tianyuan/save');
-  if(data.save&&data.save.payload&&Object.keys(data.save.payload).length){
-    state=Object.assign(fresh(),data.save.payload);
-  }else if(accountLocal&&typeof accountLocal==='object'){
-    state=Object.assign(fresh(),accountLocal);
-  }else{
-    state=fresh();
+try{
+  const saved=JSON.parse(localStorage.getItem(STORE)||"null");
+  if(saved&&typeof saved==="object")state=Object.assign(state,saved);
+  if(!saved){
+    const old=JSON.parse(localStorage.getItem("tianyuan_online_v41")||"null");
+    if(old?.location?.province)state.location=Object.assign(state.location,old.location,{photo:old.location.photo?.gallery?null:old.location.photo||null});
   }
-  state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;state.location=state.location||fresh().location;
-  try{localStorage.setItem(SAVE+':user:'+currentUser.id,JSON.stringify(state));}catch(e){}
-  cloudLoading=false;
-  if(!data.save)await pushCloudSave();
- }catch(e){cloudLoading=false;toast('已登录，云存档稍后再同步');}
- finally{renderAll();applyWorldMood();applyLocationScene();if(!state.location?.province)setTimeout(function(){openLocationPicker();},500);}
-}
-function renderAccountChip(){
- var c=currentUser&&CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
- var av=document.getElementById('accountAvatar'),nm=document.getElementById('accountName');
- if(av)av.textContent=c.icon;if(nm)nm.textContent=currentUser?(currentUser.displayName||currentUser.username):'未登录';
-}
-function scheduleCloudSave(){clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(function(){pushCloudSave().catch(function(){});},900);}
-async function pushCloudSave(){
- if(!currentUser||!authToken||cloudLoading)return;
- var data=await apiJSON('/api/tianyuan/save',{method:'PUT',body:JSON.stringify({payload:state})});
- state.profile=state.profile||{};state.profile.lastCloudSync=Date.now();try{localStorage.setItem(localSaveKey(),JSON.stringify(state));}catch(e){}
- var cs=document.getElementById('cloudStatus');if(cs)cs.textContent='云存档已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
- return data;
-}
-async function bootAccount(){
- renderCharacterChoices();setAuthMode('login');
- if(!authToken){document.getElementById('authScreen').classList.remove('hidden');return;}
- try{
-  var data=await apiJSON('/api/tianyuan/me');currentUser=data.user;selectedCharacter=currentUser.character||'farmer';await afterLogin();
- }catch(e){authToken='';currentUser=null;localStorage.removeItem(AUTH_TOKEN_KEY);document.getElementById('authScreen').classList.remove('hidden');renderAccountChip();}
-}
-window.openAccountPanel=function(){
- if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
- var c=CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
- var roles=Object.keys(CHARACTER_META).map(function(k){return '<button class="roleEdit '+(currentUser.character===k?'active':'')+'" onclick="changeCharacter(\''+k+'\')">'+CHARACTER_META[k].icon+'<div style="font-size:8px;margin-top:2px">'+CHARACTER_META[k].name+'</div></button>';}).join('');
- var admin=currentUser.role==='admin'?'<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#315c43;color:#fff;font-size:8px">管理员</span>':'';
- openModal('我的小院','<div class="accountCard"><div class="accountBigAvatar">'+c.icon+'</div><div class="accountMeta"><b>'+escapeHtml(currentUser.displayName||currentUser.username)+admin+'</b><small>@'+escapeHtml(currentUser.username)+' · '+c.name+'</small></div></div><div class="roleEditGrid">'+roles+'</div><div class="cloudStatus" id="cloudStatus">云存档已连接</div><div class="row" style="margin-top:10px"><button class="btn" onclick="manualCloudSave()">立即同步</button><button class="btn alt" onclick="logoutAccount()">退出账号</button></div>');
-}
-function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
-window.changeCharacter=async function(k){
- if(!CHARACTER_META[k])return;
- try{var data=await apiJSON('/api/tianyuan/profile',{method:'PUT',body:JSON.stringify({character:k})});currentUser=data.user;selectedCharacter=k;renderAccountChip();closeModal();toast('换成了 '+CHARACTER_META[k].name);save();}catch(e){toast('角色切换失败');}
-}
-window.manualCloudSave=async function(){var cs=document.getElementById('cloudStatus');if(cs)cs.textContent='正在同步…';try{await pushCloudSave();toast('云存档同步完成');}catch(e){if(cs)cs.textContent='同步失败，请稍后重试';}}
-window.logoutAccount=async function(){
- try{await apiJSON('/api/tianyuan/logout',{method:'POST',body:'{}'});}catch(e){}
- authToken='';currentUser=null;localStorage.removeItem(AUTH_TOKEN_KEY);closeModal();renderAccountChip();document.getElementById('authScreen').classList.remove('hidden');setAuthMode('login');
-}
-function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){e.classList.remove('show')},1600)}
-function addXP(n){state.xp+=n;while(state.xp>=state.level*100){state.xp-=state.level*100;state.level++;state.prosper+=25;toast('庄园升到 '+state.level+' 级');}save();renderStats();}
-function collect(k){if(!state.collection[k]){state.collection[k]=1;state.prosper+=3;toast('新图鉴：'+k);}save();}
-function renderStats(){
- document.getElementById('coin').textContent=fmt();document.getElementById('gem').textContent=fmt();document.getElementById('energy').textContent=fmt();
- document.getElementById('level').textContent=state.level;document.getElementById('prosper').textContent=state.prosper;
- document.getElementById('ordersDone').textContent=state.ordersDone;document.getElementById('collectionCount').textContent=Object.keys(state.collection).length;
- var need=state.level*100;document.getElementById('xpText').textContent=state.xp+' / '+need+' EXP';document.getElementById('xpBar').style.width=Math.min(100,state.xp/need*100)+'%';
- document.getElementById('mergeMax').textContent=state.mergeMax;document.getElementById('mergeCount').textContent=state.mergeCount;
- document.getElementById('story').textContent=story[state.story%story.length];
- var ml=document.getElementById('mapLevel'),mp=document.getElementById('mapProsper');
- if(ml)ml.textContent='Lv.'+state.level;if(mp)mp.textContent=state.prosper;
-}
-function renderSeeds(){
- var h='';crops.forEach(function(c,i){h+='<button class="seed '+(state.selectedCrop===i?'active':'')+'" onclick="selectCrop('+i+')"><img src="'+cropPhotos[c.name]+'" alt=""><span>'+c.name+' · '+c.time+'秒</span></button>';});document.getElementById('seedbar').innerHTML=h;
-}
-window.selectCrop=function(i){state.selectedCrop=i;save();renderSeeds();}
-function renderPlots(){
- var now=Date.now(),h='';
- state.plots.forEach(function(p,i){
-  if(!p){
-    h+='<button class="plot" onclick="plotClick('+i+')" style="background:linear-gradient(135deg,#9e7448,#724e31)"><div class="plotText"><b>空土地</b><small>点击种下 '+crops[state.selectedCrop].name+'</small></div></button>';
-    return;
-  }
-  var c=crops[p.crop],start=p.planted||p.ready-c.time*1000,total=c.time*1000,progress=Math.max(0,Math.min(1,(now-start)/total));
-  var left=Math.max(0,Math.ceil((p.ready-now)/1000)),ready=left<=0,stage=ready?3:(progress<.18?0:(progress<.55?1:2));
-  var stageText=ready?'成熟':(stage===0?'刚播种':(stage===1?'幼苗期':'生长期'));
-  var photo=ready?cropPhotos[c.name]:growthStagePhotos[Math.min(2,stage)];
-  h+='<button class="plot" onclick="plotClick('+i+')"><img src="'+photo+'"><span class="plotStage">'+stageText+'</span><div class="cropProgress"><i style="width:'+Math.round(progress*100)+'%"></i></div><div class="plotText"><b>'+c.name+(ready?' · 已成熟':'')+'</b><small>'+(ready?'点击收获':left+' 秒后成熟')+'</small></div></button>';
- });
- document.getElementById('plots').innerHTML=h;
-}
-window.plotClick=function(i){
- var p=state.plots[i],now=Date.now();
- if(!p){var c=crops[state.selectedCrop];state.plots[i]={crop:state.selectedCrop,ready:now+c.time*1000,planted:now};toast('种下 '+c.name);collect(c.name);save();renderPlots();return;}
- if(now>=p.ready){var c2=crops[p.crop];state.plots[i]=null;addXP(c2.xp);state.prosper+=2;collect(c2.name+'收获');toast('收获 '+c2.name);save();renderPlots();}else toast('还需要一点时间');
-}
-window.harvestAll=function(){var now=Date.now(),n=0;state.plots.forEach(function(p,i){if(p&&now>=p.ready){addXP(crops[p.crop].xp);collect(crops[p.crop].name+'收获');state.plots[i]=null;n++;}});save();renderPlots();toast(n?'收获 '+n+' 块农田':'暂无成熟作物');}
-function renderPasture(){
- var arr=[
-  ['散养鸡舍','鸡蛋','https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=700&q=80','chicken'],
-  ['奶牛牧场','鲜奶','https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=700&q=80','cow'],
-  ['蜂箱','蜂蜜','https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=700&q=80','bee'],
-  ['葡萄园','葡萄','https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=700&q=80','grape']
- ];
- var now=Date.now();
- document.getElementById('pasture').innerHTML=arr.map(function(x,i){
-  var a=state.animals[x[3]]||{fedAt:0,readyAt:0},ready=a.readyAt&&now>=a.readyAt,waiting=a.readyAt&&now<a.readyAt;
-  var mood=ready?'可以收取了':waiting?'正在慢慢产出':'今天还没照料';
-  var action=ready?'收取':waiting?Math.max(1,Math.ceil((a.readyAt-now)/1000))+'秒':'喂养';
-  return '<div class="shop"><img src="'+x[2]+'"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' · '+fmt()+'</small><span class="animalMood">'+mood+'</span><button class="btn" style="margin-top:8px" onclick="pastureAction('+i+')">'+action+'</button></div></div>';
- }).join('');
-}
-window.pastureAction=function(i){
- var keys=['chicken','cow','bee','grape'],names=['鸡蛋','鲜奶','蜂蜜','葡萄'],key=keys[i],now=Date.now();
- state.animals[key]=state.animals[key]||{fedAt:0,readyAt:0};
- var a=state.animals[key];
- if(a.readyAt&&now>=a.readyAt){a.fedAt=0;a.readyAt=0;collect(names[i]);addXP(12+i*3);toast('收好了 '+names[i]);}
- else if(a.readyAt&&now<a.readyAt){toast('还在慢慢产出');}
- else{a.fedAt=now;a.readyAt=now+(12+i*4)*1000;toast(i===0?'撒了一把谷子':i===1?'添好了草料':i===2?'检查了蜂箱':'给葡萄藤浇了水');}
- save();renderPasture();
-}
-function renderRecipes(){document.getElementById('recipes').innerHTML=recipes.map(function(r,i){return '<div class="recipe"><img src="'+r.photo+'"><div class="inside"><b>'+r.name+'</b><small>'+r.desc+'</small><button class="btn" style="margin-top:8px" onclick="cook('+i+')">烹饪</button></div></div>';}).join('');}
-window.cook=function(i){var r=recipes[i];openCookingScene(i,r);}
-window.cookRandom=function(){window.cook(Math.floor(Math.random()*recipes.length));}
-function newOrders(){
- var h='',hf='';for(var i=0;i<3;i++){var c=crops[(state.level+i*2)%crops.length];h+='<div class="order"><b>田园委托 · '+c.name+'</b><small>提交 '+c.name+' × '+(3+i)+' · 奖励资源仍保持无限</small><button class="btn" onclick="finishOrder(this,\''+c.name+'\')">完成委托</button></div>';}
- for(var j=0;j<3;j++){var r=recipes[(state.level+j)%recipes.length];hf+='<div class="order"><b>餐桌订单 · '+r.name+'</b><small>无限食材即时制作 · 获得经验与繁荣度</small><button class="btn" onclick="finishFoodOrder(this,\''+r.name+'\')">交付</button></div>';}
- document.getElementById('dailyOrders').innerHTML=h;document.getElementById('foodOrders').innerHTML=hf;
-}
-window.finishOrder=function(btn,name){btn.disabled=true;btn.textContent='已完成';state.ordersDone++;state.prosper+=8;collect('订单：'+name);addXP(20);save();}
-window.finishFoodOrder=function(btn,name){btn.disabled=true;btn.textContent='已交付';state.ordersDone++;state.prosper+=10;collect('料理订单：'+name);addXP(28);save();}
-function renderTasks(){var arr=[['完成 3 次收获',Math.min(state.ordersDone,3),3],['发现 5 个图鉴',Math.min(Object.keys(state.collection).length,5),5],['庄园达到 5 级',Math.min(state.level,5),5],['完成 10 个订单',Math.min(state.ordersDone,10),10]];document.getElementById('tasks').innerHTML=arr.map(function(x){var done=x[1]>=x[2];return '<div class="ach"><div class="inside"><b>'+x[0]+'</b><small>'+x[1]+' / '+x[2]+'</small><div class="progress" style="margin-top:8px"><i style="width:'+Math.min(100,x[1]/x[2]*100)+'%"></i></div>'+(done?'<small style="color:#42734f;margin-top:6px">已完成</small>':'')+'</div></div>';}).join('');}
-function renderMerge(){
- var h='';state.merge.forEach(function(v,i){h+='<button class="cell '+(state.mergeSel===i?'sel':'')+'" onclick="mergeClick('+i+')">'+(v?mergeIcons[Math.min(mergeIcons.length-1,v-1)]:'')+(v?'<small>Lv.'+v+'</small>':'')+'</button>';});document.getElementById('mergeGrid').innerHTML=h;renderStats();
-}
-window.spawnMerge=function(){var empt=[];state.merge.forEach(function(v,i){if(!v)empt.push(i)});if(!empt.length){toast('合成盘已满');return;}for(var n=0;n<Math.min(5,empt.length);n++){var ix=empt.splice(Math.floor(Math.random()*empt.length),1)[0];state.merge[ix]=1;}collect('合成素材 Lv.1');save();renderMerge();}
-window.mergeClick=function(i){var v=state.merge[i];if(!v){state.merge[i]=1;collect('合成素材 Lv.1');save();renderMerge();return;}if(state.mergeSel===null){state.mergeSel=i;renderMerge();return;}var a=state.mergeSel;if(a===i){state.mergeSel=null;renderMerge();return;}if(state.merge[a]===state.merge[i]){var nv=state.merge[i]+1;state.merge[a]=null;state.merge[i]=nv;state.mergeSel=null;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,nv);state.prosper+=nv;collect('合成收藏 Lv.'+nv);addXP(8*nv);save();renderMerge();toast('合成 Lv.'+nv);}else{state.mergeSel=i;renderMerge();}}
-window.autoMerge=function(){var changed=0;for(var lv=1;lv<10;lv++){var ids=[];state.merge.forEach(function(v,i){if(v===lv)ids.push(i)});while(ids.length>=2){var a=ids.pop(),b=ids.pop();state.merge[a]=null;state.merge[b]=lv+1;state.mergeCount++;state.mergeMax=Math.max(state.mergeMax,lv+1);collect('合成收藏 Lv.'+(lv+1));changed++;}}state.mergeSel=null;state.prosper+=changed*2;save();renderMerge();toast(changed?'自动合成 '+changed+' 次':'没有可合成物品');}
-function isGaogongVillage(){
- var l=state.location||{};return l.province==='山西省'&&l.city==='临汾市'&&l.county==='洪洞县'&&l.town==='万安镇'&&l.village==='高公村';
-}
-function renderMap(){
- var el=document.getElementById('map');if(!el)return;
- if(isGaogongVillage()){
-  var gp=[
-   {name:'高公村 · 村内实景',desc:'本村公开报道现场图',photo:'/api/tianyuan/gaogong-image/0',type:'photo'},
-   {name:'主干水网',desc:'2022年改造，581户实现24小时供水',photo:'/api/tianyuan/gaogong-image/1',type:'photo'},
-   {name:'联手说事',desc:'本村基层治理现场',photo:'/api/tianyuan/gaogong-image/2',type:'photo'},
-   {name:'文化活动',desc:'村民文化活动与艺术节',photo:'/api/tianyuan/gaogong-image/3',type:'photo'},
-   {name:'万安区域养老中心',desc:'原高公小学改造 · 60张床位',photo:'/api/tianyuan/gaogong-image/0',type:'text'},
-   {name:'数字乡村指挥中心',desc:'安防、广播、村务直播等',photo:'/api/tianyuan/gaogong-image/0',type:'text'}
-  ];
-  el.innerHTML=gp.map(function(p,i){return '<div class="place" onclick="visitGaogong('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small><span class="gaogongTag">'+(p.type==='photo'?'本村公开现场图':'公开资料提及')+'</span></div></div>';}).join('');
-  return;
- }
- el.innerHTML='<div class="place" onclick="openLocationPicker()" style="background-image:url(\''+(activeLocationPhoto()?.url||scenePhotos.home)+'\')"><div><b>当前落脚地</b><small>选择高公村后显示本村实景资料</small></div></div>';
-}
-window.visitGaogong=function(i){
- var items=[
-  {title:'高公村 · 村内实景',body:'这里展示的是公开报道中明确指向洪洞县万安镇高公村的现场资料。',img:'/api/tianyuan/gaogong-image/0'},
-  {title:'高公村主干水网',body:'公开资料记载，高公村完成深井和主干水网改造，581户实现24小时供水，并安装智能水表。',img:'/api/tianyuan/gaogong-image/1'},
-  {title:'洪洞“联手说事”',body:'高公村通过“联手说事”等方式处理村内排水巷等长期问题，是本村基层治理的重要场景。',img:'/api/tianyuan/gaogong-image/2'},
-  {title:'高公村文化活动',body:'公开资料记载，高公村组建锣鼓队、舞蹈团、合唱团，并连续举办文化艺术节。',img:'/api/tianyuan/gaogong-image/3'},
-  {title:'万安区域养老中心',body:'公开资料记载，2023年投资改造原高公小学，设60张床位并配套幸福食堂，服务周边老人。',img:null},
-  {title:'数字乡村指挥中心',body:'公开资料记载，高公村建设数字乡村指挥中心，接入安防监控、应急广播、4K闭路电视、村级电视台与村务直播。',img:null}
- ];
- var x=items[i]||items[0],media=x.img?'<img src="'+x.img+'" style="width:100%;height:210px;object-fit:cover;border-radius:16px;margin:8px 0 10px" onerror="this.style.display=\'none\'">':'';
- openModal(x.title,media+'<div style="font-size:11px;line-height:1.7;color:#666">'+x.body+'</div><div style="margin-top:10px"><a href="https://www.sohu.com/a/979391380_121106991" target="_blank" rel="noopener" style="font-size:10px;color:#315c43">查看公开资料来源</a></div>');
- collect('高公村：'+x.title);save();
-}
-window.explore=function(i){if(i===0){startFishing();return;}var p=places[i],finds=[['鲤鱼','河蚌','芦苇'],['松茸','野花','木材'],['明前茶','山泉水','竹叶'],['旧邮票','手作杯','老照片'],['水蜜桃','果酱','葡萄篮'],['山顶日落','云海照片','观星卡']][i];var f=finds[Math.floor(Math.random()*finds.length)];state.discoveries[f]=1;collect(f);addXP(18+i*2);state.prosper+=3;save();renderDiscoveries();toast(p.name+' 发现：'+f);}
-function renderDiscoveries(){var ks=Object.keys(state.discoveries);document.getElementById('discoveries').innerHTML=(ks.length?ks:['尚未发现']).slice(-8).map(function(k){return '<div class="ach"><div class="inside"><b>'+k+'</b><small>'+(k==='尚未发现'?'去地图探索看看':'已收入旅行图鉴')+'</small></div></div>';}).join('');}
-function renderRooms(){document.getElementById('rooms').innerHTML=rooms.map(function(r,i){var lv=state.buildings[r.name]||1;return '<div class="room" onclick="upgradeRoom('+i+')" style="background-image:url(\''+r.photo+'\')"><span>'+r.name+' · Lv.'+lv+'</span></div>';}).join('');}
-window.upgradeRoom=function(i){var n=rooms[i].name;state.buildings[n]=(state.buildings[n]||1)+1;state.prosper+=12;addXP(20);save();renderRooms();toast(n+' 升到 Lv.'+state.buildings[n]);}
-window.upgradeAllBuildings=function(){rooms.forEach(function(r){state.buildings[r.name]=(state.buildings[r.name]||1)+1});state.prosper+=rooms.length*10;addXP(60);save();renderRooms();toast('全部建筑提升 1 级');}
-function renderFurniture(){document.getElementById('furniture').innerHTML=furniture.map(function(f,i){var own=!!state.furniture[f.name];return '<div class="shop"><img src="'+f.photo+'"><div class="inside"><b>'+f.name+'</b><small>'+(own?'已摆放在家园':'无限资源免费领取')+'</small><button class="btn" style="margin-top:8px" onclick="buyFurniture('+i+')">'+(own?'已拥有':'领取')+'</button></div></div>';}).join('');}
-window.buyFurniture=function(i){var f=furniture[i];state.furniture[f.name]=1;collect(f.name);state.prosper+=6;save();renderFurniture();toast(f.name+' 已加入家园');}
-function renderFriends(){document.getElementById('friends').innerHTML=friends.map(function(f,i){var v=state.friends[f.name]||0;return '<div class="friend"><img src="'+f.photo+'"><div class="inside"><b>'+f.name+' · '+f.role+'</b><small>好感度 '+v+'</small><div class="progress" style="margin-top:7px"><i style="width:'+Math.min(100,v)+'%"></i></div><div class="row" style="margin-top:8px"><button class="btn" onclick="talk('+i+')">聊天</button><button class="btn alt" onclick="gift('+i+')">送礼</button></div></div></div>';}).join('');}
-window.talk=function(i){var f=friends[i];state.friends[f.name]=(state.friends[f.name]||0)+5;document.getElementById('friendLog').textContent=f.name+' 和你聊了聊最近村里的变化，好感度 +5。';collect('关系：'+f.name);save();renderFriends();}
-window.gift=function(i){var f=friends[i];state.friends[f.name]=(state.friends[f.name]||0)+12;document.getElementById('friendLog').textContent='你送给 '+f.name+' 一份无限资源礼物，好感度 +12。';collect('礼物：'+f.name);save();renderFriends();}
-window.nextStory=function(){state.story=(state.story+1)%story.length;state.prosper+=10;addXP(25);collect('主线第'+(state.story+1)+'章');save();renderStats();toast('主线推进');}
-window.claimDaily=function(){var d=new Date().toDateString();if(state.daily===d){toast('今天已经领取');return;}state.daily=d;state.prosper+=20;addXP(40);collect('今日礼物 '+d);save();toast('今日礼物已领取，资源保持无限');}
-window.unlockAll=function(){state.level=Math.max(state.level,99);state.prosper=Math.max(state.prosper,9999);rooms.forEach(function(r){state.buildings[r.name]=10});furniture.forEach(function(f){state.furniture[f.name]=1});friends.forEach(function(f){state.friends[f.name]=100});story.forEach(function(_,i){state.collection['主线第'+(i+1)+'章']=1});crops.forEach(function(c){state.collection[c.name]=1});recipes.forEach(function(r){state.collection[r.name]=1});state.mergeMax=10;save();renderAll();toast('全部内容已解锁');}
-window.exportSave=function(){var code=btoa(unescape(encodeURIComponent(JSON.stringify(state))));navigator.clipboard&&navigator.clipboard.writeText(code);openModal('存档码','已生成存档码并尝试复制到剪贴板：<br><br><textarea style="width:100%;min-height:120px">'+code+'</textarea>');}
+}catch(e){}
 
-var pendingPage=null,fishTimer=null,fishNeedleTimer=null,fishPos=0,fishDir=1,fishBiting=false;
-window.walkToZone=function(page,x,y,label){
- var actor=document.getElementById('playerActor');if(!actor){switchPage(page);return;}
- hideActionBubble();pendingPage=page;actor.classList.add('walking');actor.style.left=x+'%';actor.style.top=y+'%';
- setTimeout(function(){actor.classList.remove('walking');showActionBubble(label,page,x,y);},860);
+function save(){localStorage.setItem(STORE,JSON.stringify(state));}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),1600);}
+window.goPage=function(page){
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id==="page-"+page));
+  document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+  window.scrollTo({top:0,behavior:"smooth"});
 }
-function showActionBubble(label,page,x,y){
- var b=document.getElementById('actionBubble');if(!b)return;
- document.getElementById('actionTitle').textContent=label;document.getElementById('actionDesc').textContent=page==='farm'?'风里有泥土和草叶的味道。':page==='kitchen'?'屋里正有一点热气。':page==='explore'?'河面今天很安静。':'走近以后能听见生活的声音。';
- b.style.left=Math.min(72,Math.max(5,x))+'%';b.style.top=Math.min(70,Math.max(12,y-16))+'%';b.classList.add('show');
- document.getElementById('actionGo').onclick=function(){hideActionBubble();switchPage(page);};
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function opt(items,value,placeholder){
+  return '<option value="">'+placeholder+'</option>'+(items||[]).map(x=>'<option '+(x===value?'selected':'')+'>'+esc(x)+'</option>').join("");
 }
-window.hideActionBubble=function(){var b=document.getElementById('actionBubble');if(b)b.classList.remove('show');}
+async function getJSON(url){const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
 
-function weatherForToday(){
- var d=new Date(),key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(),n=(key*9301+49297)%233280,roll=n/233280;
- return roll<.18?'rain':roll<.42?'cloud':roll<.63?'wind':'sun';
+async function loadLives(){
+  try{const d=await getJSON("/api/tianyuan/public-lives");lives=d.items||[];}catch(e){lives=[];}
+  renderLives();renderFeatured();
 }
-function renderWorldWeather(){
- var w=state.weather||weatherForToday();state.weather=w;var wm=document.getElementById('worldMap');if(!wm)return;
- wm.classList.remove('weather-rain','weather-cloud','weather-wind');if(w!=='sun')wm.classList.add('weather-'+w);
- var labels={sun:'晴 · 风很轻',rain:'小雨 · 泥土湿润',cloud:'阴天 · 云层很低',wind:'有风 · 树叶沙沙响'};
- var badge=document.getElementById('weatherBadge');if(badge)badge.textContent=labels[w];
- var mw=document.getElementById('mapWeather');if(mw)mw.textContent=labels[w];
+function renderFeatured(){
+  const el=document.getElementById("featured");
+  const picks=lives.filter(x=>x.id!=="livechina-home").slice(0,4);
+  el.innerHTML=picks.map(x=>'<div class="liveCard"><div><b>'+esc(x.name)+'</b><small>'+esc(x.description)+'</small><div class="liveMeta"><span class="tag">● 直播</span><span class="tag">'+esc(x.place)+'</span></div></div><button class="openBtn" onclick="openLive(\''+esc(x.id)+'\')">进入直播</button></div>').join("")||'<div class="card">直播列表正在加载。</div>';
 }
-function renderFieldStrip(){
- var el=document.getElementById('fieldStrip');if(!el)return;var now=Date.now(),out='';
- for(var i=0;i<8;i++){var p=state.plots[i],cls='fieldTile';if(p){cls+=' '+(now>=p.ready?'ripe':'growing');}out+='<span class="'+cls+'"></span>';}el.innerHTML=out;
+function renderLives(){
+  const categories=["全部",...new Set(lives.map(x=>x.category))];
+  document.getElementById("filters").innerHTML=categories.map(x=>'<button class="filter '+(state.filter===x?'active':'')+'" onclick="setFilter(\''+esc(x)+'\')">'+esc(x)+'</button>').join("");
+  const arr=state.filter==="全部"?lives:lives.filter(x=>x.category===state.filter);
+  document.getElementById("liveList").innerHTML=arr.map(x=>'<div class="sourceCard"><b><span class="liveDot"></span>'+esc(x.name)+'</b><small>'+esc(x.description)+'</small><div class="sourceFoot"><span class="provider">'+esc(x.provider)+' · '+esc(x.place)+'</span><button class="btn" onclick="openLive(\''+esc(x.id)+'\')">实时观看</button></div></div>').join("");
+}
+window.setFilter=function(v){state.filter=v;save();renderLives();}
+window.openLive=function(id){
+  const x=lives.find(v=>v.id===id);if(!x)return;
+  document.getElementById("modalTitle").textContent=x.name;
+  document.getElementById("modalBody").innerHTML=
+    '<div class="frameWrap"><iframe src="'+esc(x.url)+'" allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="no-referrer-when-downgrade"></iframe></div>'+
+    '<div class="notice">这是官方公开直播页面的内嵌尝试。若央视页面阻止第三方内嵌或在 iPhone 上显示空白，使用下面的“打开官方直播”即可正常观看。</div>'+
+    '<div style="display:flex;gap:7px;margin-top:10px"><a class="btn" style="text-decoration:none" href="'+esc(x.url)+'" target="_blank" rel="noopener">打开官方直播</a><button class="btn alt" onclick="closeModal()">返回</button></div>';
+  document.getElementById("modal").classList.add("show");
+}
+window.closeModal=function(){document.getElementById("modal").classList.remove("show");document.getElementById("modalBody").innerHTML="";}
+
+async function loadProvinces(){
+  try{
+    const d=await getJSON("/api/tianyuan/regions");
+    document.getElementById("province").innerHTML=opt(d.items,state.location.province,"选择省/地区");
+    if(state.location.province)await restoreLocationSelectors();
+  }catch(e){document.getElementById("province").innerHTML='<option>地区数据暂不可用</option>';}
+}
+async function restoreLocationSelectors(){
+  const l=state.location;
+  if(l.province){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province));document.getElementById("city").innerHTML=opt(d.items,l.city,"选择市/州");}
+  if(l.province&&l.city){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province)+"&city="+encodeURIComponent(l.city));document.getElementById("county").innerHTML=opt(d.items,l.county,"选择县/区");}
+  if(l.province&&l.city&&l.county){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province)+"&city="+encodeURIComponent(l.city)+"&county="+encodeURIComponent(l.county));document.getElementById("town").innerHTML=opt(d.items,l.town,"选择镇/街道");}
+  document.getElementById("village").value=l.village||"";
+  applyPlacePhoto();
+}
+window.provinceChanged=async function(){
+  const l=state.location;l.province=document.getElementById("province").value;l.city=l.county=l.town=l.village="";l.photo=null;save();
+  document.getElementById("city").innerHTML=opt([],null,"加载中…");document.getElementById("county").innerHTML=opt([],null,"先选城市");document.getElementById("town").innerHTML=opt([],null,"先选县区");
+  if(l.province){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province));document.getElementById("city").innerHTML=opt(d.items,null,"选择市/州");}
+  applyPlacePhoto();
+}
+window.cityChanged=async function(){
+  const l=state.location;l.city=document.getElementById("city").value;l.county=l.town=l.village="";l.photo=null;save();
+  document.getElementById("county").innerHTML=opt([],null,"加载中…");document.getElementById("town").innerHTML=opt([],null,"先选县区");
+  if(l.city){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province)+"&city="+encodeURIComponent(l.city));document.getElementById("county").innerHTML=opt(d.items,null,"选择县/区");}
+  applyPlacePhoto();
+}
+window.countyChanged=async function(){
+  const l=state.location;l.county=document.getElementById("county").value;l.town=l.village="";l.photo=null;save();
+  document.getElementById("town").innerHTML=opt([],null,"加载中…");
+  if(l.county){const d=await getJSON("/api/tianyuan/regions?province="+encodeURIComponent(l.province)+"&city="+encodeURIComponent(l.city)+"&county="+encodeURIComponent(l.county));document.getElementById("town").innerHTML=opt(d.items,null,d.items?.length?"选择镇/街道":"暂无下一级");}
+  applyPlacePhoto();
+}
+window.townChanged=function(){state.location.town=document.getElementById("town").value;state.location.village="";state.location.photo=null;document.getElementById("village").value="";save();applyPlacePhoto();}
+window.villageChanged=function(){state.location.village=document.getElementById("village").value.trim();state.location.photo=null;save();applyPlacePhoto();}
+window.loadPlacePhoto=async function(){
+  const l=state.location,parts=[l.village,l.town,l.county,l.city,l.province].filter(Boolean);
+  if(!parts.length){toast("先选择一个地区");return;}
+  toast("正在找公开实景…");
+  try{const d=await getJSON("/api/tianyuan/place-photo?q="+encodeURIComponent(parts.join(" ")));l.photo=d.photo||null;save();applyPlacePhoto();toast(l.photo?"实景已更新":"暂时没找到合适照片");}catch(e){toast("实景加载失败");}
+}
+function applyPlacePhoto(){
+  const l=state.location,el=document.getElementById("placePhoto"),parts=[l.province,l.city,l.county,l.town,l.village].filter(Boolean);
+  document.getElementById("placeName").textContent=l.village||l.town||l.county||l.city||l.province||"还没有选择地方";
+  document.getElementById("placePath").textContent=parts.join(" · ")||"从上面选一个地区";
+  const c=document.getElementById("photoCredit");
+  if(l.photo?.url){el.style.backgroundImage="url('"+String(l.photo.url).replace(/'/g,"%27")+"')";c.style.display="inline-block";c.href=l.photo.sourceUrl||"#";c.textContent="图片来源 · "+(l.photo.license||"Wikimedia Commons");document.getElementById("hero").style.backgroundImage=el.style.backgroundImage;}
+  else{el.style.backgroundImage="";c.style.display="none";}
 }
 
-window.startFishing=function(){
- closeModal();openModal('河湾钓鱼','<div class="fishingScene"><div class="bobber" id="bobber"></div><div class="fishHud"><b id="fishStatus">把浮漂甩到水面上……</b><div class="fishMeter"><span class="fishGood"></span><span class="fishNeedle" id="fishNeedle"></span></div><button class="btn" id="fishButton" onclick="fishAction()">抛竿</button><div class="interactiveNote" style="color:rgba(255,255,255,.72)">鱼咬钩时再收杆，白色指针落在绿色区域更容易钓到稀有鱼。</div></div></div>');
- fishBiting=false;fishPos=0;fishDir=1;if(fishTimer)clearTimeout(fishTimer);if(fishNeedleTimer)clearInterval(fishNeedleTimer);
+window.openProfile=function(){
+  const r=ROLES[state.role]||ROLES.traveler;
+  document.getElementById("modalTitle").textContent="本机角色";
+  document.getElementById("modalBody").innerHTML='<div class="sub">已删除账号和密码。角色只保存在这台设备，不上传密码，也不要求登录。</div><div class="profile">'+Object.entries(ROLES).map(([k,v])=>'<button class="role '+(state.role===k?'active':'')+'" onclick="chooseRole(\''+k+'\')"><span>'+v.icon+'</span><b>'+v.name+'</b></button>').join("")+'</div><div class="notice">更换手机时，可重新选择角色；原来的账号密码系统已经停用。</div>';
+  document.getElementById("modal").classList.add("show");
 }
-window.fishAction=function(){
- var btn=document.getElementById('fishButton'),status=document.getElementById('fishStatus'),bob=document.getElementById('bobber');if(!btn||!status)return;
- if(btn.dataset.state!=='waiting'&&!fishBiting){
-  btn.dataset.state='waiting';btn.textContent='等鱼咬钩…';btn.disabled=true;status.textContent='水面只有一点风声。';
-  var wait=1800+Math.random()*3200;fishTimer=setTimeout(function(){fishBiting=true;btn.disabled=false;btn.textContent='现在收杆';status.textContent='浮漂猛地往下一沉！';bob&&bob.classList.add('bite');startFishNeedle();},wait);return;
- }
- if(fishBiting){
-  fishBiting=false;btn.disabled=true;if(fishNeedleTimer)clearInterval(fishNeedleTimer);bob&&bob.classList.remove('bite');
-  var rare=fishPos>=42&&fishPos<=60,names=rare?['锦鲤','鳟鱼','大鲈鱼']:['鲫鱼','鲤鱼','小河虾'];var name=names[Math.floor(Math.random()*names.length)];
-  state.discoveries[name]=1;collect(name);addXP(rare?34:18);state.prosper+=rare?8:3;save();renderDiscoveries();status.textContent='钓到了 '+name+(rare?'，这一杆很漂亮。':'。');btn.textContent='再来一杆';btn.disabled=false;delete btn.dataset.state;toast('钓到 '+name);
- }
-}
-function startFishNeedle(){
- fishPos=0;fishDir=1;fishNeedleTimer=setInterval(function(){fishPos+=fishDir*3;if(fishPos>=98||fishPos<=0)fishDir*=-1;var n=document.getElementById('fishNeedle');if(n)n.style.left=fishPos+'%';},28);
-}
-function openCookingScene(i,r){
- openModal(r.name,'<div class="kitchenStage"><div class="steam" id="cookSteam"></div><div class="fishHud"><b id="cookStatus">食材已经备好。</b><button class="btn" id="cookButton" onclick="finishCooking('+i+')">开始做饭</button><div class="interactiveNote" style="color:rgba(255,255,255,.72)">切配、加热、起锅需要一点时间，不再瞬间完成。</div></div></div>');
-}
-window.finishCooking=function(i){
- var r=recipes[i],btn=document.getElementById('cookButton'),st=document.getElementById('cookStatus'),steam=document.getElementById('cookSteam');if(!btn||btn.disabled)return;
- btn.disabled=true;btn.textContent='烹饪中…';st.textContent='锅里开始有了香味。';steam&&steam.classList.add('on');
- setTimeout(function(){st.textContent='火候刚好，再等一会。';},900);
- setTimeout(function(){collect(r.name);addXP(r.xp);state.prosper+=2;save();st.textContent=r.name+' 做好了。';btn.textContent='端上桌';btn.disabled=false;btn.onclick=function(){closeModal();toast(r.name+' 已上桌');};steam&&steam.classList.remove('on');},1900);
-}
+window.chooseRole=function(k){if(!ROLES[k])return;state.role=k;save();renderRole();closeModal();toast("角色已切换");}
+function renderRole(){const r=ROLES[state.role]||ROLES.traveler;document.getElementById("roleChip").textContent=r.icon+" "+r.name;}
 
-
-var locationDraft={province:'',city:'',county:'',town:'',village:''};
-var REGION_FLAVOR={
- '四川省':['川西竹林','青瓦小院','茶园','山雾'],
- '云南省':['白墙院落','稻田','茶山','高原阳光'],
- '浙江省':['竹海','溪谷','白墙黛瓦','梯田'],
- '福建省':['茶山','土楼','溪谷','海风'],
- '广东省':['岭南院落','荔枝园','水乡','南方雨季'],
- '广西壮族自治区':['喀斯特山水','稻田','竹林','壮乡村寨'],
- '贵州省':['山地梯田','木楼','云雾','溪谷'],
- '湖南省':['稻田','山村','木屋','烟雨'],
- '江西省':['赣南村落','茶园','稻田','青山'],
- '安徽省':['徽派村落','白墙黛瓦','山泉','茶园'],
- '江苏省':['江南水乡','田埂','河网','白墙院落'],
- '台湾省':['花东田园','稻田','山谷','茶园'],
- '新疆维吾尔自治区':['果园','雪山','绿洲','院落'],
- '西藏自治区':['高原村落','牧场','雪山','河谷'],
- '内蒙古自治区':['草原','牧场','风车','长空'],
- '海南省':['椰林','海风','热带果园','村落'],
- '黑龙江省':['黑土地','林海','木屋','长冬'],
- '吉林省':['林地','玉米田','山村','雪季'],
- '辽宁省':['果园','丘陵村落','海岸','农田'],
- '山东省':['麦田','石墙村落','果园','海风'],
- '河南省':['麦田','平原村庄','院落','黄河风'],
- '河北省':['北方村落','麦田','果园','山地'],
- '山西省':['黄土院落','窑洞','山村','旱地'],
- '陕西省':['关中麦田','窑洞','苹果园','秦岭山村'],
- '甘肃省':['黄土山村','梯田','果园','河谷'],
- '青海省':['高原牧场','湖畔','青稞田','雪山'],
- '湖北省':['湖乡','稻田','茶山','水网']
-};
-function locationText(loc){
- return [loc?.province,loc?.city,loc?.county,loc?.town,loc?.village].filter(Boolean).join(' · ');
+async function init(){
+  renderRole();applyPlacePhoto();await Promise.all([loadLives(),loadProvinces()]);
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("/tianyuan/sw.js").catch(()=>{});
 }
-function escapeAttr(v){return escapeHtml(v).replace(/"/g,'&quot;');}
-function selectOptions(items,value,placeholder){
- var html='<option value="">'+placeholder+'</option>';
- (items||[]).forEach(function(x){html+='<option '+(x===value?'selected':'')+' value="'+escapeAttr(x)+'">'+escapeHtml(x)+'</option>';});
- return html;
-}
-async function fetchRegions(params){
- var q=new URLSearchParams(params||{});var d=await apiJSON('/api/tianyuan/regions'+(q.toString()?'?'+q.toString():''));
- return d.items||[];
-}
-window.openLocationPicker=async function(){
- locationDraft=Object.assign({province:'',city:'',county:'',town:'',village:''},state.location||{});
- openModal('选一个中国乡村落脚地','<div class="locationPicker">'+
-  '<div class="placePreview" id="placePreview"><div class="placePreviewText"><b id="placePreviewName">正在整理地图…</b><small id="placePreviewSub">省 → 市 → 县/区 → 镇/街道 → 村/社区</small></div></div>'+
-  '<div class="locRow"><label>省/自治区</label><select id="locProvince" onchange="locationProvinceChanged()"><option>加载中…</option></select></div>'+
-  '<div class="locRow"><label>市/州</label><select id="locCity" onchange="locationCityChanged()"><option value="">先选省份</option></select></div>'+
-  '<div class="locRow"><label>县/区</label><select id="locCounty" onchange="locationCountyChanged()"><option value="">先选城市</option></select></div>'+
-  '<div class="locRow"><label>镇/街道</label><select id="locTown" onchange="locationTownChanged()"><option value="">先选县区</option></select></div>'+
-  '<div class="locRow"><label>村/社区</label><input id="locVillage" value="'+escapeAttr(locationDraft.village||'')+'" placeholder="填写村、里、社区或自然村名" oninput="locationVillageChanged()"></div>'+
-  '<div class="quickPlace" onclick="chooseGaogongVillage()"><b>直接选择：山西洪洞 · 高公村</b><small>山西省 → 临汾市 → 洪洞县 → 万安镇 → 高公村 · 已有人工核对实景资料</small></div>'+
-  '<div class="locHint">省、市、县/区、镇/街道使用开源区划数据联动；村级名称数量很大，为保证手机加载速度采用搜索/填写方式。台湾省入口已加入，同样可以保存到账号云存档。</div>'+
-  '<div class="localFlavor" id="localFlavor"></div>'+
-  '<button class="btn" onclick="saveLocationChoice()">住到这里</button>'+
- '</div>');
- try{
-  var provinces=await fetchRegions({});
-  var ps=document.getElementById('locProvince');if(!ps)return;ps.innerHTML=selectOptions(provinces,locationDraft.province,'选择省/自治区/直辖市');
-  if(locationDraft.province)await populateLocationFromDraft();
- }catch(e){var n=document.getElementById('placePreviewName');if(n)n.textContent='地图暂时没加载出来';}
- updateLocationPreview();
-}
-async function populateLocationFromDraft(){
- var cityEl=document.getElementById('locCity'),countyEl=document.getElementById('locCounty'),townEl=document.getElementById('locTown');
- if(locationDraft.province){
-  var cities=await fetchRegions({province:locationDraft.province});cityEl.innerHTML=selectOptions(cities,locationDraft.city,'选择市/州');
- }
- if(locationDraft.province&&locationDraft.city){
-  var counties=await fetchRegions({province:locationDraft.province,city:locationDraft.city});countyEl.innerHTML=selectOptions(counties,locationDraft.county,'选择县/区');
- }
- if(locationDraft.province&&locationDraft.city&&locationDraft.county){
-  var towns=await fetchRegions({province:locationDraft.province,city:locationDraft.city,county:locationDraft.county});townEl.innerHTML=selectOptions(towns,locationDraft.town,'选择镇/街道（如有）');
- }
-}
-window.locationProvinceChanged=async function(){
- locationDraft.province=document.getElementById('locProvince').value;locationDraft.city='';locationDraft.county='';locationDraft.town='';
- document.getElementById('locCity').innerHTML='<option value="">加载中…</option>';document.getElementById('locCounty').innerHTML='<option value="">先选城市</option>';document.getElementById('locTown').innerHTML='<option value="">先选县区</option>';
- try{document.getElementById('locCity').innerHTML=selectOptions(await fetchRegions({province:locationDraft.province}),'','选择市/州');}catch(e){}
- updateLocationPreview();
-}
-window.locationCityChanged=async function(){
- locationDraft.city=document.getElementById('locCity').value;locationDraft.county='';locationDraft.town='';
- document.getElementById('locCounty').innerHTML='<option value="">加载中…</option>';document.getElementById('locTown').innerHTML='<option value="">先选县区</option>';
- try{document.getElementById('locCounty').innerHTML=selectOptions(await fetchRegions({province:locationDraft.province,city:locationDraft.city}),'','选择县/区');}catch(e){}
- updateLocationPreview();
-}
-window.locationCountyChanged=async function(){
- locationDraft.county=document.getElementById('locCounty').value;locationDraft.town='';
- document.getElementById('locTown').innerHTML='<option value="">加载中…</option>';
- try{var t=await fetchRegions({province:locationDraft.province,city:locationDraft.city,county:locationDraft.county});document.getElementById('locTown').innerHTML=selectOptions(t,'',t.length?'选择镇/街道':'可直接填写村/社区');}catch(e){}
- updateLocationPreview();
-}
-window.locationTownChanged=function(){locationDraft.town=document.getElementById('locTown').value;updateLocationPreview();}
-window.locationVillageChanged=function(){locationDraft.village=document.getElementById('locVillage').value.trim();updateLocationPreview();}
-window.chooseGaogongVillage=async function(){
- locationDraft={province:'山西省',city:'临汾市',county:'洪洞县',town:'万安镇',village:'高公村'};
- var p=document.getElementById('locProvince');if(p)p.value='山西省';
- try{await populateLocationFromDraft();}catch(e){}
- var c=document.getElementById('locCity'),co=document.getElementById('locCounty'),t=document.getElementById('locTown'),v=document.getElementById('locVillage');
- if(c)c.value='临汾市';if(co)co.value='洪洞县';if(t)t.value='万安镇';if(v)v.value='高公村';
- updateLocationPreview();
- toast('已定位到高公村');
-}
-function updateLocationPreview(){
- var txt=locationText(locationDraft)||'还没有选择地方';
- var name=document.getElementById('placePreviewName'),sub=document.getElementById('placePreviewSub');if(name)name.textContent=locationDraft.village||locationDraft.town||locationDraft.county||locationDraft.city||locationDraft.province||'选一个地方';if(sub)sub.textContent=txt;
- var fl=document.getElementById('localFlavor');if(fl){var tags=REGION_FLAVOR[locationDraft.province]||['中国乡村','田园','院落','四季'];fl.innerHTML=tags.map(function(x){return '<span>'+x+'</span>';}).join('');}
-}
-window.saveLocationChoice=async function(){
- if(!locationDraft.province){toast('先选一个省份');return;}
- var btn=document.querySelector('.locationPicker .btn');if(btn){btn.disabled=true;btn.textContent='正在找实景…';}
- var loc=Object.assign({},locationDraft);loc.village=(document.getElementById('locVillage')?.value||'').trim();loc.galleryIndex=0;
- try{
-  var q=[loc.village,loc.town,loc.county,loc.city,loc.province].filter(Boolean).join(' ');
-  var p=await apiJSON('/api/tianyuan/place-photo?q='+encodeURIComponent(q));
-  loc.photo=p.photo||null;
- }catch(e){loc.photo=null;}
- state.location=loc;save();applyLocationScene();renderMap();closeModal();toast('以后这里就是你的小院了');
-}
-function activeLocationPhoto(){
- var loc=state.location||{},g=loc.photo?.gallery;
- if(Array.isArray(g)&&g.length)return g[Math.max(0,Math.min(g.length-1,Number(loc.galleryIndex||0)))]||g[0];
- return loc.photo||null;
-}
-function applyLocationScene(){
- var loc=state.location||{},photo=activeLocationPhoto(),title=document.getElementById('worldPlaceTitle'),badge=document.getElementById('locationBadge'),wm=document.getElementById('worldMap'),credit=document.getElementById('photoCredit'),gb=document.getElementById('sceneGalleryBtn');
- var short=loc.village||loc.town||loc.county||loc.city||loc.province||'云溪';
- if(title)title.textContent=short+' · 小院';
- if(badge)badge.textContent=loc.province?'📍 '+[loc.province,loc.city,loc.county,loc.town,loc.village].filter(Boolean).slice(-3).join(' · '):'📍 选择落脚地';
- if(wm&&photo?.url)wm.style.backgroundImage="url('"+String(photo.url).replace(/'/g,"%27")+"')";
- if(credit){
-  if(photo?.url){credit.style.display='block';credit.href=photo.sourceUrl||'#';credit.textContent=(loc.photo?.gallery?'本村实景 · ':'实景 · ')+(photo.license||'来源资料');}
-  else credit.style.display='none';
- }
- if(gb){
-  var count=Array.isArray(loc.photo?.gallery)?loc.photo.gallery.length:0;
-  if(count>1){gb.classList.add('show');gb.textContent='本村实景 '+(Number(loc.galleryIndex||0)+1)+'/'+count;}else gb.classList.remove('show');
- }
- var scene=document.getElementById('heroScene');if(scene&&photo?.url&&document.getElementById('page-home')?.classList.contains('active'))scene.style.backgroundImage="url('"+String(photo.url).replace(/'/g,"%27")+"')";
- var d=document.getElementById('diaryDate');if(d&&loc.province)d.textContent=(loc.village||loc.town||loc.county||loc.city||loc.province)+' · '+new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
-}
-window.nextVillageScene=function(){
- var g=state.location?.photo?.gallery;if(!Array.isArray(g)||g.length<2)return;
- state.location.galleryIndex=(Number(state.location.galleryIndex||0)+1)%g.length;save();applyLocationScene();renderMap();
- var p=activeLocationPhoto();toast(p?.caption||'切换了一张本村实景');
-}
-
-window.openGaogongVillageInfo=function(){
- openModal('高公村 · 村务资料',
- '<div style="display:grid;gap:8px">'+
- '<div class="accountCard"><div class="accountMeta"><b>数字乡村</b><small>32路安防监控、16个应急广播、4K闭路电视、村级电视台、村务直播间。</small></div></div>'+
- '<div class="accountCard"><div class="accountMeta"><b>水网与道路</b><small>公开资料记载，2022年改造主干水网2.5万米，581户实现24小时供水。</small></div></div>'+
- '<div class="accountCard"><div class="accountMeta"><b>区域养老中心</b><small>原高公小学改造，设60张床位并配套幸福食堂。</small></div></div>'+
- '<a href="https://28509.aliyinba.com/News/100062" target="_blank" rel="noopener" style="font-size:10px;color:#315c43">查看数字乡村公开资料</a>'+
- '</div>');
-}
-window.renderMonitor=async function(){
- var grid=document.getElementById('monitorGrid'),sum=document.getElementById('monitorSummary'),status=document.getElementById('cameraStatus');
- if(!grid||!sum||!status)return;
- sum.textContent='正在读取监控接入状态…';grid.innerHTML='';status.innerHTML='';
- try{
-  var d=await apiJSON('/api/tianyuan/cameras');
-  var streams=d.publicStreams||[];
-  sum.innerHTML='<b>公开资料：'+d.reportedCount+'路高清监控 · '+escapeHtml(d.reportedMode)+'</b><br>'+escapeHtml(d.message);
-  if(streams.length){
-    grid.innerHTML=streams.map(function(c){
-      var media=c.type==='iframe'
-        ?'<iframe src="'+escapeAttr(c.url)+'" allow="autoplay; fullscreen" loading="lazy"></iframe>'
-        :'<video src="'+escapeAttr(c.url)+'" controls playsinline muted autoplay></video>';
-      return '<div class="cameraCard"><span class="cameraLabel">'+escapeHtml(c.name)+'</span>'+media+'</div>';
-    }).join('');
-  }else{
-    grid.innerHTML='<div class="cameraCard"><div class="cameraEmpty"><div><b>当前没有授权公开视频流</b><small>已经预留 HLS / MP4 / 嵌入式直播接入能力。拿到村里或洪洞县融媒体中心授权的公开地址后即可接入。</small></div></div></div><div class="cameraCard"><div class="cameraEmpty"><div><b>不会绕过安防权限</b><small>村级安防监控涉及现实公共安全与隐私，只接明确授权的公开流。</small></div></div></div>';
-  }
-  var liveIds=new Set(streams.map(function(x){return String(x.id)}));
-  var dots='';for(var i=1;i<=32;i++){dots+='<div class="cameraDot '+(liveIds.has(String(i))?'live':'')+'">'+String(i).padStart(2,'0')+(liveIds.has(String(i))?' · LIVE':' · 未接')+'</div>';}status.innerHTML=dots;
- }catch(e){
-  sum.textContent='监控接入状态读取失败';grid.innerHTML='<div class="cameraCard"><div class="cameraEmpty"><div><b>暂时无法读取状态</b><small>稍后刷新即可。</small></div></div></div>';
- }
-}
-window.openCozyMenu=function(){
- openModal('小院里的小抽屉',
- '<div style="display:grid;gap:8px">'+
- '<button class="btn" onclick="claimDaily();closeModal()">收下今日小礼物</button>'+
- '<button class="btn alt" onclick="installWebApp()">放到手机桌面</button>'+
- '<button class="btn alt" onclick="closeModal();openLocationPicker()">选择我的落脚地</button>'+
- '<button class="btn alt" onclick="exportSave()">备份这段生活</button>'+
- '<button class="btn alt" onclick="unlockAll();closeModal()">悄悄打开所有地方</button>'+
- '<div style="margin-top:7px;color:#8a8b84;font-size:10px">金币、钻石、体力和基础材料实际均为 9,999,999,999,999，并保持无限。</div>'+
- '</div>');
-}
-window.openAbout=function(){openModal('iPhone 使用说明','这是在线网页版本，Safari 直接打开即可完整运行。想像 App 一样使用：点击 Safari 分享按钮 → “添加到主屏幕”。存档保存在当前浏览器的本地存储中。<br><br>本项目为原创开源网页游戏，通用经营玩法自行实现，不包含第三方商业游戏代码或商业素材。');}
-function openModal(t,b){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modal').classList.add('show');}
-window.closeModal=function(){document.getElementById('modal').classList.remove('show');}
-window.openModal=openModal;
-function sceneFor(p){var data={
-home:['scene-home','今日 · 小院','把日子种进风里','种田、做饭、装修、合成、探索。资源无限，但庄园仍需要一点点成长。'],
-farm:['scene-farm','四季 · 农田','今天适合下地','真实田园画面与成长循环结合，点击土地即可播种和收获。'],
-kitchen:['scene-kitchen','烟火 · 厨房','晚饭从一锅热气开始','无限食材，不限次数烹饪。完成菜谱图鉴与餐桌订单。'],
-merge:['scene-merge','手作 · 工坊','旧东西也能长出新故事','二合合成、发现新等级，把普通材料一路合成为稀有收藏。'],
-explore:['scene-explore','山野 · 河湾','去村子外面走走','钓鱼、采集、果园和观景台，每次探索都有随机发现。'],
-house:['scene-house','家园 · 建设','把屋子住成喜欢的样子','升级房屋、领取家具、布置属于自己的乡间生活。'],
-friends:['scene-friends','来客 · 村民','有人来，院子才热闹','聊天、送礼、提升好感，解锁每个村民的小故事。']
-};return data[p];}
-function switchPage(p){document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active')});document.getElementById('page-'+p).classList.add('active');document.querySelectorAll('.nav').forEach(function(x){x.classList.toggle('active',x.dataset.page===p)});var d=sceneFor(p),s=document.getElementById('heroScene');s.className='scene '+d[0];document.getElementById('sceneTag').textContent=d[1];document.getElementById('sceneTitle').textContent=d[2];document.getElementById('sceneDesc').textContent=d[3];window.scrollTo({top:0,behavior:'smooth'});}
-document.querySelectorAll('.nav').forEach(function(n){n.addEventListener('click',function(){switchPage(n.dataset.page)})});
-window.goPage=function(p){switchPage(p);}
-var deferredInstallPrompt=null;
-window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstallPrompt=e;showInstallBar();});
-function showInstallBar(){var el=document.getElementById('installBar');if(el&&!localStorage.getItem('tianyuan:hideInstall'))el.classList.add('show');}
-window.hideInstallBar=function(){var el=document.getElementById('installBar');if(el)el.classList.remove('show');localStorage.setItem('tianyuan:hideInstall','1');}
-window.installWebApp=async function(){
- if(deferredInstallPrompt){deferredInstallPrompt.prompt();try{await deferredInstallPrompt.userChoice}catch(e){}deferredInstallPrompt=null;hideInstallBar();return;}
- var isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
- openModal('安装到手机',isiOS
- ? '在 Safari 中轻点底部或顶部的“共享”按钮 → <b>添加到主屏幕</b> → 打开<b>“作为网页 App 打开”</b> → 添加。之后会出现独立图标，并以接近 App 的全屏窗口启动。'
- : '在浏览器菜单中选择“安装应用”或“添加到主屏幕”。如果浏览器支持直接安装，这里也会出现系统安装提示。');
-}
-function applyWorldMood(){
- var h=new Date().getHours(),part=h<6?'night':h<9?'dawn':h<17?'day':h<20?'evening':'night';
- var wm=document.getElementById('worldMap');if(wm)wm.dataset.daypart=part;
- var seasons=['冬季','春季','夏季','秋季'],m=new Date().getMonth(),season=seasons[Math.floor(((m+1)%12)/3)];
- var s=document.getElementById('mapSeason');if(s)s.textContent=season;
- var wc=document.getElementById('worldClock');if(wc)wc.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'})+' · '+(part==='night'?'夜色':part==='dawn'?'清晨':part==='evening'?'傍晚':'白昼');
- renderWorldWeather();
- var dd=document.getElementById('diaryDate');if(dd)dd.textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
-}
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
-setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
-function renderAll(){renderStats();renderMap();applyLocationScene();}
-renderAll();applyWorldMood();renderWorldWeather();bootAccount();setInterval(applyWorldMood,60000);
+init();
 })();
 </script>
-</body></html>
+</body>
+</html>
