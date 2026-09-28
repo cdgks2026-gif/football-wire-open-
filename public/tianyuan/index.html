@@ -221,7 +221,7 @@ function applyPlacePhoto(){
 window.openProfile=function(){
   const r=ROLES[state.role]||ROLES.traveler;
   document.getElementById("modalTitle").textContent="本机角色";
-  document.getElementById("modalBody").innerHTML='<div class="sub">已删除账号和密码。角色只保存在这台设备，不上传密码，也不要求登录。</div><div class="profile">'+Object.entries(ROLES).map(([k,v])=>'<button class="role '+(state.role===k?'active':'')+'" onclick="chooseRole(\''+k+'\')"><span>'+v.icon+'</span><b>'+v.name+'</b></button>').join("")+'</div><div class="notice">更换手机时，可重新选择角色；原来的账号密码系统已经停用。</div>';
+  document.getElementById("modalBody").innerHTML='<div class="sub">角色只保存在这台设备，打开网站即可直接使用。</div><div class="profile">'+Object.entries(ROLES).map(([k,v])=>'<button class="role '+(state.role===k?'active':'')+'" onclick="chooseRole(\''+k+'\')"><span>'+v.icon+'</span><b>'+v.name+'</b></button>').join("")+'</div><div class="notice">更换手机时，可重新选择角色。</div>';
   document.getElementById("modal").classList.add("show");
 }
 window.chooseRole=function(k){if(!ROLES[k])return;state.role=k;save();renderRole();closeModal();toast("角色已切换");}
