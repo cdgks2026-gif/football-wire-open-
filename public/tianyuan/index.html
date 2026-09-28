@@ -158,6 +158,15 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .quickPlace b{display:block;font-size:11px;color:#334038}.quickPlace small{display:block;margin-top:3px;font-size:9px;color:#7c817a}
 
 .gaogongTag{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.14);font-size:8px;color:rgba(255,255,255,.86)}
+
+.monitorHero{border-radius:22px;padding:16px;background:linear-gradient(135deg,#172820,#314f3b);color:#fff;box-shadow:0 16px 36px rgba(18,40,27,.15)}
+.monitorHero b{display:block;font-size:18px;font-family:"Songti SC","STSong",serif}.monitorHero small{display:block;margin-top:5px;color:rgba(255,255,255,.72);line-height:1.55;font-size:10px}
+.monitorGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.cameraCard{position:relative;min-height:180px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#24332b,#101713);border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(11,25,17,.12)}
+.cameraCard video,.cameraCard iframe{width:100%;height:100%;min-height:180px;border:0;object-fit:cover;background:#0c120f}.cameraEmpty{min-height:180px;display:grid;place-items:center;text-align:center;color:#d9dfd8;padding:18px}.cameraEmpty b{font-size:12px}.cameraEmpty small{display:block;margin-top:6px;font-size:9px;color:#8e9b92;line-height:1.5}
+.cameraLabel{position:absolute;left:10px;top:10px;z-index:4;background:rgba(9,20,14,.65);color:#fff;border-radius:999px;padding:5px 8px;font-size:9px;backdrop-filter:blur(7px)}
+.cameraStatus{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.cameraDot{padding:7px;border-radius:12px;background:#eef1eb;color:#637067;font-size:9px;text-align:center}.cameraDot.live{background:#e4f1e6;color:#356140}
+.villageOnlyZone{position:absolute;border:1px solid rgba(255,255,255,.28);background:rgba(18,38,26,.46);color:#fff;border-radius:14px;padding:9px 11px;backdrop-filter:blur(8px);z-index:4;box-shadow:0 10px 24px rgba(0,0,0,.15)}.villageOnlyZone b{display:block;font-size:12px}.villageOnlyZone small{display:block;margin-top:2px;font-size:8px;color:rgba(255,255,255,.72)}.v-real{left:8%;top:58%}.v-monitor{right:8%;top:34%}.v-info{left:40%;top:22%}
+@media(max-width:760px){.monitorGrid{grid-template-columns:1fr}.cameraStatus{grid-template-columns:repeat(4,1fr)}.v-real{left:4%;top:60%}.v-monitor{right:4%;top:38%}.v-info{left:36%;top:22%}}
 </style>
 </head>
 <body>
@@ -207,21 +216,13 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
   <div class="worldMap" id="worldMap">
     <div class="worldTitle"><b id="worldPlaceTitle">云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small><button class="locationBadge" id="locationBadge" onclick="openLocationPicker()">📍 选择落脚地</button></div>
     <div class="worldActions"><button aria-label="更多" onclick="openCozyMenu()">···</button></div>
-    <button class="zone z-explore" onclick="walkToZone('explore',18,24,'河湾与山林')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
-    <button class="zone z-farm" onclick="walkToZone('farm',17,58,'四季农田')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
-    <button class="zone z-kitchen" onclick="walkToZone('kitchen',47,40,'乡间厨房')"><b>乡间厨房</b><small>烹饪 · 餐桌订单</small></button>
-    <button class="zone z-house" onclick="walkToZone('house',64,28,'主屋与客舍')"><b>主屋与客舍</b><small>升级 · 布置 · 花房</small></button>
-    <button class="zone z-merge" onclick="walkToZone('merge',80,57,'手作工坊')"><b>手作工坊</b><small>二合 · 收藏 · 制作</small></button>
-    <button class="zone z-friends" onclick="walkToZone('friends',76,73,'村民来访')"><b>村民来访</b><small>聊天 · 送礼 · 故事</small></button>
-    <div class="mapNpc npc1" data-name="林夏" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=76"></div>
-    <div class="mapNpc npc2" data-name="阿禾" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=76"></div>
-    <div class="mapNpc npc3" data-name="小满" onclick="goPage('friends')"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=76"></div>
-    <div class="playerActor" id="playerActor"><span class="head"></span><span class="body"></span><span class="leg l"></span><span class="leg r"></span></div>
-    <div class="actionBubble" id="actionBubble"><b id="actionTitle">去哪儿</b><small id="actionDesc">走近一点再看看。</small><div class="row"><button id="actionGo">进入</button><button onclick="hideActionBubble()" style="background:#e9e5da;color:#566057">先逛逛</button></div></div>
-    <div class="fieldStrip" id="fieldStrip"></div>
+    <button class="villageOnlyZone v-real" onclick="goPage('explore')"><b>高公村实景</b><small>村内现场 · 水网 · 文化活动</small></button>
+    <button class="villageOnlyZone v-monitor" onclick="goPage('monitor');renderMonitor()"><b>监控中心</b><small>32路安防 · 授权流接入</small></button>
+    <button class="villageOnlyZone v-info" onclick="openGaogongVillageInfo()"><b>村务资料</b><small>数字乡村 · 养老 · 基础设施</small></button>
+    
     <div class="worldRain"></div>
     <div class="weatherBadge" id="weatherBadge">晴 · 微风</div><button class="sceneGalleryBtn" id="sceneGalleryBtn" onclick="nextVillageScene()">实景 1/1</button><a class="photoCredit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">实景图来源</a>
-    <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div><div class="pondGlow"></div>
+    <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div>
     <div class="gameStateSink">
       <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
     </div>
@@ -230,7 +231,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 <div class="homeDiary">
   <div class="diaryPaper">
     <div class="date" id="diaryDate">TODAY IN YUNXI</div>
-    <p id="story">第一章 · 回到山里。旧屋、荒田和一条通往河湾的小路，今天重新有了烟火气。</p>
+    <p id="story">高公村 · 村里的道路、水网、文化活动和数字乡村建设，都从这里进入。</p>
     <div class="diaryActions">
       <button onclick="nextStory()">翻一页</button>
       <button onclick="claimDaily()">收下今天的小礼物</button>
@@ -244,61 +245,32 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 </div>
 </section>
 
-<section class="page" id="page-farm">
-<div class="grid">
-<div class="card">
-<div class="row between"><div><h2>四季农田</h2><div class="sub">选种子，再点土地。成熟后再次点击收获。</div></div><button class="btn alt" onclick="harvestAll()">一键收获</button></div>
-<div class="seedbar" id="seedbar"></div><div class="plots" id="plots"></div>
-</div>
-<div class="card"><h2>牧场与果园</h2><div class="shopGrid" id="pasture"></div></div>
-</div>
-</section>
-
-<section class="page" id="page-kitchen">
-<div class="grid">
-<div class="card"><div class="row between"><div><h2>乡间厨房</h2><div class="sub">所有食材均为无限。烹饪用于提升等级、图鉴和订单进度。</div></div><button class="btn alt" onclick="cookRandom()">随机做一道</button></div><div class="recipeGrid" id="recipes"></div></div>
-<div class="card"><h2>餐桌订单</h2><div class="orders" id="foodOrders"></div></div>
-</div>
-</section>
-
-<section class="page" id="page-merge">
-<div class="grid">
-<div class="card"><div class="row between"><div><h2>二合工坊</h2><div class="sub">点击两个相同等级物品即可合成。生成不消耗任何资源。</div></div><div class="row"><button class="btn alt" onclick="spawnMerge()">生成</button><button class="btn alt" onclick="autoMerge()">自动合成</button></div></div><div class="mergeGrid" id="mergeGrid"></div></div>
-<div class="card"><h2>合成收藏</h2><div class="sub">从种子、食材、木作、器皿一路合成到稀有收藏。每发现一个新等级都会永久记入图鉴。</div><div class="divider"></div><div class="statgrid"><div class="stat"><small>最高合成等级</small><b id="mergeMax">1</b></div><div class="stat"><small>合成次数</small><b id="mergeCount">0</b></div></div></div>
-</div>
-</section>
-
 <section class="page" id="page-explore">
 <div class="grid">
-<div class="card"><div class="row between"><div><h2>村落地图</h2><div class="sub">不是每次出门都会有收获，但偶尔会碰到意外。</div></div><button class="btn alt" onclick="startFishing()">去河边钓鱼</button></div><div class="map" id="map"></div></div>
-<div class="card"><h2>旅行背包</h2><div class="sub">采集、钓鱼和旅行手信均不会占用有限背包。稀有发现会记录到收藏图鉴。</div><div class="divider"></div><div class="achievementGrid" id="discoveries"></div></div>
+<div class="card"><div class="row between"><div><h2>高公村实景</h2><div class="sub">只保留与高公村直接相关、来源明确的现场资料。</div></div><a class="btn alt" href="https://www.sohu.com/a/979391380_121106991" target="_blank" rel="noopener">公开来源</a></div><div class="map" id="map"></div></div>
 </div>
 </section>
 
-<section class="page" id="page-house">
+<section class="page" id="page-monitor">
 <div class="grid">
-<div class="card"><div class="row between"><div><h2>家园建设</h2><div class="sub">升级不会消耗资源，只影响外观与可玩内容。</div></div><button class="btn" onclick="upgradeAllBuildings()">一键升级当前建筑</button></div><div class="roomGrid" id="rooms"></div></div>
-<div class="card"><h2>家具商店</h2><div class="shopGrid" id="furniture"></div></div>
-</div>
-</section>
-
-<section class="page" id="page-friends">
-<div class="grid">
-<div class="card"><h2>村民来访</h2><div class="friendGrid" id="friends"></div></div>
-<div class="card"><h2>关系图鉴</h2><div class="sub">聊天和送礼都不会消耗道具。达到新的好感阶段会解锁人物小故事。</div><div class="divider"></div><div id="friendLog" class="sub">今天还没有和村民聊天。</div></div>
+  <div class="card">
+    <div class="monitorHero">
+      <b>高公村 · 实时监控中心</b>
+      <small>公开资料显示，高公村建有32路高清安防监控并全天候运行。当前网页只显示获得明确授权的公开视频流；未授权通道不会尝试连接。</small>
+    </div>
+    <div id="monitorSummary" class="sub" style="margin-top:10px">正在读取监控接入状态…</div>
+    <div class="monitorGrid" id="monitorGrid"></div>
+    <div class="cameraStatus" id="cameraStatus"></div>
+  </div>
 </div>
 </section>
 </main>
 </div>
 
 <nav class="bottom">
-<button class="nav active" data-page="home"><i>🏡</i>庄园</button>
-<button class="nav" data-page="farm"><i>🌾</i>种植</button>
-<button class="nav" data-page="kitchen"><i>🍳</i>厨房</button>
-<button class="nav" data-page="merge"><i>🧺</i>合成</button>
-<button class="nav" data-page="explore"><i>🗺️</i>探索</button>
-<button class="nav" data-page="house"><i>🛋️</i>家园</button>
-<button class="nav" data-page="friends"><i>👥</i>好友</button>
+<button class="nav active" data-page="home"><i>🏘️</i>高公村</button>
+<button class="nav" data-page="explore"><i>📷</i>实景</button>
+<button class="nav" data-page="monitor"><i>📹</i>监控</button>
 </nav>
 <div class="toast" id="toast"></div>
 <div class="modal" id="modal"><div class="modalbox"><div class="row between"><h2 id="modalTitle">说明</h2><button class="btn alt" onclick="closeModal()">关闭</button></div><div id="modalBody" class="sub"></div></div></div>
@@ -588,7 +560,7 @@ function renderMap(){
   el.innerHTML=gp.map(function(p,i){return '<div class="place" onclick="visitGaogong('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small><span class="gaogongTag">'+(p.type==='photo'?'本村公开现场图':'公开资料提及')+'</span></div></div>';}).join('');
   return;
  }
- el.innerHTML=places.map(function(p,i){return '<div class="place" onclick="explore('+i+')" style="background-image:url(\''+p.photo+'\')"><div><b>'+p.name+'</b><small>'+p.desc+'</small></div></div>';}).join('');
+ el.innerHTML='<div class="place" onclick="openLocationPicker()" style="background-image:url(\''+(activeLocationPhoto()?.url||scenePhotos.home)+'\')"><div><b>当前落脚地</b><small>选择高公村后显示本村实景资料</small></div></div>';
 }
 window.visitGaogong=function(i){
  var items=[
@@ -826,6 +798,40 @@ window.nextVillageScene=function(){
  state.location.galleryIndex=(Number(state.location.galleryIndex||0)+1)%g.length;save();applyLocationScene();renderMap();
  var p=activeLocationPhoto();toast(p?.caption||'切换了一张本村实景');
 }
+
+window.openGaogongVillageInfo=function(){
+ openModal('高公村 · 村务资料',
+ '<div style="display:grid;gap:8px">'+
+ '<div class="accountCard"><div class="accountMeta"><b>数字乡村</b><small>32路安防监控、16个应急广播、4K闭路电视、村级电视台、村务直播间。</small></div></div>'+
+ '<div class="accountCard"><div class="accountMeta"><b>水网与道路</b><small>公开资料记载，2022年改造主干水网2.5万米，581户实现24小时供水。</small></div></div>'+
+ '<div class="accountCard"><div class="accountMeta"><b>区域养老中心</b><small>原高公小学改造，设60张床位并配套幸福食堂。</small></div></div>'+
+ '<a href="https://28509.aliyinba.com/News/100062" target="_blank" rel="noopener" style="font-size:10px;color:#315c43">查看数字乡村公开资料</a>'+
+ '</div>');
+}
+window.renderMonitor=async function(){
+ var grid=document.getElementById('monitorGrid'),sum=document.getElementById('monitorSummary'),status=document.getElementById('cameraStatus');
+ if(!grid||!sum||!status)return;
+ sum.textContent='正在读取监控接入状态…';grid.innerHTML='';status.innerHTML='';
+ try{
+  var d=await apiJSON('/api/tianyuan/cameras');
+  var streams=d.publicStreams||[];
+  sum.innerHTML='<b>公开资料：'+d.reportedCount+'路高清监控 · '+escapeHtml(d.reportedMode)+'</b><br>'+escapeHtml(d.message);
+  if(streams.length){
+    grid.innerHTML=streams.map(function(c){
+      var media=c.type==='iframe'
+        ?'<iframe src="'+escapeAttr(c.url)+'" allow="autoplay; fullscreen" loading="lazy"></iframe>'
+        :'<video src="'+escapeAttr(c.url)+'" controls playsinline muted autoplay></video>';
+      return '<div class="cameraCard"><span class="cameraLabel">'+escapeHtml(c.name)+'</span>'+media+'</div>';
+    }).join('');
+  }else{
+    grid.innerHTML='<div class="cameraCard"><div class="cameraEmpty"><div><b>当前没有授权公开视频流</b><small>已经预留 HLS / MP4 / 嵌入式直播接入能力。拿到村里或洪洞县融媒体中心授权的公开地址后即可接入。</small></div></div></div><div class="cameraCard"><div class="cameraEmpty"><div><b>不会绕过安防权限</b><small>村级安防监控涉及现实公共安全与隐私，只接明确授权的公开流。</small></div></div></div>';
+  }
+  var liveIds=new Set(streams.map(function(x){return String(x.id)}));
+  var dots='';for(var i=1;i<=32;i++){dots+='<div class="cameraDot '+(liveIds.has(String(i))?'live':'')+'">'+String(i).padStart(2,'0')+(liveIds.has(String(i))?' · LIVE':' · 未接')+'</div>';}status.innerHTML=dots;
+ }catch(e){
+  sum.textContent='监控接入状态读取失败';grid.innerHTML='<div class="cameraCard"><div class="cameraEmpty"><div><b>暂时无法读取状态</b><small>稍后刷新即可。</small></div></div></div>';
+ }
+}
 window.openCozyMenu=function(){
  openModal('小院里的小抽屉',
  '<div style="display:grid;gap:8px">'+
@@ -875,8 +881,8 @@ function applyWorldMood(){
 }
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
 setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
-function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();renderFieldStrip();applyLocationScene();}
-renderAll();applyWorldMood();renderWorldWeather();bootAccount();setInterval(function(){renderPlots();renderTasks();renderPasture();renderFieldStrip()},1000);setInterval(applyWorldMood,60000);
+function renderAll(){renderStats();renderMap();applyLocationScene();}
+renderAll();applyWorldMood();renderWorldWeather();bootAccount();setInterval(applyWorldMood,60000);
 })();
 </script>
 </body></html>
