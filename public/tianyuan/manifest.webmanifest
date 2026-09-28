@@ -1,12 +1,12 @@
 {
-  "name":"向往田园 5.0",
+  "name":"向往田园 · 中国实景",
   "short_name":"向往田园",
-  "description":"原创田园经营网页游戏：种植、烹饪、合成、探索、家园与村民互动。",
+  "description":"中国地区实景与官方公开实时直播聚合：央视直播中国、熊猫频道等。",
   "start_url":"/tianyuan/",
   "scope":"/tianyuan/",
   "display":"standalone",
   "orientation":"portrait-primary",
-  "background_color":"#e9e5d8",
+  "background_color":"#e9e4d7",
   "theme_color":"#173324",
   "icons":[
     {"src":"/tianyuan/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
