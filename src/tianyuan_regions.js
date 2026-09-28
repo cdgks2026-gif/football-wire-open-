@@ -25,6 +25,32 @@ function normalizeProvinceName(name){return String(name||"").trim()}
 function uniq(arr){return [...new Set((arr||[]).filter(Boolean))]}
 function valuesFor(obj,key){return obj&&typeof obj==="object"?Object.keys(obj[key]||{}):[]}
 export function registerTianyuanRegionRoutes(app){
+  app.get("/api/tianyuan/cameras",(req,res)=>{
+    let streams=[];
+    try{
+      const parsed=JSON.parse(process.env.TANYUAN_PUBLIC_CAMERA_STREAMS_JSON||"[]");
+      if(Array.isArray(parsed)){
+        streams=parsed.slice(0,32).map((x,i)=>({
+          id:String(x?.id||i+1),
+          name:String(x?.name||("监控通道 "+String(i+1).padStart(2,"0"))).slice(0,60),
+          type:["hls","mp4","iframe"].includes(x?.type)?x.type:"hls",
+          url:/^https?:\/\//i.test(String(x?.url||""))?String(x.url):"",
+          note:String(x?.note||"").slice(0,120)
+        })).filter(x=>x.url);
+      }
+    }catch{}
+    res.json({
+      ok:true,
+      place:"山西省临汾市洪洞县万安镇高公村",
+      reportedCount:32,
+      reportedMode:"24小时安防监控",
+      configured:streams.length>0,
+      publicStreams:streams,
+      source:"https://28509.aliyinba.com/News/100062",
+      message:streams.length?"已接入授权公开流":"当前网页尚未获得村级安防平台的授权公开视频流"
+    });
+  });
+
   app.get("/api/tianyuan/regions",async(req,res)=>{
     const province=normalizeProvinceName(req.query.province),city=String(req.query.city||"").trim(),county=String(req.query.county||"").trim();
     try{
