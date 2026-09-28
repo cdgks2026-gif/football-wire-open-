@@ -14,7 +14,7 @@ async function loadRegionData(){
   return {pcas,hmt};
 }
 function normalizeProvinceName(name){return String(name||"").trim()}
-function uniq(arr){return [...new Set((arr||[]).filter(Boolean))}
+function uniq(arr){return [...new Set((arr||[]).filter(Boolean))]}
 function valuesFor(obj,key){return obj&&typeof obj==="object"?Object.keys(obj[key]||{}):[]}
 export function registerTianyuanRegionRoutes(app){
   app.get("/api/tianyuan/regions",async(req,res)=>{
