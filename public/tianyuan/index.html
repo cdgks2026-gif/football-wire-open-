@@ -140,6 +140,16 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 .characterTitle{font-family:"Songti SC","STSong",serif;font-size:14px;margin:3px 0 7px;color:#425047}.characterGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.charCard{border:1px solid rgba(55,75,60,.12);background:#fff;border-radius:16px;padding:10px 5px;text-align:center;cursor:pointer}.charCard.active{outline:2px solid #62816a;background:#f4f5ed}.charCard .face{font-size:25px;display:block;margin-bottom:4px}.charCard b{display:block;font-size:10px}.charCard small{display:block;font-size:8px;color:#8a8c85;margin-top:2px}.authSubmit{border:0;background:#315c43;color:white;border-radius:14px;padding:12px 14px;font-weight:900;margin-top:3px}.authError{min-height:18px;color:#9d4e44;font-size:10px;text-align:center}.authFoot{font-size:9px;color:#92938e;line-height:1.5;text-align:center;margin-top:10px}
 .accountCard{display:flex;align-items:center;gap:12px;padding:12px;border-radius:17px;background:#efeee5;border:1px solid rgba(67,82,70,.09)}.accountBigAvatar{width:54px;height:54px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:29px}.accountMeta b{display:block;font-size:14px}.accountMeta small{display:block;color:#7b8078;font-size:9px;margin-top:3px}.roleEditGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.roleEdit{border:1px solid rgba(64,82,68,.12);background:#fff;border-radius:13px;padding:8px 4px;text-align:center;font-size:19px}.roleEdit.active{outline:2px solid #66856f}.cloudStatus{font-size:9px;color:#7d837b;margin-top:8px;min-height:14px}
 @media(max-width:560px){.authPanel{border-radius:23px;padding:17px}.authPanel h1{font-size:25px}.characterGrid,.roleEditGrid{grid-template-columns:repeat(2,1fr)}.charCard{padding:10px 6px}.accountChip{padding-right:6px}.accountChip .accountName{display:none}}
+
+/* 5.4 中国地区与实景 */
+.locationBadge{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:6px 9px;border-radius:999px;background:rgba(18,36,25,.38);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:9px;backdrop-filter:blur(8px);cursor:pointer}
+.locationPicker{display:grid;gap:9px}.locRow{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:8px}.locRow label{font-size:10px;color:#72786f}.locRow select,.locRow input{width:100%;border:1px solid rgba(61,80,65,.14);background:#fff;border-radius:12px;padding:10px 11px;font-size:12px;color:#334038;outline:none}
+.locHint{font-size:9px;color:#898d86;line-height:1.55}.placePreview{height:190px;border-radius:18px;background:#d9ddcf center/cover;position:relative;overflow:hidden;border:1px solid rgba(65,83,69,.12)}
+.placePreview:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.5))}
+.placePreviewText{position:absolute;left:12px;right:12px;bottom:10px;z-index:2;color:#fff}.placePreviewText b{display:block;font-family:"Songti SC","STSong",serif;font-size:16px}.placePreviewText small{display:block;margin-top:3px;font-size:9px;color:rgba(255,255,255,.75)}
+.photoCredit{position:absolute;right:10px;bottom:10px;z-index:8;padding:5px 7px;border-radius:999px;background:rgba(10,25,17,.46);color:#fff;font-size:8px;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);text-decoration:none;max-width:52%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.localFlavor{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.localFlavor span{padding:5px 7px;border-radius:999px;background:#eef0e7;color:#5e6b60;font-size:9px}
+@media(max-width:560px){.locRow{grid-template-columns:76px 1fr}.placePreview{height:160px}}
 </style>
 </head>
 <body>
@@ -187,7 +197,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
 <section class="page active" id="page-home">
 <div class="worldWrap">
   <div class="worldMap" id="worldMap">
-    <div class="worldTitle"><b>云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small></div>
+    <div class="worldTitle"><b id="worldPlaceTitle">云溪小院</b><small id="worldClock">今天 · 田园生活进行中</small><button class="locationBadge" id="locationBadge" onclick="openLocationPicker()">📍 选择落脚地</button></div>
     <div class="worldActions"><button aria-label="更多" onclick="openCozyMenu()">···</button></div>
     <button class="zone z-explore" onclick="walkToZone('explore',18,24,'河湾与山林')"><b>河湾与山林</b><small>钓鱼 · 采集 · 旅行</small></button>
     <button class="zone z-farm" onclick="walkToZone('farm',17,58,'四季农田')"><b>四季农田</b><small>播种 · 生长 · 收获</small></button>
@@ -202,7 +212,7 @@ button{font:inherit;color:inherit;touch-action:manipulation}.app{max-width:1180p
     <div class="actionBubble" id="actionBubble"><b id="actionTitle">去哪儿</b><small id="actionDesc">走近一点再看看。</small><div class="row"><button id="actionGo">进入</button><button onclick="hideActionBubble()" style="background:#e9e5da;color:#566057">先逛逛</button></div></div>
     <div class="fieldStrip" id="fieldStrip"></div>
     <div class="worldRain"></div>
-    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div>
+    <div class="weatherBadge" id="weatherBadge">晴 · 微风</div><a class="photoCredit" id="photoCredit" href="#" target="_blank" rel="noopener" style="display:none">实景图来源</a>
     <div class="ambient leafA"></div><div class="ambient leafB"></div><div class="ambient leafC"></div><div class="pondGlow"></div>
     <div class="gameStateSink">
       <b id="mapLevel">Lv.1</b><b id="mapProsper">0</b><b id="mapWeather">晴 · 24℃</b><b id="mapSeason">春季</b>
@@ -370,13 +380,13 @@ var story=[
 ];
 
 function fresh(){
- return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),
+ return {level:1,xp:0,prosper:0,ordersDone:0,selectedCrop:0,plots:Array.from({length:12},function(){return null}),location:{province:'',city:'',county:'',town:'',village:'',photo:null},
  merge:Array.from({length:48},function(){return null}),mergeSel:null,mergeCount:0,mergeMax:1,story:0,
  collection:{},buildings:{},furniture:{},friends:{},discoveries:{},daily:0,profile:{lastCloudSync:0},animals:{chicken:{fedAt:0,readyAt:0},cow:{fedAt:0,readyAt:0},bee:{fedAt:0,readyAt:0},grape:{fedAt:0,readyAt:0}},weather:null};
 }
 var state=fresh();
 try{var raw=localStorage.getItem(SAVE);if(raw)state=Object.assign(fresh(),JSON.parse(raw));}catch(e){}
-state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;
+state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;state.location=state.location||fresh().location;
 function localSaveKey(){return currentUser?SAVE+':user:'+currentUser.id:SAVE;}
 function save(){try{localStorage.setItem(localSaveKey(),JSON.stringify(state));}catch(e){}if(currentUser&&!cloudLoading)scheduleCloudSave();}
 function fmt(){return '∞';}
@@ -430,12 +440,12 @@ async function afterLogin(){
   }else{
     state=fresh();
   }
-  state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;
+  state.profile=state.profile||{lastCloudSync:0};state.animals=state.animals||fresh().animals;state.location=state.location||fresh().location;
   try{localStorage.setItem(SAVE+':user:'+currentUser.id,JSON.stringify(state));}catch(e){}
   cloudLoading=false;
   if(!data.save)await pushCloudSave();
  }catch(e){cloudLoading=false;toast('已登录，云存档稍后再同步');}
- finally{renderAll();applyWorldMood();}
+ finally{renderAll();applyWorldMood();applyLocationScene();if(!state.location?.province)setTimeout(function(){openLocationPicker();},500);}
 }
 function renderAccountChip(){
  var c=currentUser&&CHARACTER_META[currentUser.character]||CHARACTER_META.farmer;
@@ -628,11 +638,137 @@ window.finishCooking=function(i){
  setTimeout(function(){collect(r.name);addXP(r.xp);state.prosper+=2;save();st.textContent=r.name+' 做好了。';btn.textContent='端上桌';btn.disabled=false;btn.onclick=function(){closeModal();toast(r.name+' 已上桌');};steam&&steam.classList.remove('on');},1900);
 }
 
+
+var locationDraft={province:'',city:'',county:'',town:'',village:''};
+var REGION_FLAVOR={
+ '四川省':['川西竹林','青瓦小院','茶园','山雾'],
+ '云南省':['白墙院落','稻田','茶山','高原阳光'],
+ '浙江省':['竹海','溪谷','白墙黛瓦','梯田'],
+ '福建省':['茶山','土楼','溪谷','海风'],
+ '广东省':['岭南院落','荔枝园','水乡','南方雨季'],
+ '广西壮族自治区':['喀斯特山水','稻田','竹林','壮乡村寨'],
+ '贵州省':['山地梯田','木楼','云雾','溪谷'],
+ '湖南省':['稻田','山村','木屋','烟雨'],
+ '江西省':['赣南村落','茶园','稻田','青山'],
+ '安徽省':['徽派村落','白墙黛瓦','山泉','茶园'],
+ '江苏省':['江南水乡','田埂','河网','白墙院落'],
+ '台湾省':['花东田园','稻田','山谷','茶园'],
+ '新疆维吾尔自治区':['果园','雪山','绿洲','院落'],
+ '西藏自治区':['高原村落','牧场','雪山','河谷'],
+ '内蒙古自治区':['草原','牧场','风车','长空'],
+ '海南省':['椰林','海风','热带果园','村落'],
+ '黑龙江省':['黑土地','林海','木屋','长冬'],
+ '吉林省':['林地','玉米田','山村','雪季'],
+ '辽宁省':['果园','丘陵村落','海岸','农田'],
+ '山东省':['麦田','石墙村落','果园','海风'],
+ '河南省':['麦田','平原村庄','院落','黄河风'],
+ '河北省':['北方村落','麦田','果园','山地'],
+ '山西省':['黄土院落','窑洞','山村','旱地'],
+ '陕西省':['关中麦田','窑洞','苹果园','秦岭山村'],
+ '甘肃省':['黄土山村','梯田','果园','河谷'],
+ '青海省':['高原牧场','湖畔','青稞田','雪山'],
+ '湖北省':['湖乡','稻田','茶山','水网']
+};
+function locationText(loc){
+ return [loc?.province,loc?.city,loc?.county,loc?.town,loc?.village].filter(Boolean).join(' · ');
+}
+function escapeAttr(v){return escapeHtml(v).replace(/"/g,'&quot;');}
+function selectOptions(items,value,placeholder){
+ var html='<option value="">'+placeholder+'</option>';
+ (items||[]).forEach(function(x){html+='<option '+(x===value?'selected':'')+' value="'+escapeAttr(x)+'">'+escapeHtml(x)+'</option>';});
+ return html;
+}
+async function fetchRegions(params){
+ var q=new URLSearchParams(params||{});var d=await apiJSON('/api/tianyuan/regions'+(q.toString()?'?'+q.toString():''));
+ return d.items||[];
+}
+window.openLocationPicker=async function(){
+ locationDraft=Object.assign({province:'',city:'',county:'',town:'',village:''},state.location||{});
+ openModal('选一个中国乡村落脚地','<div class="locationPicker">'+
+  '<div class="placePreview" id="placePreview"><div class="placePreviewText"><b id="placePreviewName">正在整理地图…</b><small id="placePreviewSub">省 → 市 → 县/区 → 镇/街道 → 村/社区</small></div></div>'+
+  '<div class="locRow"><label>省/自治区</label><select id="locProvince" onchange="locationProvinceChanged()"><option>加载中…</option></select></div>'+
+  '<div class="locRow"><label>市/州</label><select id="locCity" onchange="locationCityChanged()"><option value="">先选省份</option></select></div>'+
+  '<div class="locRow"><label>县/区</label><select id="locCounty" onchange="locationCountyChanged()"><option value="">先选城市</option></select></div>'+
+  '<div class="locRow"><label>镇/街道</label><select id="locTown" onchange="locationTownChanged()"><option value="">先选县区</option></select></div>'+
+  '<div class="locRow"><label>村/社区</label><input id="locVillage" value="'+escapeAttr(locationDraft.village||'')+'" placeholder="填写村、里、社区或自然村名" oninput="locationVillageChanged()"></div>'+
+  '<div class="locHint">省、市、县/区、镇/街道使用开源区划数据联动；村级名称数量很大，为保证手机加载速度采用搜索/填写方式。台湾省入口已加入，同样可以保存到账号云存档。</div>'+
+  '<div class="localFlavor" id="localFlavor"></div>'+
+  '<button class="btn" onclick="saveLocationChoice()">住到这里</button>'+
+ '</div>');
+ try{
+  var provinces=await fetchRegions({});
+  var ps=document.getElementById('locProvince');if(!ps)return;ps.innerHTML=selectOptions(provinces,locationDraft.province,'选择省/自治区/直辖市');
+  if(locationDraft.province)await populateLocationFromDraft();
+ }catch(e){var n=document.getElementById('placePreviewName');if(n)n.textContent='地图暂时没加载出来';}
+ updateLocationPreview();
+}
+async function populateLocationFromDraft(){
+ var cityEl=document.getElementById('locCity'),countyEl=document.getElementById('locCounty'),townEl=document.getElementById('locTown');
+ if(locationDraft.province){
+  var cities=await fetchRegions({province:locationDraft.province});cityEl.innerHTML=selectOptions(cities,locationDraft.city,'选择市/州');
+ }
+ if(locationDraft.province&&locationDraft.city){
+  var counties=await fetchRegions({province:locationDraft.province,city:locationDraft.city});countyEl.innerHTML=selectOptions(counties,locationDraft.county,'选择县/区');
+ }
+ if(locationDraft.province&&locationDraft.city&&locationDraft.county){
+  var towns=await fetchRegions({province:locationDraft.province,city:locationDraft.city,county:locationDraft.county});townEl.innerHTML=selectOptions(towns,locationDraft.town,'选择镇/街道（如有）');
+ }
+}
+window.locationProvinceChanged=async function(){
+ locationDraft.province=document.getElementById('locProvince').value;locationDraft.city='';locationDraft.county='';locationDraft.town='';
+ document.getElementById('locCity').innerHTML='<option value="">加载中…</option>';document.getElementById('locCounty').innerHTML='<option value="">先选城市</option>';document.getElementById('locTown').innerHTML='<option value="">先选县区</option>';
+ try{document.getElementById('locCity').innerHTML=selectOptions(await fetchRegions({province:locationDraft.province}),'','选择市/州');}catch(e){}
+ updateLocationPreview();
+}
+window.locationCityChanged=async function(){
+ locationDraft.city=document.getElementById('locCity').value;locationDraft.county='';locationDraft.town='';
+ document.getElementById('locCounty').innerHTML='<option value="">加载中…</option>';document.getElementById('locTown').innerHTML='<option value="">先选县区</option>';
+ try{document.getElementById('locCounty').innerHTML=selectOptions(await fetchRegions({province:locationDraft.province,city:locationDraft.city}),'','选择县/区');}catch(e){}
+ updateLocationPreview();
+}
+window.locationCountyChanged=async function(){
+ locationDraft.county=document.getElementById('locCounty').value;locationDraft.town='';
+ document.getElementById('locTown').innerHTML='<option value="">加载中…</option>';
+ try{var t=await fetchRegions({province:locationDraft.province,city:locationDraft.city,county:locationDraft.county});document.getElementById('locTown').innerHTML=selectOptions(t,'',t.length?'选择镇/街道':'可直接填写村/社区');}catch(e){}
+ updateLocationPreview();
+}
+window.locationTownChanged=function(){locationDraft.town=document.getElementById('locTown').value;updateLocationPreview();}
+window.locationVillageChanged=function(){locationDraft.village=document.getElementById('locVillage').value.trim();updateLocationPreview();}
+function updateLocationPreview(){
+ var txt=locationText(locationDraft)||'还没有选择地方';
+ var name=document.getElementById('placePreviewName'),sub=document.getElementById('placePreviewSub');if(name)name.textContent=locationDraft.village||locationDraft.town||locationDraft.county||locationDraft.city||locationDraft.province||'选一个地方';if(sub)sub.textContent=txt;
+ var fl=document.getElementById('localFlavor');if(fl){var tags=REGION_FLAVOR[locationDraft.province]||['中国乡村','田园','院落','四季'];fl.innerHTML=tags.map(function(x){return '<span>'+x+'</span>';}).join('');}
+}
+window.saveLocationChoice=async function(){
+ if(!locationDraft.province){toast('先选一个省份');return;}
+ var btn=document.querySelector('.locationPicker .btn');if(btn){btn.disabled=true;btn.textContent='正在找实景…';}
+ var loc=Object.assign({},locationDraft);loc.village=(document.getElementById('locVillage')?.value||'').trim();
+ try{
+  var q=[loc.village,loc.town,loc.county,loc.city,loc.province].filter(Boolean).join(' ');
+  var p=await apiJSON('/api/tianyuan/place-photo?q='+encodeURIComponent(q));
+  loc.photo=p.photo||null;
+ }catch(e){loc.photo=null;}
+ state.location=loc;save();applyLocationScene();closeModal();toast('以后这里就是你的小院了');
+}
+function applyLocationScene(){
+ var loc=state.location||{},title=document.getElementById('worldPlaceTitle'),badge=document.getElementById('locationBadge'),wm=document.getElementById('worldMap'),credit=document.getElementById('photoCredit');
+ var short=loc.village||loc.town||loc.county||loc.city||loc.province||'云溪';
+ if(title)title.textContent=short+' · 小院';
+ if(badge)badge.textContent=loc.province?'📍 '+[loc.province,loc.city,loc.county].filter(Boolean).slice(-2).join(' · '):'📍 选择落脚地';
+ if(wm&&loc.photo?.url)wm.style.backgroundImage="url('"+String(loc.photo.url).replace(/'/g,"%27")+"')";
+ if(credit){
+  if(loc.photo?.url){credit.style.display='block';credit.href=loc.photo.sourceUrl||'#';credit.textContent='实景 · '+(loc.photo.license||'Wikimedia Commons');}
+  else credit.style.display='none';
+ }
+ var scene=document.getElementById('heroScene');if(scene&&loc.photo?.url&&document.getElementById('page-home')?.classList.contains('active'))scene.style.backgroundImage="url('"+String(loc.photo.url).replace(/'/g,"%27")+"')";
+ var d=document.getElementById('diaryDate');if(d&&loc.province)d.textContent=(loc.village||loc.town||loc.county||loc.city||loc.province)+' · '+new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
+}
 window.openCozyMenu=function(){
  openModal('小院里的小抽屉',
  '<div style="display:grid;gap:8px">'+
  '<button class="btn" onclick="claimDaily();closeModal()">收下今日小礼物</button>'+
  '<button class="btn alt" onclick="installWebApp()">放到手机桌面</button>'+
+ '<button class="btn alt" onclick="closeModal();openLocationPicker()">选择我的落脚地</button>'+
  '<button class="btn alt" onclick="exportSave()">备份这段生活</button>'+
  '<button class="btn alt" onclick="unlockAll();closeModal()">悄悄打开所有地方</button>'+
  '<div style="margin-top:7px;color:#8a8b84;font-size:10px">金币、钻石、体力和基础材料实际均为 9,999,999,999,999，并保持无限。</div>'+
@@ -676,7 +812,7 @@ function applyWorldMood(){
 }
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/tianyuan/sw.js').catch(function(){});});}
 setTimeout(function(){if(!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone)showInstallBar();},1600);
-function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();renderFieldStrip();}
+function renderAll(){renderStats();renderSeeds();renderPlots();renderPasture();renderRecipes();newOrders();renderTasks();renderMerge();renderMap();renderDiscoveries();renderRooms();renderFurniture();renderFriends();renderFieldStrip();applyLocationScene();}
 renderAll();applyWorldMood();renderWorldWeather();bootAccount();setInterval(function(){renderPlots();renderTasks();renderPasture();renderFieldStrip()},1000);setInterval(applyWorldMood,60000);
 })();
 </script>
