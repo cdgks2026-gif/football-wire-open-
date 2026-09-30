@@ -5,7 +5,7 @@ function authHeader() {
   const pass = process.env.MINIFLUX_PASSWORD || "change-this-password";
   return `Basic ${Buffer.from(`${user}:${pass}`).toString("base64")}`;
 }
-const base = () => (process.env.MINIFLUX_URL || "http://miniflux:8080").replace(/\/$/, "");
+const base = () => (process.env.MINIFLUX_INTERNAL_URL || process.env.MINIFLUX_URL || "http://miniflux:8080").replace(/\/$/, "");
 
 async function api(path, options = {}) {
   const res = await fetch(`${base()}${path}`, {
