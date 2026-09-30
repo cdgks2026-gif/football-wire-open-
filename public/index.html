@@ -39,7 +39,7 @@ function verifyHtml(x){
   if(!ss.length)return "";
   return '<div class="verify"><b>核实来源：</b>'+ss.map(v=>'<span class="vtag">'+esc(v)+'</span>').join("")+'</div>';
 }
-function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function ago(v){const n=Date.parse(v);if(!n)return"";const m=Math.max(0,Math.round((Date.now()-n)/60000));if(m<60)return`${m}分钟前`;const h=Math.round(m/60);if(h<24)return`${h}小时前`;return`${Math.round(h/24)}天前`}
 async function load(){try{const qs=new URLSearchParams({tier,category:cat,q:$("#q").value.trim(),hours:String(hours),sort:"latest"});const r=await fetch("/api/news?"+qs.toString(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const d=await r.json();const items=d.items||[];
 $("#count").textContent=`已核实 ${d.count} 条`;$("#updated").textContent=d.metrics?.syncedAt?`同步：${new Date(d.metrics.syncedAt).toLocaleTimeString("zh-CN",{hour12:false})}`:"";$("#status").textContent=`原始抓取 ${d.metrics?.rawEntries||0} 条 · 多源核实后 ${d.metrics?.visibleEvents||0} 条 · 外文翻译缓存 ${d.metrics?.translationCache||0}`;$("#status").className="good";
