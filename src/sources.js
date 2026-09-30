@@ -6,7 +6,7 @@ export function loadSources() {
 }
 export function feedUrl(source) {
   if (source.type === "rsshub") {
-    return `${(process.env.RSSHUB_URL || "http://rsshub:1200").replace(/\/$/, "")}${source.path}`;
+    return `${(process.env.RSSHUB_INTERNAL_URL || process.env.RSSHUB_URL || "http://rsshub:1200").replace(/\/$/, "")}${source.path}`;
   }
   if (source.type === "gnews") {
     const qs = new URLSearchParams({hl:"zh-CN",gl:"CN",ceid:"CN:zh-Hans",q:source.query});
