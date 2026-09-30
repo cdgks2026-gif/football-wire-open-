@@ -96,6 +96,25 @@ function snapshotLocal(items=[]){
   state.snapshots=Object.fromEntries(keys.map(k=>[k,state.snapshots[k]]));
   return date;
 }
+
+function restoreLastGoodNews(){
+  if(Array.isArray(state.latest)&&state.latest.length)return state.latest.length;
+  const stories=Object.values(state.stories||{}).filter(Boolean);
+  const restored=stories.filter((x)=>{
+    const t=Date.parse(x.publishedAt||x.lastSeenAt||0);
+    if(!Number.isFinite(t)||Date.now()-t>NEWS_MAX_AGE_HOURS*3600_000)return false;
+    const official=(x.tiers||[]).includes("官方");
+    return !x.isMatchReport && (official || (x.confirmations||0)>=2);
+  }).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)).slice(0,MAX_VISIBLE);
+  if(restored.length){
+    state.latest=restored;
+    state.allEligible=restored;
+    state.metrics={...(state.metrics||{}),visibleEvents:restored.length,phase:"历史成功结果兜底",restoredAt:new Date().toISOString()};
+    console.log("[restore]",JSON.stringify({visible:restored.length}));
+    saveState();
+  }
+  return restored.length;
+}
 function adminAllowed(req){
   const configured=String(process.env.ADMIN_TOKEN||"");
   if(!configured)return false;
@@ -870,6 +889,22 @@ function publishProcessed(processed,extraMetrics={}){
   });
 
   const clustered=rankedEligible.slice(0,MAX_VISIBLE);
+  if(extraMetrics.directFallback && clustered.length===0 && Array.isArray(state.latest) && state.latest.length>0){
+    state.metrics={
+      ...(state.metrics||{}),
+      rawEntries:extraMetrics.rawEntries??0,
+      visibleEvents:state.latest.length,
+      translatedNow:extraMetrics.translatedNow??0,
+      hiddenForeign:extraMetrics.hiddenForeign??0,
+      phase:"直连抓取失败，保留上一批成功新闻",
+      directFallback:true,
+      directFallbackReason:extraMetrics.directFallbackReason||"empty-batch",
+      syncedAt:new Date().toISOString()
+    };
+    saveState();
+    console.warn("[sync preserve]",JSON.stringify({kept:state.latest.length,raw:extraMetrics.rawEntries??0}));
+    return state.latest;
+  }
   const reportLatest=allClusters
     .filter((x)=>x.isMatchReport)
     .filter((x)=>{
@@ -1037,6 +1072,7 @@ async function directFallbackSync(reason="miniflux-unavailable"){
 
 async function setup(){
   ensureEditor(state);
+  restoreLastGoodNews();
   let db={enabled:false,vector:false,error:"数据库初始化超时，已切换无数据库模式"};
   try{
     db=await Promise.race([
@@ -1940,12 +1976,16 @@ app.post("/api/refresh",async(_req,res)=>{
   const now=Date.now();
   if(now-lastManualRefreshAt<15000)return res.status(429).json({ok:false,error:"refresh-too-frequent",retryAfterMs:15000-(now-lastManualRefreshAt)});
   lastManualRefreshAt=now;
-  await refreshDue(true);
-  setTimeout(()=>syncEntries(),5000);
-  res.status(202).json({ok:true});
+  if(bootstrap){
+    await refreshDue(true);
+    setTimeout(()=>syncEntries(),5000);
+  }else{
+    void directFallbackSync("manual-refresh");
+  }
+  res.status(202).json({ok:true,mode:bootstrap?"miniflux":"direct-fallback"});
 });
 
 app.listen(PORT,()=>console.log(`[web] http://localhost:${PORT}`));
 setup().catch((err)=>console.error("[setup fatal]",err));
 setInterval(()=>refreshDue(false),15000).unref();
-setInterval(()=>{if(bootstrap)syncEntries();else directFallbackSync("scheduled-fallback")},30000).unref();
+setInterval(()=>{if(bootstrap)syncEntries();else directFallbackSync("scheduled-fallback")},300000).unref();
