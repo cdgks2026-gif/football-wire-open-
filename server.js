@@ -31,6 +31,7 @@ const ENTRY_DAYS=Number(process.env.ENTRY_DAYS||5);
 const ENTRY_LIMIT=Number(process.env.ENTRY_LIMIT||240);
 const FOREIGN_TRANSLATE_LIMIT=Number(process.env.FOREIGN_TRANSLATE_LIMIT||24);
 const ARTICLE_ENRICH_LIMIT=Number(process.env.ARTICLE_ENRICH_LIMIT||18);
+const NEWS_MAX_AGE_HOURS=Number(process.env.NEWS_MAX_AGE_HOURS||72);
 
 fs.mkdirSync(path.dirname(DATA_FILE),{recursive:true});
 
@@ -472,14 +473,15 @@ function credibilityFor(item){
   const details=item.sourceDetails||[];
   const best=details[0]?.score||item.sourceScore||0;
   const avg=details.length?details.reduce((a,b)=>a+(b.score||0),0)/details.length:best;
+  const confirmations=item.confirmations||0;
 
-  if((item.confirmations||0)>=3 && best>=88) return {score:98,label:"已核实"};
-  if((item.confirmations||0)>=2 && best>=92 && avg>=80) return {score:95,label:"已核实"};
-  if((item.confirmations||0)>=2 && best>=85) return {score:91,label:"交叉确认"};
-  if((item.confirmations||0)>=2) return {score:86,label:"交叉确认"};
-  if((item.confirmations||0)===1 && best>=92) return {score:84,label:"权威单源"};
-  if((item.confirmations||0)===1 && directPlatformSource(item)) return {score:82,label:"平台直发"};
-  return {score:0,label:""};
+  // 鹿白足球主新闻只认多源核实。单一来源（包括懂球帝/虎扑、记者或权威媒体）不进入主流。
+  if(confirmations>=4 && best>=88) return {score:99,label:"多方核实"};
+  if(confirmations>=3 && best>=88) return {score:97,label:"多方核实"};
+  if(confirmations>=2 && best>=92 && avg>=80) return {score:95,label:"双源核实"};
+  if(confirmations>=2 && best>=85) return {score:92,label:"双源核实"};
+  if(confirmations>=2) return {score:88,label:"双源核实"};
+  return {score:0,label:"未核实"};
 }
 
 function heatScore(item){
@@ -500,17 +502,15 @@ function heatScore(item){
 function rankScore(item){
   const confirmations=item.confirmations||0;
   const best=item.sourceDetails?.[0]?.score||item.sourceScore||0;
-  const platform=directPlatformSource(item);
 
-  // 硬优先级：官方/顶级权威 > 多源确认 > 权威单源 > 懂球帝/虎扑直发。
+  // 只在已通过多源核实的新闻之间排序，不再给懂球帝/虎扑单源额外优先级。
   let band=0;
-  if(isOfficialNews(item) || best>=98) band=4;
-  else if(confirmations>=2) band=3;
-  else if(best>=92) band=2;
-  else if(platform) band=1;
+  if(confirmations>=4) band=5;
+  else if(confirmations>=3) band=4;
+  else if(confirmations>=2 && (isOfficialNews(item) || best>=98)) band=3;
+  else if(confirmations>=2) band=2;
 
-  const platformTie=platform==="懂球帝"?2:platform==="虎扑"?1:0;
-  return band*10000+(item.credibilityScore||0)*10+(item.heat||0)+platformTie;
+  return band*10000+(item.credibilityScore||0)*10+(item.heat||0);
 }
 
 function importanceScore(item){
@@ -851,11 +851,9 @@ function publishProcessed(processed,extraMetrics={}){
   const eligible=allClusters.filter((x)=>{
     if(x.isMatchReport)return false;
     const confirmations=x.confirmations||0;
-    const best=x.sourceDetails?.[0]?.score||x.sourceScore||0;
-    if(confirmations>=2)return true;
-    if(confirmations===1 && best>=92)return true;
-    if(confirmations===1 && directPlatformSource(x))return true;
-    return false;
+    const published=Date.parse(x.publishedAt||0);
+    const fresh=Number.isFinite(published) && (Date.now()-published)<=NEWS_MAX_AGE_HOURS*3600_000;
+    return confirmations>=2 && fresh;
   });
 
   const editor=ensureEditor(state);
@@ -879,7 +877,7 @@ function publishProcessed(processed,extraMetrics={}){
 
   const unconfirmedFiltered=Math.max(0,allClusters.length-eligible.length);
   const exclusiveVisible=(state.exclusiveLatest||[]).length;
-  const platformDirectVisible=clustered.filter((x)=>(x.confirmations||0)===1 && directPlatformSource(x)).length;
+  const platformDirectVisible=0;
 
   state.latest=clustered;
   state.allEligible=rankedEligible.slice(0,800);
