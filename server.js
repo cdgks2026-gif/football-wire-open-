@@ -945,7 +945,7 @@ function decodeXmlText(value=""){
     .replace(/\s+/g," ").trim();
 }
 function rssTag(block,tag){
-  const m=String(block).match(new RegExp("<"+tag+"(?:\\\\s[^>]*)?>([\\\\s\\\\S]*?)<\\\\/"+tag+">","i"));
+  const m=String(block).match(new RegExp("<"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+tag+">","i"));
   return m?decodeXmlText(m[1]):"";
 }
 async function fetchDirectFeed(source){
