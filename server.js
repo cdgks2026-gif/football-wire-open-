@@ -1958,11 +1958,25 @@ app.get("/api/ai-status",(_req,res)=>{
   res.json(aiStatus(state));
 });
 
+app.get("/healthz",(_req,res)=>{
+  res.set("Cache-Control","no-store");
+  res.status(200).json({ok:true,newsCount:(state.latest||[]).length,mode:bootstrap?"miniflux":"direct-fallback"});
+});
+
 app.get("/api/status",async(_req,res)=>{
   res.set("Cache-Control","no-store");
+  let miniflux={ok:false,error:"unavailable"};
+  try{
+    miniflux=await Promise.race([
+      minifluxHealth(),
+      new Promise((resolve)=>setTimeout(()=>resolve({ok:false,error:"timeout"}),1200))
+    ]);
+  }catch(err){
+    miniflux={ok:false,error:String(err)};
+  }
   res.json({
     ok:true,
-    miniflux:await minifluxHealth(),
+    miniflux,
     sourceCount:bootstrap?Object.keys(bootstrap.sourceByFeedId).length:0,
     newsCount:(state.latest||[]).length,
     mode:bootstrap?"miniflux":"direct-fallback",
