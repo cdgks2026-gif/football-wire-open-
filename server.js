@@ -308,6 +308,7 @@ function footballOnlyReason(title,meta){
 
 const SOURCE_REPUTATION_RULES=[
   [/Reuters|路透/i,100],
+  [/Associated Press|\bAP\b|美联社/i,96],
   [/BBC|英国广播公司/i,97],
   [/The Athletic|竞技体育网/i,96],
   [/Sky Sports|天空体育/i,95],
@@ -342,6 +343,7 @@ function canonicalSourceName(name){
     [/(?:懂球帝|dongqiudi\.com)/i,"懂球帝"],
     [/虎扑|Hupu/i,"虎扑"],
     [/Reuters|路透/i,"Reuters"],
+    [/Associated Press|\bAP\b|美联社/i,"Associated Press"],
     [/BBC(?: Sport| Football)?|英国广播公司/i,"BBC"],
     [/Sky Sports|天空体育/i,"Sky Sports"],
     [/The Athletic|竞技体育网/i,"The Athletic"],
