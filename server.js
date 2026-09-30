@@ -1037,7 +1037,15 @@ async function directFallbackSync(reason="miniflux-unavailable"){
 
 async function setup(){
   ensureEditor(state);
-  const db=await initStore();
+  let db={enabled:false,vector:false,error:"数据库初始化超时，已切换无数据库模式"};
+  try{
+    db=await Promise.race([
+      initStore(),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error("database init timeout")),2500))
+    ]);
+  }catch(err){
+    console.warn("[store fallback]",String(err));
+  }
   state.metrics={...(state.metrics||{}),store:db};
   if(db.enabled){
     try{
