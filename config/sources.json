@@ -120,6 +120,14 @@
     "enabled": true
   },
   {
+    "name": "美联社足球",
+    "tier": "国际媒体",
+    "group": "media",
+    "type": "gnews",
+    "query": "site:apnews.com (soccer OR football) when:1d -odds -betting -bets -bookmaker -sportsbook -wager -prediction -predictions -tips -casino -竞彩 -足彩 -博彩 -投注 -下注 -盘口 -赔率",
+    "enabled": true
+  },
+  {
     "name": "路透社足球",
     "tier": "国际媒体",
     "group": "media",
