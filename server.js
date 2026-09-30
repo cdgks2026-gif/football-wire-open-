@@ -954,7 +954,7 @@ async function fetchDirectFeed(source){
   const url=feedUrl(source);
   try{
     const res=await fetch(url,{
-      headers:{"user-agent":"Mozilla/5.0 鹿白足球/1.0","accept":"application/rss+xml, application/xml, text/xml, */*"},
+      headers:{"user-agent":"Mozilla/5.0 LubaiFootball/1.0","accept":"application/rss+xml, application/xml, text/xml, */*"},
       signal:AbortSignal.timeout(7000)
     });
     if(!res.ok)throw new Error("HTTP "+res.status);
