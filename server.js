@@ -1052,7 +1052,7 @@ async function setup(){
       new Promise((_,reject)=>setTimeout(()=>reject(new Error("Miniflux bootstrap timeout")),6500))
     ]);
     state.metrics={...(state.metrics||{}),websub:await subscribeWebSubSources(sources).catch(()=>({configured:0,subscribed:0}))};
-    console.log(\`[setup] \${sources.length} 个来源已配置；新建 \${bootstrap.created.length} 个订阅\`);
+    console.log("[setup] "+sources.length+" 个来源已配置；新建 "+bootstrap.created.length+" 个订阅");
     await refreshDue(true);
     setTimeout(()=>syncEntries(),3500);
   }catch(err){
