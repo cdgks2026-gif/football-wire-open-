@@ -89,7 +89,7 @@ function key(text) {
 }
 
 async function libreTranslate(text, source="auto") {
-  const url = (process.env.LIBRETRANSLATE_URL || "http://libretranslate:5000").replace(/\/$/, "");
+  const url = (process.env.LIBRETRANSLATE_INTERNAL_URL || process.env.LIBRETRANSLATE_URL || "http://libretranslate:5000").replace(/\/$/, "");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), Number(process.env.TRANSLATE_TIMEOUT_MS || 12000));
   try {
