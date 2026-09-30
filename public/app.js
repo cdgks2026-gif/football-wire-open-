@@ -43,7 +43,7 @@ async function checkNews(initial=false){
       for(const x of items.slice(0,5).reverse()){
         const id=x.storyId||x.id;if(set.has(id))continue;
         const url=x.storyId?`/story/${x.storyId}`:"/";
-        const n=new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url}});
+        const n=new Notification("鹿白足球",{body:x.title,icon:"/icon.svg",data:{url}});
         n.onclick=()=>{window.focus();location.href=url};
         set.add(id);
       }
@@ -61,7 +61,7 @@ try{
       const seen=read("lubai:notified",[]),set=new Set(seen),id=x.storyId||x.id;
       if(set.has(id))return;
       const url=x.storyId?"/story/"+x.storyId:"/";
-      const n=new Notification("露白足球",{body:x.title,icon:"/icon.svg",data:{url}});
+      const n=new Notification("鹿白足球",{body:x.title,icon:"/icon.svg",data:{url}});
       n.onclick=()=>{window.focus();location.href=url};
       set.add(id);write("lubai:notified",[...set].slice(-100));
     }catch{}
@@ -85,7 +85,7 @@ $("#showBookmarks")?.addEventListener("click",()=>{
 renderBookmarkCount();
 
 $$(".shareStory").forEach(btn=>btn.addEventListener("click",async()=>{
-  const id=btn.dataset.storyId,title=btn.dataset.storyTitle||"露白足球";
+  const id=btn.dataset.storyId,title=btn.dataset.storyTitle||"鹿白足球";
   const url=id?location.origin+"/story/"+encodeURIComponent(id):location.href;
   try{
     if(navigator.share)await navigator.share({title,text:title,url});
