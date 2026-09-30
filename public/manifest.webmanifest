@@ -1,7 +1,7 @@
 {
-  "name":"露白足球",
-  "short_name":"露白足球",
-  "description":"开源足球新闻聚合器：多源核实、独家识别、战报、历史与语义搜索",
+  "name":"鹿白足球",
+  "short_name":"鹿白足球",
+  "description":"全球最新足球新闻：外网翻译、多源核实、来源可追溯",
   "start_url":"/",
   "scope":"/",
   "display":"standalone",
