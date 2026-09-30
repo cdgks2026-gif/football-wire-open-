@@ -2,7 +2,7 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { loadSources, GROUP_META } from "./src/sources.js";
+import { loadSources, GROUP_META, feedUrl } from "./src/sources.js";
 import { bootstrapSources, getRecentEntriesByCategory, getRecentEntriesByFeed, refreshCategory, minifluxHealth } from "./src/miniflux.js";
 import { toChineseTitle, normalizeTerms, chineseRatio } from "./src/translator.js";
 import { clusterLatest, category, eventKey } from "./src/events.js";
@@ -934,6 +934,107 @@ function publishProcessed(processed,extraMetrics={}){
   console.log("[sync]",JSON.stringify(state.metrics));
 }
 
+
+function decodeXmlText(value=""){
+  return String(value)
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
+    .replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'")
+    .replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n)||32))
+    .replace(/<[^>]+>/g," ")
+    .replace(/\s+/g," ").trim();
+}
+function rssTag(block,tag){
+  const m=String(block).match(new RegExp("<"+tag+"(?:\\\\s[^>]*)?>([\\\\s\\\\S]*?)<\\\\/"+tag+">","i"));
+  return m?decodeXmlText(m[1]):"";
+}
+async function fetchDirectFeed(source){
+  if(source.historyOnly)return[];
+  if(!["gnews","rsshub","rss"].includes(source.type))return[];
+  const url=feedUrl(source);
+  try{
+    const res=await fetch(url,{
+      headers:{"user-agent":"Mozilla/5.0 鹿白足球/1.0","accept":"application/rss+xml, application/xml, text/xml, */*"},
+      signal:AbortSignal.timeout(7000)
+    });
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const xml=await res.text();
+    const blocks=[...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].slice(0,18).map(x=>x[0]);
+    return blocks.map((block,i)=>{
+      const title=rssTag(block,"title");
+      const link=rssTag(block,"link")||rssTag(block,"guid");
+      const rawDate=rssTag(block,"pubDate")||rssTag(block,"published")||rssTag(block,"updated");
+      const ms=Date.parse(rawDate||"");
+      const when=Number.isFinite(ms)?new Date(ms).toISOString():new Date().toISOString();
+      return {
+        id:"direct-"+idFor(source.name+"|"+(link||title)+"|"+i),
+        title,url:link,link,content:rssTag(block,"description"),
+        published_at:when,created_at:when,
+        _meta:{name:source.name,tier:source.tier,group:source.group,type:source.type,historyOnly:false},
+        _timeReliable:Number.isFinite(ms)
+      };
+    }).filter(x=>x.title);
+  }catch(err){
+    console.error("[direct feed]",source.name,String(err).slice(0,180));
+    return[];
+  }
+}
+async function directFallbackSync(reason="miniflux-unavailable"){
+  if(syncing)return;
+  syncing=true;
+  try{
+    const sources=loadSources().filter(x=>!x.historyOnly && ["gnews","rsshub","rss"].includes(x.type));
+    const entries=[];
+    let cursor=0;
+    async function worker(){
+      while(cursor<sources.length){
+        const source=sources[cursor++];
+        entries.push(...await fetchDirectFeed(source));
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(8,Math.max(1,sources.length))},()=>worker()));
+    entries.sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at));
+    const limited=entries.slice(0,420);
+    const processed=[];
+    const foreign=[];
+    for(const entry of limited){
+      const meta=entry._meta;
+      const sourceInfo=extractPublisher(entry.title||"",meta);
+      const normalized=normalizeTerms(sourceInfo.title);
+      if(!normalized)continue;
+      if(gamblingReason(normalized,entry)||junkTitleReason(normalized))continue;
+      if(commercialReason(normalized,entry))continue;
+      if(footballOnlyReason(normalized,meta))continue;
+      if(chineseRatio(normalized)>=0.48)processed.push(makeItem(entry,normalized,meta,sourceInfo));
+      else foreign.push({entry,meta,sourceInfo,normalized});
+    }
+    let tCursor=0;
+    async function translateWorker(){
+      while(tCursor<Math.min(foreign.length,90)){
+        const x=foreign[tCursor++];
+        try{
+          const title=await toChineseTitle(x.normalized,state.translations,{allowOriginal:false});
+          if(title)processed.push(makeItem(x.entry,title,x.meta,x.sourceInfo));
+        }catch{}
+      }
+    }
+    await Promise.all(Array.from({length:6},()=>translateWorker()));
+    publishProcessed(processed,{
+      rawEntries:limited.length,
+      translatedNow:Math.min(foreign.length,90),
+      hiddenForeign:Math.max(0,foreign.length-90),
+      phase:"数据库降级直连模式",
+      directFallback:true,
+      directFallbackReason:reason
+    });
+    console.log("[direct sync]",JSON.stringify({raw:limited.length,processed:processed.length,visible:state.latest?.length||0,reason}));
+  }catch(err){
+    console.error("[direct sync fatal]",String(err));
+  }finally{
+    syncing=false;
+  }
+}
+
 async function setup(){
   ensureEditor(state);
   const db=await initStore();
@@ -945,11 +1046,20 @@ async function setup(){
     }catch{}
   }
   const sources=loadSources();
-  bootstrap=await bootstrapSources(sources);
-  state.metrics={...(state.metrics||{}),websub:await subscribeWebSubSources(sources).catch(()=>({configured:0,subscribed:0}))};
-  console.log(`[setup] ${sources.length} 个来源已配置；新建 ${bootstrap.created.length} 个订阅`);
-  await refreshDue(true);
-  setTimeout(()=>syncEntries(),5000);
+  try{
+    bootstrap=await Promise.race([
+      bootstrapSources(sources),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error("Miniflux bootstrap timeout")),6500))
+    ]);
+    state.metrics={...(state.metrics||{}),websub:await subscribeWebSubSources(sources).catch(()=>({configured:0,subscribed:0}))};
+    console.log(\`[setup] \${sources.length} 个来源已配置；新建 \${bootstrap.created.length} 个订阅\`);
+    await refreshDue(true);
+    setTimeout(()=>syncEntries(),3500);
+  }catch(err){
+    bootstrap=null;
+    console.warn("[setup fallback]",String(err));
+    await directFallbackSync(String(err));
+  }
 }
 
 async function refreshDue(force=false){
@@ -1811,6 +1921,7 @@ app.get("/api/status",async(_req,res)=>{
     miniflux:await minifluxHealth(),
     sourceCount:bootstrap?Object.keys(bootstrap.sourceByFeedId).length:0,
     newsCount:(state.latest||[]).length,
+    mode:bootstrap?"miniflux":"direct-fallback",
     metrics:state.metrics||{},
     ai:aiStatus(state)
   });
@@ -1829,4 +1940,4 @@ app.post("/api/refresh",async(_req,res)=>{
 app.listen(PORT,()=>console.log(`[web] http://localhost:${PORT}`));
 setup().catch((err)=>console.error("[setup fatal]",err));
 setInterval(()=>refreshDue(false),15000).unref();
-setInterval(()=>syncEntries(),30000).unref();
+setInterval(()=>{if(bootstrap)syncEntries();else directFallbackSync("scheduled-fallback")},30000).unref();
