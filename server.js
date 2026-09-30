@@ -1768,7 +1768,7 @@ app.get("/api/news",(req,res)=>{
 app.get("/feed.json",(_req,res)=>{
   const items=(state.latest||[]).slice(0,80).map(x=>({id:x.storyId||x.id,url:x.storyId?`${PUBLIC_URL}/story/${encodeURIComponent(x.storyId)}`:x.url,external_url:x.url||undefined,title:x.title,date_published:x.publishedAt,tags:[x.category,...(x.aiTags||[])].filter(Boolean)}));
   res.set("Cache-Control","public, max-age=60, stale-while-revalidate=180");
-  res.type("application/feed+json").send(JSON.stringify({version:"https://jsonfeed.org/version/1.1",title:"露白足球",home_page_url:PUBLIC_URL,feed_url:`${PUBLIC_URL}/feed.json`,description:"全球足球中文新闻聚合、多源核实与事件时间线",items}));
+  res.type("application/feed+json").send(JSON.stringify({version:"https://jsonfeed.org/version/1.1",title:"鹿白足球",home_page_url:PUBLIC_URL,feed_url:`${PUBLIC_URL}/feed.json`,description:"全球足球中文新闻聚合、多源核实与事件时间线",items}));
 });
 
 app.get("/feed.xml",(_req,res)=>{
@@ -1778,7 +1778,7 @@ app.get("/feed.xml",(_req,res)=>{
     return `<item><title>${esc(x.title)}</title><link>${esc(link)}</link><guid isPermaLink="false">${esc(x.storyId||x.id)}</guid><pubDate>${new Date(x.publishedAt||Date.now()).toUTCString()}</pubDate><category>${esc(x.category||"综合")}</category></item>`;
   }).join("");
   res.set("Cache-Control","public, max-age=60, stale-while-revalidate=180");
-  res.type("application/rss+xml").send(`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>露白足球</title><link>${PUBLIC_URL}</link><description>全球足球中文新闻聚合、多源核实与事件时间线</description><language>zh-cn</language>${xml}</channel></rss>`);
+  res.type("application/rss+xml").send(`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>鹿白足球</title><link>${PUBLIC_URL}</link><description>全球足球中文新闻聚合、多源核实与事件时间线</description><language>zh-cn</language>${xml}</channel></rss>`);
 });
 
 app.get("/api/trending",(_req,res)=>{
