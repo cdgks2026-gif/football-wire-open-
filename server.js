@@ -478,6 +478,7 @@ function credibilityFor(item){
   const confirmations=item.confirmations||0;
 
   // 鹿白足球主新闻只认多源核实。单一来源（包括懂球帝/虎扑、记者或权威媒体）不进入主流。
+  if(isOfficialNews(item)) return {score:99,label:"官方确认"};
   if(confirmations>=4 && best>=88) return {score:99,label:"多方核实"};
   if(confirmations>=3 && best>=88) return {score:97,label:"多方核实"};
   if(confirmations>=2 && best>=92 && avg>=80) return {score:95,label:"双源核实"};
@@ -507,9 +508,10 @@ function rankScore(item){
 
   // 只在已通过多源核实的新闻之间排序，不再给懂球帝/虎扑单源额外优先级。
   let band=0;
-  if(confirmations>=4) band=5;
+  if(isOfficialNews(item)) band=6;
+  else if(confirmations>=4) band=5;
   else if(confirmations>=3) band=4;
-  else if(confirmations>=2 && (isOfficialNews(item) || best>=98)) band=3;
+  else if(confirmations>=2 && best>=98) band=3;
   else if(confirmations>=2) band=2;
 
   return band*10000+(item.credibilityScore||0)*10+(item.heat||0);
@@ -855,7 +857,7 @@ function publishProcessed(processed,extraMetrics={}){
     const confirmations=x.confirmations||0;
     const published=Date.parse(x.publishedAt||0);
     const fresh=Number.isFinite(published) && (Date.now()-published)<=NEWS_MAX_AGE_HOURS*3600_000;
-    return confirmations>=2 && fresh;
+    return fresh && (isOfficialNews(x) || confirmations>=2);
   });
 
   const editor=ensureEditor(state);
