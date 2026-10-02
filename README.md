@@ -6,7 +6,7 @@
 
 ## 运行
 
-Node.js 22 及以上版本。规则数据由站点运行环境提供，手册与封面保存在站点的独立数据库表中；源码仓库不包含这些文件或完整规则正文。
+Node.js 22 及以上版本。规则数据由站点运行环境提供，手册与封面保存在项目的私有文件存储中；源码仓库不包含这些文件或完整规则正文。
 
 ```sh
 npm ci
@@ -19,18 +19,19 @@ npm start
 ## 内容维护
 
 - `RULEBOOK_DATA_BROTLI_BASE64`：运行环境提供的压缩规则数据。
-- `RULEBOOK_ASSET_DATABASE_URL`：独立资源表的数据库连接，由部署环境的服务引用提供。
+- `RULEBOOK_S3_BUCKET`、`RULEBOOK_S3_ENDPOINT`、`RULEBOOK_S3_REGION`：项目私有文件存储的连接配置。
+- `RULEBOOK_S3_ACCESS_KEY_ID`、`RULEBOOK_S3_SECRET_ACCESS_KEY`：由部署环境的资源引用提供，不进入源码。
 - `RULEBOOK_ASSET_UPLOAD_TOKEN`：资源上传的部署凭证；不进入源码。
 - `public/load-rulebook.js`：从本站接口读取规则，再启动查阅界面。
 - `public/app.js`：检索、分类、详情与深链接。
 - `public/styles.css`：桌面和移动端布局。
-- `/season-one-manual.pdf`：用户提供的 37 页第一季手册阅读副本，由本站资源表读取。
-- `/manual-brand.png`：手册封面中的赛事标识，由本站资源表读取。
+- `/season-one-manual.pdf`：用户提供的 37 页第一季手册阅读副本，由本站文件存储读取。
+- `/manual-brand.png`：手册封面中的赛事标识，由本站文件存储读取。
 
-原站的新闻页面、采集逻辑、翻译与新闻接口已经移除。新服务只读写 `cm_rulebook_assets` 资源表，不运行抓取任务；旧文章路径跳转到规则库首页，已停用接口返回 410。`public/sw.js` 负责退役旧浏览器缓存。
+原站的新闻页面、采集逻辑、翻译与新闻接口已经移除。新服务不连接旧数据库、不运行抓取任务；旧文章路径跳转到规则库首页，已停用接口返回 410。`public/sw.js` 负责退役旧浏览器缓存。
 
 ## Railway
 
-沿用现有服务和域名 `https://football-wire-production.up.railway.app/`，Dockerfile 直接运行 Node 服务。健康检查使用 `/healthz`。连接原站已有的 PostgreSQL 保存资源，无需新闻提取器。历史源码保留在 Git 提交历史中。
+沿用现有服务和域名 `https://football-wire-production.up.railway.app/`，Dockerfile 直接运行 Node 服务。健康检查使用 `/healthz`。手册与封面通过同项目的私有 S3 文件存储提供，无需数据库或新闻提取器。历史源码保留在 Git 提交历史中。
 
 赛事规则以用户提供的执行手册为依据，参考版型链接回 https://werewolves.games/ 。本站不代替赛事主裁判的正式裁定。

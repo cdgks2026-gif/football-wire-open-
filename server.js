@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliDecompressSync, gzipSync } from 'node:zlib';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import pg from 'pg';
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
 const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.pdf': 'application/pdf' };
@@ -25,15 +25,16 @@ try {
 }
 const compressedJson = gzipSync(json);
 const localAssetDir = process.env.NODE_ENV !== 'production' ? process.env.RULEBOOK_LOCAL_ASSET_DIR : null;
-const pool = localAssetDir ? null : new pg.Pool({ connectionString: process.env.RULEBOOK_ASSET_DATABASE_URL || process.env.APP_DATABASE_URL, max: 3, connectionTimeoutMillis: 8000 });
+const s3 = localAssetDir ? null : new S3Client({
+  endpoint: process.env.RULEBOOK_S3_ENDPOINT,
+  region: process.env.RULEBOOK_S3_REGION || 'auto',
+  credentials: { accessKeyId: process.env.RULEBOOK_S3_ACCESS_KEY_ID, secretAccessKey: process.env.RULEBOOK_S3_SECRET_ACCESS_KEY },
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  maxAttempts: 2
+});
+const bucket = process.env.RULEBOOK_S3_BUCKET;
 const storedAssets = new Map();
-let tableReady;
 const allowedUploads = new Map([['season-one-manual.pdf', 'application/pdf'], ['manual-brand.png', 'image/png']]);
-
-async function ensureTable() {
-  if (!tableReady) tableReady = pool.query('CREATE TABLE IF NOT EXISTS cm_rulebook_assets (name TEXT PRIMARY KEY, content BYTEA NOT NULL, content_type TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())').catch(error => { tableReady = null; throw error; });
-  return tableReady;
-}
 
 async function readStoredAsset(name) {
   if (storedAssets.has(name)) return storedAssets.get(name);
@@ -42,10 +43,13 @@ async function readStoredAsset(name) {
     try { content = await fs.promises.readFile(path.join(localAssetDir, name)); }
     catch (error) { if (error.code === 'ENOENT') return null; throw error; }
   } else {
-    await ensureTable();
-    const result = await pool.query('SELECT content FROM cm_rulebook_assets WHERE name = $1', [name]);
-    if (!result.rows.length) return null;
-    content = result.rows[0].content;
+    try {
+      const result = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: name }));
+      content = Buffer.from(await result.Body.transformToByteArray());
+    } catch (error) {
+      if (error.name === 'NoSuchKey') return null;
+      throw error;
+    }
   }
   const asset = { content, size: content.length };
   storedAssets.set(name, asset);
@@ -79,8 +83,7 @@ async function uploadAsset(req, res, name) {
     await fs.promises.mkdir(localAssetDir, { recursive: true });
     await fs.promises.writeFile(path.join(localAssetDir, name), content);
   } else {
-    await ensureTable();
-    await pool.query('INSERT INTO cm_rulebook_assets(name, content, content_type) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET content = EXCLUDED.content, content_type = EXCLUDED.content_type, updated_at = NOW()', [name, content, allowedUploads.get(name)]);
+    await s3.send(new PutObjectCommand({ Bucket: bucket, Key: name, Body: content, ContentType: allowedUploads.get(name), ContentLength: content.length }));
   }
   storedAssets.set(name, { content, size });
   reply(req, res, 201, JSON.stringify({ name, bytes: size, sha256: createHash('sha256').update(content).digest('hex') }), 'application/json; charset=utf-8');
@@ -160,4 +163,4 @@ const server = http.createServer(async (req, res) => {
 
 const port = Number(process.env.PORT || 8088);
 server.listen(port, '0.0.0.0', () => console.log(`Chengdu rulebook listening on ${port}`));
-for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => server.close(async () => { if (pool) await pool.end(); process.exit(0); }));
+for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => server.close(() => { s3?.destroy(); process.exit(0); }));
