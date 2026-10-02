@@ -28,7 +28,7 @@ const high=s=>{
 function searchable(r){return normalized([r.title,r.summary,r.category,...(r.tags||[]),JSON.stringify(r.sections||[]),...(r.items||[]),...(r.key||[]),...(r.gods||[]),JSON.stringify(r.wolves||[])].join(' '));}
 function matches(r){const q=search.value.trim();return !q||q.split(/\s+/).every(w=>searchable(r).includes(normalized(w)));}
 function route(r){return '#'+r.type+'/'+r.id;}
-function badge(r){return r.official?'<span class="badge">成都赛事手册</span>':r.type==='glossary'?'<span class="badge">术语释义</span>':'<span class="badge ref">'+(r.conflict?'来源待核':'LAL参考')+'</span>';}
+function badge(r){return r.official||r.pages?.length?'<span class="badge">成都赛事手册</span>':r.type==='glossary'?'<span class="badge">术语释义</span>':'<span class="badge ref">'+(r.conflict?'来源待核':'LAL参考')+'</span>';}
 function boardCard(r){
  return `<a class="card" href="${route(r)}"><div class="card-top"><span class="card-index">${String(r.index+1).padStart(2,'0')}</span>${badge(r)}</div><h3>${high(r.title)}</h3><p>${high(r.summary)}</p><div class="card-config"><div><b>神职</b>${esc(r.gods.join(' / '))}</div><div><b>狼人</b>${esc(r.wolves.map(w=>w[0]+(w[1]>1?'×'+w[1]:'')).join(' / '))}</div>${r.civilians?'<div><b>平民</b>平民×'+r.civilians+'</div>':''}${r.special?'<div><b>特殊</b>'+esc(r.special.join(' / '))+'</div>':''}</div><div class="card-bottom"><span>${esc(r.category)} · 12人</span><span>查看规则</span></div></a>`;
 }

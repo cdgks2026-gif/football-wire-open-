@@ -152,7 +152,8 @@ const server = http.createServer(async (req, res) => {
       return reply(req, res, 404, 'Not found');
     }
     return sendAsset(req, res, pathname, asset);
-  } catch {
+  } catch (error) {
+    console.error('Rulebook asset storage failed:', error?.code || error?.name || 'unknown');
     return reply(req, res, 503, 'Asset storage is temporarily unavailable');
   }
 });
