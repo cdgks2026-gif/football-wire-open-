@@ -1,14 +1,12 @@
 {
-  "name":"鹿白足球",
-  "short_name":"鹿白足球",
-  "description":"全球最新足球新闻：外网翻译、多源核实、来源可追溯",
-  "start_url":"/",
-  "scope":"/",
-  "display":"standalone",
-  "background_color":"#06100c",
-  "theme_color":"#06100c",
-  "lang":"zh-CN",
-  "icons":[
-    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
-  ]
+  "name": "京城大师成都公开赛 · 狼人杀规则库",
+  "short_name": "狼人杀规则库",
+  "description": "赛事版型、角色技能、计分与裁判条款查询",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#6f3bd5",
+  "background_color": "#ffffff",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
 }
