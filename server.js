@@ -32,6 +32,20 @@ try {
   rulebook.boards = dedupe(rulebook.boards.filter(item => item.official !== false));
   rulebook.roles = dedupe(rulebook.roles.filter(item => item.official === true));
   rulebook.faq = dedupe(rulebook.faq);
+
+  // Chengdu event ruling: once the last god is eliminated, the game ends immediately.
+  const LAST_HUNTER_SETTLEMENT = '若猎人是场上最后一名神职且夜间被狼人击杀，屠神条件即时达成，狼人直接获胜，不再结算猎人开枪。';
+  const isLastHunterQuestion = item => {
+    const text = JSON.stringify(item || {});
+    return text.includes('猎人') && /(最后一神|最后一个神|最后神职|最后一名神职|屠神)/.test(text) && /(开枪|带人|发动技能)/.test(text);
+  };
+  rulebook.faq = rulebook.faq.filter(item => !isLastHunterQuestion(item));
+
+  const hunter = rulebook.roles.find(item => String(item.title || '').trim() === '猎人');
+  if (hunter) {
+    if (!Array.isArray(hunter.items)) hunter.items = [];
+    if (!hunter.items.includes(LAST_HUNTER_SETTLEMENT)) hunter.items.push(LAST_HUNTER_SETTLEMENT);
+  }
   rulebook.reference = [];
   rulebook.glossary = [];
   json = Buffer.from(JSON.stringify(rulebook), 'utf8');
