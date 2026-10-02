@@ -40,6 +40,7 @@ try {
   process.exit(1);
 }
 const compressedJson = gzipSync(json);
+console.log(`Rulebook loaded: ${rulebook.boards.length} boards, ${rulebook.roles.length} roles, ${rulebook.rules.length} rules, ${rulebook.faq.length} faq`);
 const localAssetDir = process.env.NODE_ENV !== 'production' ? process.env.RULEBOOK_LOCAL_ASSET_DIR : null;
 const s3 = localAssetDir ? null : new S3Client({
   endpoint: process.env.RULEBOOK_S3_ENDPOINT,
