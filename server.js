@@ -18,7 +18,23 @@ let rulebook, json;
 try {
   json = brotliDecompressSync(Buffer.from(process.env.RULEBOOK_DATA_BROTLI_BASE64 || '', 'base64'), { maxOutputLength: 2 * 1024 * 1024 });
   rulebook = JSON.parse(json.toString('utf8'));
-  for (const key of ['rules', 'boards', 'roles', 'faq', 'reference', 'glossary']) if (!Array.isArray(rulebook[key])) throw new Error('Invalid rulebook');
+  for (const key of ['rules', 'boards', 'roles', 'faq']) if (!Array.isArray(rulebook[key])) throw new Error('Invalid rulebook');
+  const dedupe = items => {
+    const seen = new Set();
+    return items.filter(item => {
+      const key = String(item.id || '') + '|' + String(item.title || '').trim() + '|' + String(item.summary || '').trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  rulebook.rules = dedupe(rulebook.rules);
+  rulebook.boards = dedupe(rulebook.boards.filter(item => item.official !== false));
+  rulebook.roles = dedupe(rulebook.roles.filter(item => item.official === true));
+  rulebook.faq = dedupe(rulebook.faq);
+  rulebook.reference = [];
+  rulebook.glossary = [];
+  json = Buffer.from(JSON.stringify(rulebook), 'utf8');
 } catch {
   console.error('Rulebook runtime data is missing or invalid');
   process.exit(1);
