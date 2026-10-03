@@ -19,6 +19,31 @@ try {
   json = brotliDecompressSync(Buffer.from(process.env.RULEBOOK_DATA_BROTLI_BASE64 || '', 'base64'), { maxOutputLength: 2 * 1024 * 1024 });
   rulebook = JSON.parse(json.toString('utf8'));
   for (const key of ['rules', 'boards', 'roles', 'faq']) if (!Array.isArray(rulebook[key])) throw new Error('Invalid rulebook');
+
+  // Remove every visible/reference trace of Logic & Lies / LAL from the Chengdu rulebook.
+  const blockedText = value => {
+    const text = String(value ?? '');
+    return text.includes('逻辑与谎言') || /(^|[^A-Za-z])LAL([^A-Za-z]|$)/i.test(text);
+  };
+  const cleanValue = value => {
+    if (typeof value === 'string') return blockedText(value) ? null : value;
+    if (Array.isArray(value)) return value.map(cleanValue).filter(item => item !== null && item !== undefined);
+    if (value && typeof value === 'object') {
+      const identity = [value.id, value.title, value.summary, value.category, value.camp].filter(Boolean);
+      if (identity.some(blockedText)) return null;
+      const cleaned = {};
+      for (const [key, item] of Object.entries(value)) {
+        const next = cleanValue(item);
+        if (next !== null && next !== undefined) cleaned[key] = next;
+      }
+      return cleaned;
+    }
+    return value;
+  };
+  for (const key of ['rules', 'boards', 'roles', 'faq']) {
+    rulebook[key] = rulebook[key].map(cleanValue).filter(Boolean);
+  }
+
   const dedupe = items => {
     const seen = new Set();
     return items.filter(item => {
