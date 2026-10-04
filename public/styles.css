@@ -2,3 +2,51 @@
 
 /* Keep configuration and reusable descriptions readable on phones. */
 .card-config{font-size:14px}.card-config b{font-size:12px}@media(max-width:760px){.card p,.card-config,.term p,.rule-row p{font-size:14px}.card-config b{font-size:12px}}
+
+
+/* ===== Chengdu home visual hierarchy v2 ===== */
+.side-brand-mini{padding:2px 9px 18px;border-bottom:1px solid #362b44}
+.side-brand-mini span{display:block;font:800 21px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#fff;letter-spacing:.04em}
+.side-brand-mini strong{display:block;margin-top:4px;font-size:13px;letter-spacing:.18em;color:#c8b0e8;font-weight:650}
+.topbar-edition{font-size:12px;color:#7f748e;letter-spacing:.06em}
+.event-hero{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;min-height:330px;margin:0 0 34px;padding:34px 42px 38px;border:1px solid #e2d8ef;border-radius:16px;background:
+  radial-gradient(circle at 15% 0%,#efe4ff 0,transparent 34%),
+  radial-gradient(circle at 88% 12%,#fff0d9 0,transparent 30%),
+  linear-gradient(135deg,#fff 0%,#fbf9ff 55%,#f6f2fb 100%);
+  box-shadow:0 14px 35px rgba(69,40,105,.08)}
+.event-hero:before{content:"";position:absolute;inset:auto -60px -115px auto;width:320px;height:320px;border-radius:50%;border:46px solid rgba(111,59,213,.045)}
+.event-logo-link{position:relative;z-index:1;display:flex;width:min(900px,78%);justify-content:center}
+.event-hero-logo{display:block;width:100%;max-height:210px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(36,32,49,.12))}
+.event-manual-cta{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:16px;min-width:390px;min-height:66px;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#6f3bd5,#8351df);color:white;box-shadow:0 10px 24px rgba(111,59,213,.25);transition:transform .15s,box-shadow .15s}
+.event-manual-cta:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(111,59,213,.3)}
+.manual-main{font-size:19px;font-weight:800;letter-spacing:.03em}
+.manual-sub{font-size:12px;color:#e8dcff;border-left:1px solid rgba(255,255,255,.32);padding-left:16px;white-space:nowrap}
+main{padding-top:28px}
+.heading{margin-bottom:22px}
+@media(min-width:1500px){
+  .event-hero{min-height:370px}
+  .event-logo-link{width:min(1020px,74%)}
+  .event-hero-logo{max-height:235px}
+}
+@media(max-width:1100px){
+  .event-hero{min-height:300px;padding:30px 28px}
+  .event-logo-link{width:min(760px,88%)}
+}
+@media(max-width:760px){
+  .side-brand-mini{display:flex;align-items:baseline;gap:10px;padding:2px 0 7px;border:0}
+  .side-brand-mini span{font-size:18px}
+  .side-brand-mini strong{font-size:11px;margin:0}
+  .event-hero{min-height:250px;margin:0 0 24px;padding:25px 14px 28px;border-radius:13px;gap:18px}
+  .event-logo-link{width:96%}
+  .event-hero-logo{max-height:155px}
+  .event-manual-cta{width:min(100%,430px);min-width:0;min-height:62px;padding:12px 18px;gap:12px}
+  .manual-main{font-size:18px}
+  .manual-sub{font-size:11px;padding-left:12px}
+  .topbar-edition{font-size:11px}
+}
+@media(max-width:420px){
+  .event-hero{min-height:220px}
+  .event-hero-logo{max-height:132px}
+  .event-manual-cta{flex-direction:column;gap:2px;min-height:64px}
+  .manual-sub{border-left:0;padding-left:0}
+}
