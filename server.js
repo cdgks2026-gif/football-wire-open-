@@ -7,12 +7,21 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.pdf': 'application/pdf' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.pdf': 'application/pdf' };
 const assets = new Map();
 for (const name of fs.readdirSync(publicRoot)) {
   const file = path.join(publicRoot, name);
-  if (fs.statSync(file).isFile()) assets.set('/' + name, { file, size: fs.statSync(file).size });
+  if (fs.statSync(file).isFile() && !name.startsWith('event-logo.part')) assets.set('/' + name, { file, size: fs.statSync(file).size });
 }
+
+// Rebuild the original event logo from text chunks so Git stores no re-rendered or generated branding.
+const eventLogoParts = ['01','02','03','04','05','06'].map(n => fs.readFileSync(path.join(publicRoot, 'event-logo.part' + n), 'utf8').trim());
+const eventLogoBase64 = eventLogoParts.join('');
+const eventLogo = Buffer.from(eventLogoBase64, 'base64');
+if (eventLogo.length !== 38658 || eventLogo.subarray(0, 4).toString('ascii') !== 'RIFF' || eventLogo.subarray(8, 12).toString('ascii') !== 'WEBP') {
+  throw new Error('Invalid event logo asset');
+}
+assets.set('/event-logo.webp', { content: eventLogo, size: eventLogo.length });
 
 let rulebook, json;
 try {
