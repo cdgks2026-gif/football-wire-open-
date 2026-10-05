@@ -62,6 +62,7 @@ try {
       const normalizedKey = key.toLowerCase().replace(/[-\s]/g, '');
       // Keep pages: these are page references to the official Chengdu season-one manual.
       if (key === 'pages') { out[key] = val; continue; }
+      if (EXTERNAL_REF_RE.test(key)) continue;
       if (EXTERNAL_META_KEYS.has(normalizedKey)) continue;
       if (typeof val === 'string' && EXTERNAL_REF_RE.test(val)) continue;
       const cleaned = cleanExternalRefs(val);
@@ -76,6 +77,7 @@ try {
   rulebook.boards = cleanCollection(rulebook.boards);
   rulebook.roles = cleanCollection(rulebook.roles);
   rulebook.faq = cleanCollection(rulebook.faq);
+  rulebook = cleanExternalRefs(rulebook);
   if (EXTERNAL_REF_RE.test(JSON.stringify(rulebook))) {
     throw new Error('External reference trace remains after cleanup');
   }
@@ -93,7 +95,7 @@ try {
     if (!Array.isArray(hunter.items)) hunter.items = [];
     if (!hunter.items.includes(LAST_HUNTER_SETTLEMENT)) hunter.items.push(LAST_HUNTER_SETTLEMENT);
   }
-  rulebook.reference = [];
+  delete rulebook.reference;
   rulebook.glossary = [];
   json = Buffer.from(JSON.stringify(rulebook), 'utf8');
 } catch {
