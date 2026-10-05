@@ -78,8 +78,10 @@ try {
   rulebook.roles = cleanCollection(rulebook.roles);
   rulebook.faq = cleanCollection(rulebook.faq);
   rulebook = cleanExternalRefs(rulebook);
-  if (EXTERNAL_REF_RE.test(JSON.stringify(rulebook))) {
-    throw new Error('External reference trace remains after cleanup');
+  const cleanedRulebookText = JSON.stringify(rulebook);
+  const externalTrace = cleanedRulebookText.match(EXTERNAL_REF_RE);
+  if (externalTrace) {
+    throw new Error('External reference trace remains after cleanup: ' + externalTrace[0]);
   }
 
   // Chengdu event ruling: once the last god is eliminated, the game ends immediately.
@@ -98,8 +100,8 @@ try {
   delete rulebook.reference;
   rulebook.glossary = [];
   json = Buffer.from(JSON.stringify(rulebook), 'utf8');
-} catch {
-  console.error('Rulebook runtime data is missing or invalid');
+} catch (error) {
+  console.error('Rulebook runtime data is missing or invalid:', error?.message || error?.name || 'unknown');
   process.exit(1);
 }
 const compressedJson = gzipSync(json);
