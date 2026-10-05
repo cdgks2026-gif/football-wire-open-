@@ -1,15 +1,18 @@
 package com.capitalmaster.chengdu;
 
 import android.app.Activity;
-import android.os.Bundle;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.Window;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.view.Window;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -46,9 +49,37 @@ public class MainActivity extends Activity {
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
+            private boolean openPdfExternally(String url) {
+                if (url == null) return false;
+                String lower = url.toLowerCase();
+                if (!lower.contains(".pdf")) return false;
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    try {
+                        Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(browser);
+                    } catch (Exception ignored) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                view.loadUrl(request.getUrl().toString());
+                String url = request.getUrl().toString();
+                if (openPdfExternally(url)) return true;
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (openPdfExternally(url)) return true;
+                view.loadUrl(url);
                 return true;
             }
         });
