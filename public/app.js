@@ -75,6 +75,9 @@ function scoreRecord(r,q){
   if(matched)hits++;
  }
  score+=Math.min(hits,8)*12;
+ // Type priority is only a tie-break bonus after a real keyword match.
+ // Never return unrelated FAQ/rules merely because of their record type.
+ if(score<=0)return 0;
  if(r.type==='faq')score+=15;
  else if(r.type==='rules')score+=10;
  return score;
