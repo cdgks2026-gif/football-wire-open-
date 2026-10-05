@@ -42,6 +42,41 @@ try {
   rulebook.roles = dedupe(rulebook.roles.filter(item => item.official === true));
   rulebook.faq = dedupe(rulebook.faq);
 
+  // Remove traces of external reference libraries while preserving our own season-one manual page references.
+  const EXTERNAL_REF_RE = /(逻辑\s*与\s*谎言|\bLAL\b|werewolves\.games|外部规则库|外部参考|参考来源)/i;
+  const EXTERNAL_META_KEYS = new Set([
+    'source','sources','reference','references','origin','origins','credit','credits',
+    'sourceurl','source_url','external','externalref','external_ref','externalsource',
+    'external_source','referenceurl','reference_url'
+  ]);
+  const cleanExternalRefs = value => {
+    if (Array.isArray(value)) {
+      return value
+        .filter(item => !(typeof item === 'string' && EXTERNAL_REF_RE.test(item)))
+        .map(cleanExternalRefs)
+        .filter(item => item !== undefined && item !== null);
+    }
+    if (!value || typeof value !== 'object') return value;
+    const out = {};
+    for (const [key, val] of Object.entries(value)) {
+      const normalizedKey = key.toLowerCase().replace(/[-\s]/g, '');
+      // Keep pages: these are page references to the official Chengdu season-one manual.
+      if (key === 'pages') { out[key] = val; continue; }
+      if (EXTERNAL_META_KEYS.has(normalizedKey)) continue;
+      if (typeof val === 'string' && EXTERNAL_REF_RE.test(val)) continue;
+      const cleaned = cleanExternalRefs(val);
+      if (cleaned !== undefined && cleaned !== null) out[key] = cleaned;
+    }
+    return out;
+  };
+  const cleanCollection = items => items
+    .filter(item => !EXTERNAL_REF_RE.test(String(item?.title || '')))
+    .map(cleanExternalRefs);
+  rulebook.rules = cleanCollection(rulebook.rules);
+  rulebook.boards = cleanCollection(rulebook.boards);
+  rulebook.roles = cleanCollection(rulebook.roles);
+  rulebook.faq = cleanCollection(rulebook.faq);
+
   // Chengdu event ruling: once the last god is eliminated, the game ends immediately.
   const LAST_HUNTER_SETTLEMENT = '若猎人是场上最后一名神职且夜间被狼人击杀，屠神条件即时达成，狼人直接获胜，不再结算猎人开枪。';
   const isLastHunterQuestion = item => {
