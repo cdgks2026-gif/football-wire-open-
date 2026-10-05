@@ -76,6 +76,9 @@ try {
   rulebook.boards = cleanCollection(rulebook.boards);
   rulebook.roles = cleanCollection(rulebook.roles);
   rulebook.faq = cleanCollection(rulebook.faq);
+  if (EXTERNAL_REF_RE.test(JSON.stringify(rulebook))) {
+    throw new Error('External reference trace remains after cleanup');
+  }
 
   // Chengdu event ruling: once the last god is eliminated, the game ends immediately.
   const LAST_HUNTER_SETTLEMENT = '若猎人是场上最后一名神职且夜间被狼人击杀，屠神条件即时达成，狼人直接获胜，不再结算猎人开枪。';
