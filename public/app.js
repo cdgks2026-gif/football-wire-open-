@@ -28,6 +28,7 @@ function searchableParts(r){
  return {title:normalized(r.title),summary:normalized(r.summary),tags:normalized(tags),body:normalized(body)};
 }
 const SEARCH_STOP=new Set(['什么','怎么','如何','可以','是否','是不是','能否','如果','这个','那个','一个','时候','规则','比赛','请问','一下','相关']);
+const BLOCKED_EXTERNAL_QUERY=/(逻辑\s*与\s*谎言|^\s*lal\s*$|werewolves\.games)/i;
 const SEARCH_ALIASES={
  '开枪':['开枪','猎人','狼王','枪'],
  '枪':['开枪','猎人','狼王'],
@@ -83,6 +84,7 @@ function scoreRecord(r,q){
  return score;
 }
 function searchResults(q){
+ if(BLOCKED_EXTERNAL_QUERY.test(String(q||''))) return [];
  const unique=new Map();
  for(const r of all){
   const score=scoreRecord(r,q);
