@@ -101,7 +101,7 @@ function row(r){return `<a class="rule-row" href="${route(r)}"><span class="rule
 function term(r){return `<a class="term" href="${route(r)}"><h3>${high(r.title)}</h3><p>${high(r.summary)}</p><small>${esc(r.category)}</small></a>`;}
 function renderGroup(records,type){if(!records.length)return '';const cls=['boards','roles'].includes(type)?'grid':'rule-list';const fn=type==='boards'?boardCard:type==='roles'?roleCard:row;return `<div class="${cls}">${records.map(fn).join('')}</div>`;}
 function source(r){
- if(r.pages?.length){return `<div class="source-ref"><strong>依据：第一季执行手册</strong><br>${r.pages.map(p=>`<a href="season-one-manual.pdf#page=${p}" target="_blank" rel="noopener">正文第${p-6}页（PDF第${p}页）</a>`).join(' · ')}<br><span>条目为查阅整理，完整条文以所链接手册原文为准。</span></div>`;}
+ if(r.pages?.length){return `<div class="source-ref"><strong>依据：第一季执行手册</strong><br>${r.pages.map(p=>`<a class="manual-page-link" href="/season-one-manual.pdf#page=${p}">正文第${p-6}页（PDF第${p}页）</a>`).join(' · ')}<br><span>条目为查阅整理，完整条文以所链接手册原文为准。</span></div>`;}
  return '';
 }
 function linkTo(id){const r=byId.get(id);return r?`<a href="${route(r)}">${esc(r.title)}</a>`:'';}
