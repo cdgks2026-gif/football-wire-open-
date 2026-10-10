@@ -353,21 +353,48 @@ svg.addEventListener('wheel',e=>{
  const pt=[camera.x-w/2+(e.clientX-rect.left)/rect.width*w,camera.y-h/2+(e.clientY-rect.top)/rect.height*h];
  zoomBy(e.deltaY<0?1.17:1/1.17,pt);
 },{passive:false});
+const activePointers=new Map();let pinchDistance=0;
 svg.addEventListener('pointerdown',e=>{
- if(!e.isPrimary)return;
- pointer={x:e.clientX,y:e.clientY,cx:camera.x,cy:camera.y};moving=false;
+ activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  svg.setPointerCapture?.(e.pointerId);
+ if(activePointers.size===1){pointer={x:e.clientX,y:e.clientY,cx:camera.x,cy:camera.y};moving=false;}
+ else{pointer=null;const [a,b]=[...activePointers.values()];pinchDistance=Math.hypot(a.x-b.x,a.y-b.y);moving=true;}
 });
 svg.addEventListener('pointermove',e=>{
+ if(!activePointers.has(e.pointerId))return;
+ activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(activePointers.size>=2){
+  const [a,b]=[...activePointers.values()];const distance=Math.hypot(a.x-b.x,a.y-b.y);
+  if(pinchDistance>5&&distance>5){
+   const rect=svg.getBoundingClientRect(),w=W/camera.zoom,h=H/camera.zoom;
+   const centerX=(a.x+b.x)/2,centerY=(a.y+b.y)/2;
+   const center=[camera.x-w/2+(centerX-rect.left)/rect.width*w,camera.y-h/2+(centerY-rect.top)/rect.height*h];
+   zoomBy(distance/pinchDistance,center);
+  }
+  pinchDistance=distance;moving=true;return;
+ }
  if(!pointer)return;
  const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;
  if(Math.abs(dx)+Math.abs(dy)>6)moving=true;
  if(!moving)return;
  const rect=svg.getBoundingClientRect();
- camera.x=pointer.cx-dx/rect.width*(W/camera.zoom);camera.y=pointer.cy-dy/rect.height*(H/camera.zoom);cameraApply();
+ camera.x=pointer.cx-dx/rect.width*(W/camera.zoom);
+ camera.y=pointer.cy-dy/rect.height*(H/camera.zoom);
+ cameraApply();
 });
-svg.addEventListener('pointerup',()=>{pointer=null;if(moving)setTimeout(()=>{moving=false;},30);});
-svg.addEventListener('pointercancel',()=>{pointer=null;moving=false;});
+function endPointer(e){
+ activePointers.delete(e.pointerId);
+ if(activePointers.size===1){
+  const left=[...activePointers.values()][0];
+  pointer={x:left.x,y:left.y,cx:camera.x,cy:camera.y};
+  pinchDistance=0;moving=true;
+ }else{
+  pointer=null;pinchDistance=0;
+  if(moving)setTimeout(()=>{moving=false;},90);
+ }
+}
+svg.addEventListener('pointerup',endPointer);
+svg.addEventListener('pointercancel',endPointer);
 svg.addEventListener('dblclick',e=>{e.preventDefault();zoomBy(1.5);});
 Promise.all([
  fetchJson('/geo/china-provinces.geojson'),
