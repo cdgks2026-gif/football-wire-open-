@@ -99,9 +99,15 @@ board.addEventListener('click',event=>{
 });
 board.addEventListener('click',event=>{if(event.target.closest('#atlas-retry'))setMode(game);});
 buttons.forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.atlasGame)));
+let lastRegionKey='';
 window.addEventListener('atlas:region',event=>{
  const d=event.detail||{};
- region={trail:d.trail||['中国'],children:d.children||[],others:d.others||[],siblings:d.siblings||[],specialties:d.specialties||[],specialtySource:d.specialtySource||'',specialtyOptions:d.specialtyOptions||[]};
+ const next={trail:d.trail||['中国'],children:d.children||[],others:d.others||[],siblings:d.siblings||[],specialties:d.specialties||[],specialtySource:d.specialtySource||'',specialtyOptions:d.specialtyOptions||[]};
+ const key=JSON.stringify([next.trail,next.children,next.specialties,next.specialtySource]);
+ region=next;
+ // Answers and hint/list actions re-render the atlas, but should not erase an ongoing game.
+ if(key===lastRegionKey)return;
+ lastRegionKey=key;
  setMode(game);
 });
 setMode('match');
