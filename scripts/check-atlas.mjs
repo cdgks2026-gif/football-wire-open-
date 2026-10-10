@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve('public');
+const json=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const map=json('geo/china-provinces.geojson');
+const pcas=json('geo/pcas.json');
+const codes=json('geo/pca-code.json');
+const extras=json('geo/hk-mo-tw.json');
+const provinces=map.features.map(f=>f.properties?.name).filter(Boolean);
+assert.equal(new Set(provinces).size,34,'地图必须包含34个不同的省级地区');
+assert.ok(provinces.includes('台湾省'));
+for(const name of provinces)assert.ok(pcas[name]||extras[name],name+' 下辖数据缺失');
+const wuhou=pcas['四川省']?.['成都市']?.['武侯区'];
+assert.ok(Array.isArray(wuhou)&&wuhou.includes('玉林街道'),'成都武侯区街道目录缺失');
+const sc=codes.find(p=>p.name==='四川省');
+const cd=sc?.children.find(c=>c.name==='成都市');
+assert.equal(cd?.children.find(a=>a.name==='武侯区')?.code,'510107');
+const tw=fs.readFileSync(path.join(root,'geo/taiwan-villages.csv'),'utf8');
+assert.ok(tw.startsWith('id,name,town,county,'));
+assert.ok(tw.includes(',臺北市,'),'台湾村里目录缺少台北市');
+const html=fs.readFileSync(path.join(root,'geo.html'),'utf8');
+const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
+for(const file of ['geo.js','geo-games.js','geo.css','geo-games.css','home.css']){
+ assert.ok(fs.existsSync(path.join(root,file)),file+' 不存在');
+}
+for(const mode of ['match','place','special'])assert.ok(html.includes('data-atlas-game="'+mode+'"'),mode+' 按钮缺失');
+assert.ok(html.includes('/geo-games.js')&&html.includes('/geo-games.css'));
+assert.ok(home.includes('/geo.html'));
+console.log('Atlas smoke check OK:',provinces.length,'省级地区,',wuhou.length,'武侯区街道,',tw.split(/\r?\n/).length-2,'台湾村里记录');
