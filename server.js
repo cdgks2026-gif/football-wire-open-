@@ -7,11 +7,25 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.pdf': 'application/pdf' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml', '.geojson': 'application/geo+json; charset=utf-8', '.csv': 'text/csv; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.pdf': 'application/pdf' };
 const assets = new Map();
 for (const name of fs.readdirSync(publicRoot)) {
   const file = path.join(publicRoot, name);
   if (fs.statSync(file).isFile() && !name.startsWith('event-logo.part')) assets.set('/' + name, { file, size: fs.statSync(file).size });
+}
+
+
+// The geography atlas is partitioned into static subdirectories to allow on-demand loading.
+const geoRoot=path.join(publicRoot,'geo');
+if(fs.existsSync(geoRoot)){
+ const addGeo=(directory,webPrefix)=>{
+  for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
+   const disk=path.join(directory,entry.name),web=webPrefix+'/'+entry.name;
+   if(entry.isDirectory())addGeo(disk,web);
+   else if(entry.isFile())assets.set(web,{file:disk,size:fs.statSync(disk).size});
+  }
+ };
+ addGeo(geoRoot,'/geo');
 }
 
 // Rebuild the original event logo from text chunks so Git stores no re-rendered or generated branding.
