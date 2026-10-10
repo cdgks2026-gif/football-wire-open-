@@ -50,8 +50,8 @@ const special={
 };
 let provinces=[],pcas={},codeTree=[],twTree={},trail=['中国'],answerList=[],revealed=false,hintCount=0,twLoading=false;
 const villageCache={},loadingVillage=new Set(),initialMsg='填写下辖地名可以获得积分，答案正确后可进入下一级。';
-let record={found:{},score:0};
-try{const obj=JSON.parse(localStorage.getItem('casual-atlas-progress-v1')||'{}');if(obj&&typeof obj==='object')record={found:obj.found&&typeof obj.found==='object'?obj.found:{},score:Number.isFinite(obj.score)?Math.max(0,obj.score):0};}catch{}
+let record={found:{},score:0,gameWins:{}};
+try{const obj=JSON.parse(localStorage.getItem('casual-atlas-progress-v1')||'{}');if(obj&&typeof obj==='object')record={found:obj.found&&typeof obj.found==='object'?obj.found:{},score:Number.isFinite(obj.score)?Math.max(0,obj.score):0,gameWins:obj.gameWins&&typeof obj.gameWins==='object'?obj.gameWins:{}};}catch{}
 const persist=()=>{try{localStorage.setItem('casual-atlas-progress-v1',JSON.stringify(record));}catch{}};
 function foundKey(name){return [...trail,name].join('/');}
 function provinceName(){return trail[1]||'';}
@@ -96,8 +96,8 @@ function children(){
  const province=trail[1];
  if(province==='台湾省'){
   if(trail.length===2)return Object.keys(twTree).length?Object.keys(twTree):Object.keys(window.atlasExtra?.['台湾省']||{});
-  if(trail.length===3)return Object.keys(twTree[trail[2]]||{});
-  if(trail.length===4)return twTree[trail[2]]?.[trail[3]]||[];
+  if(trail.length===3){const county=Object.keys(twTree).find(k=>normal(k)===normal(trail[2]));return Object.keys(twTree[county]||{});}
+  if(trail.length===4){const county=Object.keys(twTree).find(k=>normal(k)===normal(trail[2]));const towns=twTree[county]||{};const town=Object.keys(towns).find(k=>normal(k)===normal(trail[3]));return towns[town]||[];}
   return [];
  }
  const extra=window.atlasExtra?.[province];
@@ -118,11 +118,38 @@ function children(){
  return data?.villages?.[streetCode]||[];
 }
 function setResponse(message){$('#atlas-response').textContent=message;}
+window.addEventListener('atlas:reward',event=>{
+ const mode=event.detail?.game;
+ if(!['match','place','special'].includes(mode))return;
+ const now=new Date(),day=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+ const key=[...trail,mode,day].join('/');
+ if(record.gameWins[key])return;
+ record.gameWins[key]=true;record.score+=20;persist();statRender();
+});
 function statRender(){
  const num=Object.keys(record.found).length;
  $('#atlas-found').textContent=num;$('#atlas-score').textContent=record.score;
  $('#atlas-level').textContent=num>=500?'地名大师':num>=100?'城市达人':num>=25?'全国旅人':num>=5?'探索学徒':'地理新手';
 }
+function alternativePlaces(){
+ const len=trail.length,province=provinceName();
+ if(len===1)return uniqueNames(Object.values(pcas).flatMap(tree=>Object.keys(tree||{})).slice(0,220));
+ if(province==='台湾省'){
+  if(len===2)return uniqueNames(Object.keys(pcas).flatMap(p=>Object.keys(pcas[p]||{})).slice(0,170));
+  const county=Object.keys(twTree).find(k=>normal(k)===normal(trail[2]));
+  if(len===3)return uniqueNames(Object.entries(twTree).filter(([k])=>k!==county).flatMap(([,towns])=>Object.keys(towns)).slice(0,250));
+  if(len===4)return uniqueNames(Object.entries(twTree[county]||{}).filter(([k])=>normal(k)!==normal(trail[3])).flatMap(([,villages])=>villages).slice(0,250));
+  return [];
+ }
+ if(len===2)return uniqueNames(Object.entries(pcas).filter(([p])=>p!==province).flatMap(([,cities])=>Object.keys(cities)).slice(0,240));
+ const cities=pcas[province]||{};
+ if(len===3)return uniqueNames(Object.entries(cities).filter(([c])=>c!==trail[2]).flatMap(([,areas])=>Object.keys(areas)).slice(0,250));
+ const areas=cities[trail[2]]||{};
+ if(len===4)return uniqueNames(Object.entries(areas).filter(([a])=>a!==trail[3]).flatMap(([,streets])=>streets).slice(0,300));
+ if(len===5){const data=villageCache[provinceCode()];return uniqueNames(Object.entries(data?.villages||{}).flatMap(([,vs])=>vs.slice(0,3)).slice(0,300));}
+ return [];
+}
+function uniqueNames(names){return [...new Set(names.filter(Boolean))];}
 function render(){
  statRender();const ch=children();answerList=ch;
  const title=trail.at(-1),len=trail.length;
@@ -149,6 +176,15 @@ function render(){
  if(!ch.length&&!loading)setResponse('当前层级没有更多下辖地名，或数据源暂未覆盖。返回上一级可继续探索。');
  showSpecialties();
  refreshMapSelection();
+ const exact=special[trail.at(-1)],upper=special[provinceName()];
+ const selected=exact||upper||[];
+ const source=exact?trail.at(-1):upper?provinceName():'';
+ const siblings=trail.length>1?(trail.length===2?provinces.map(p=>p.properties.name):[]):[];
+ window.dispatchEvent(new CustomEvent('atlas:region',{detail:{
+  trail:[...trail],children:[...ch],others:alternativePlaces(),siblings,
+  specialties:selected.map(x=>({name:x.name,file:x.file})),specialtySource:source,
+  specialtyOptions:uniqueNames(Object.values(special).flatMap(items=>items.map(x=>x.name)))
+ }}));
 }
 function jumpTo(index){
  if(!Number.isInteger(index)||index<0||index>=trail.length)return;

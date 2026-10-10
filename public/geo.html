@@ -5,14 +5,14 @@
 <meta name="theme-color" content="#6f3bd5">
 <meta name="description" content="中国地名探索：地图可放大拖动，从省市区逐级填空到街道村社区，探索各地特色产品与实景图片。">
 <title>中国地名探索 · 休闲游戏</title>
-<link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/geo.css">
+<link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/geo.css"><link rel="stylesheet" href="/geo-games.css">
 </head>
 <body>
 <a class="skip" href="#atlas-main">跳转到地图游戏</a>
 <div class="atlas-app">
-<header class="topbar"><a class="back" href="/">← 休闲游戏</a><span class="topbrand">中国地名探索 <small>· CHINA ATLAS</small></span><a class="other" href="/games.html">经典益智</a></header>
+<header class="topbar"><a class="back" href="/">← 休闲游戏</a><span class="topbrand">中国地名探索 <small>· CHINA ATLAS</small></span><a class="other" href="#region-play">地方小游戏</a></header>
 <main id="atlas-main">
-<section class="intro"><div><div class="eyebrow">EXPLORE / PLAY / DISCOVER</div><h1>把中国地图，一层一层点亮。</h1><p>从省市区县走到街道、村和社区。记得就填，忘记就点提示；每到一处，还能探索当地特产。</p></div><div class="intro-right"><strong id="atlas-score">0</strong><span>探索积分</span></div></section>
+<section class="intro"><div><div class="eyebrow">EXPLORE / PLAY / DISCOVER</div><h1>把中国地图，一层一层点亮。</h1><p>从省市区县走到街道、村和社区。记得就填，忘记就点提示；每到一处，还能探索当地特产，挑战专属地名和风物小游戏。</p></div><div class="intro-right"><strong id="atlas-score">0</strong><span>探索积分</span></div></section>
 <div class="quick-stats"><span>已解锁 <b id="atlas-found">0</b> 处地名</span><span>当前等级 <b id="atlas-level">地理新手</b></span><button type="button" id="atlas-daily">今日城市挑战 →</button></div>
 <div class="atlas-grid">
 <section class="map-panel" aria-labelledby="map-title">
@@ -35,6 +35,16 @@
 <div id="atlas-answers" class="revealed" hidden><h3>下辖地名 · 点击直接进入</h3><div id="atlas-options" class="name-grid"></div></div>
 </section>
 </div>
+<section id="region-play" class="atlas-local-games" aria-labelledby="atlas-game-title">
+<div class="section-head"><div><p class="eyebrow">REGIONAL MINI GAMES</p><h2>当地小游戏</h2><p>先在地图上选择地区，再玩这一地区的地名配对、归属竞猜和特产挑战。</p></div><span class="section-note">每日每地区每模式首次通关得20分</span></div>
+<div class="atlas-game-tabs" role="group" aria-label="选择地方游戏">
+<button type="button" data-atlas-game="match" aria-pressed="true">地名翻牌配对</button>
+<button type="button" data-atlas-game="place" aria-pressed="false">地名归属挑战</button>
+<button type="button" data-atlas-game="special" aria-pressed="false">特产竞猜</button></div>
+<h3 id="atlas-game-title" class="atlas-game-title">地名翻牌配对</h3>
+<div id="atlas-game-status" class="atlas-game-status" role="status" aria-live="polite">请选择地区，开始游戏。</div>
+<div id="atlas-game-board" class="atlas-game-board"></div>
+</section>
 <section id="atlas-specials" class="specials" aria-labelledby="special-title">
 <div class="section-head"><div><p class="eyebrow">LOCAL SPECIALTIES</p><h2 id="special-title">沿途特产图鉴</h2><p id="special-desc">点击地图上的地区，查看已收录的当地特产和实拍图片。</p></div><span class="section-note">真实图片 · 图片来源可查看</span></div>
 <div id="special-grid" class="special-grid"><div class="special-empty">选择地区后，将在这里展示相应特产。</div></div>
@@ -47,5 +57,5 @@
 </main>
 <footer>休闲游戏 · 中国地名探索 <a href="/">返回游戏大厅</a></footer>
 </div>
-<script defer src="/geo.js"></script>
+<script defer src="/geo-games.js"></script><script defer src="/geo.js"></script>
 </body></html>

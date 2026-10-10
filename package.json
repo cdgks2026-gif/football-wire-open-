@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/load-rulebook.js && node --check public/app.js && node --check public/sw.js && node --check public/cache-cleanup.js"
+    "check": "node --check server.js && node --check public/load-rulebook.js && node --check public/app.js && node --check public/sw.js && node --check public/cache-cleanup.js && node --check public/geo.js && node --check public/geo-games.js && node --check public/games.js"
   },
   "engines": {
     "node": ">=22"

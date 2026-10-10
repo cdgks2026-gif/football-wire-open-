@@ -195,7 +195,10 @@ function sendAsset(req, res, pathname, asset) {
   res.setHeader('Content-Type', mime[path.extname(pathname)] || 'application/octet-stream');
   res.setHeader('Accept-Ranges', 'bytes');
   if (pathname.endsWith('.pdf')) res.setHeader('Content-Disposition', 'inline');
-  if (pathname.endsWith('.html')) res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  if (pathname.endsWith('.html')) {
+    const atlasExternal = pathname === '/geo.html' ? ' https://commons.wikimedia.org https://upload.wikimedia.org' : '';
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:" + atlasExternal + "; font-src 'self'; connect-src 'self'" + (atlasExternal ? " https://commons.wikimedia.org" : "") + "; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  }
   let start = 0, end = asset.size - 1, status = 200;
   if (req.headers.range) {
     const match = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
