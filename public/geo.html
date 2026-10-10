@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#6f3bd5">
+<meta name="description" content="中国地名探索：地图可放大拖动，从省市区逐级填空到街道村社区，探索各地特色产品与实景图片。">
+<title>中国地名探索 · 休闲游戏</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/geo.css">
+</head>
+<body>
+<a class="skip" href="#atlas-main">跳转到地图游戏</a>
+<div class="atlas-app">
+<header class="topbar"><a class="back" href="/">← 休闲游戏</a><span class="topbrand">中国地名探索 <small>· CHINA ATLAS</small></span><a class="other" href="/games.html">经典益智</a></header>
+<main id="atlas-main">
+<section class="intro"><div><div class="eyebrow">EXPLORE / PLAY / DISCOVER</div><h1>把中国地图，一层一层点亮。</h1><p>从省市区县走到街道、村和社区。记得就填，忘记就点提示；每到一处，还能探索当地特产。</p></div><div class="intro-right"><strong id="atlas-score">0</strong><span>探索积分</span></div></section>
+<div class="quick-stats"><span>已解锁 <b id="atlas-found">0</b> 处地名</span><span>当前等级 <b id="atlas-level">地理新手</b></span><button type="button" id="atlas-daily">今日城市挑战 →</button></div>
+<div class="atlas-grid">
+<section class="map-panel" aria-labelledby="map-title">
+<div class="panel-heading"><div><p class="eyebrow">INTERACTIVE MAP</p><h2 id="map-title">中国地图</h2></div><button id="map-reset" type="button" class="soft-button">全国视图</button></div>
+<div class="map-stage" id="map-stage"><svg id="atlas-map" viewBox="0 0 920 630" role="group" aria-label="中国省级地图，可缩放、拖动、点击省级区域"><g id="map-layer"></g></svg>
+<div class="map-buttons"><button id="map-plus" type="button" aria-label="放大地图">＋</button><button id="map-minus" type="button" aria-label="缩小地图">－</button></div>
+<div class="map-caption">点选省份 · 双指缩放或滚轮缩放 · 拖动画面</div></div>
+<div id="map-message" class="map-message" role="status">地图数据加载中，请稍候…</div>
+<div class="map-smallprint">边界为公开 GeoJSON 数据。地图提供真实省级范围；市、县、乡镇的名称和层级在右侧逐级查看，暂不绘制其精确边界。</div>
+</section>
+<section class="explore-panel" aria-labelledby="quiz-title">
+<div class="panel-heading"><div><p class="eyebrow">REGION CHALLENGE</p><h2 id="quiz-title">地名填空挑战</h2></div><button id="atlas-home" type="button" class="soft-button">回到全国</button></div>
+<nav id="atlas-breadcrumb" class="breadcrumb" aria-label="当前位置"><button type="button">中国</button></nav>
+<div class="challenge-head"><div><div class="challenge-title" id="atlas-question">请选择省份，开始探索</div><p class="small-muted" id="atlas-subtext">答对后可以继续深入下一级地名</p></div><span id="atlas-ratio" class="ratio">0 / 34</span></div>
+<div class="progress"><div id="atlas-progress" class="progress-fill"></div></div>
+<form id="atlas-form"><label for="atlas-answer" class="sr-only">填写当前位置的下辖地名</label><input id="atlas-answer" type="text" maxlength="45" autocomplete="off" placeholder="例如：四川省"><button type="submit">提交答案</button></form>
+<div class="challenge-controls"><button type="button" id="atlas-hint">✦ 给我提示</button><button type="button" id="atlas-show">查看全部地名</button><button type="button" id="atlas-hide" hidden>收起名单</button></div>
+<p id="atlas-response" class="response" role="status" aria-live="polite">填写正确地名可获得积分，使用提示或查看名单也能继续探索。</p>
+<div class="discovered"><div class="list-heading"><h3>已答对的地名</h3><span id="atlas-local-count">0 个</span></div><div id="atlas-collected" class="name-grid"><span class="empty-note">还没有答对任何地名</span></div></div>
+<div id="atlas-answers" class="revealed" hidden><h3>下辖地名 · 点击直接进入</h3><div id="atlas-options" class="name-grid"></div></div>
+</section>
+</div>
+<section id="atlas-specials" class="specials" aria-labelledby="special-title">
+<div class="section-head"><div><p class="eyebrow">LOCAL SPECIALTIES</p><h2 id="special-title">沿途特产图鉴</h2><p id="special-desc">点击地图上的地区，查看已收录的当地特产和实拍图片。</p></div><span class="section-note">真实图片 · 图片来源可查看</span></div>
+<div id="special-grid" class="special-grid"><div class="special-empty">选择地区后，将在这里展示相应特产。</div></div>
+</section>
+<details class="source-panel"><summary>地名数据库、地图与图片的来源及覆盖说明</summary>
+<p>大陆地名：省、市、县、乡镇、街道主要采用 <a href="https://github.com/modood/Administrative-divisions-of-China" target="_blank" rel="noopener">Administrative-divisions-of-China</a> 的历史统计区划资料；村、社区数据基于2023年统计口径，可能与现行行政归属不同。台湾地区村里资料采用 <a href="https://github.com/g0v/twgeojson" target="_blank" rel="noopener">g0v twgeojson</a> 的公开数据，部分名称保留当地使用的正体字。</p>
+<p>省级地图几何来自 <a href="https://github.com/Supeset/China-GeoData" target="_blank" rel="noopener">China-GeoData</a>（MIT）。地名目录不是实时民政核定数据，也不包含每一条自然村、路名和门牌。</p>
+<p>特产参考 <a href="https://xccys.moa.gov.cn/xxzlcx/202002/t20200227_6337876.htm" target="_blank" rel="noopener">农业农村部乡村特色产品目录</a> 和 <a href="https://www.cnipa.gov.cn/attach/0/baf15fc1f5b74750bf14e64ec11ca970.pdf" target="_blank" rel="noopener">国家知识产权局地理标志目录</a>。目前优先呈现已核查条目；照片来自 Wikimedia Commons 的公开图片，每张可查看文件页及署名。未收录的地区不强行使用不相关照片。</p>
+</details>
+</main>
+<footer>休闲游戏 · 中国地名探索 <a href="/">返回游戏大厅</a></footer>
+</div>
+<script defer src="/geo.js"></script>
+</body></html>
