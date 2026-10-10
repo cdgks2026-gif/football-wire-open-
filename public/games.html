@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#6f3bd5">
+<meta name="description" content="京城大师成都公开赛休闲益智游戏：数独、2048和数字华容道，免费在线游玩。">
+<title>休闲益智 · 京城大师成都公开赛</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/games.css">
+</head>
+<body>
+<a class="skip" href="#game-main">跳转到游戏</a>
+<div class="game-shell">
+<header class="game-header">
+  <a class="back-link" href="/">← 返回赛事规则库</a>
+  <span class="brand-tag">京城大师 · 成都公开赛</span>
+</header>
+<main id="game-main">
+  <div class="intro"><p class="eyebrow">BRAIN BREAK · 休闲益智</p><h1>给大脑放个假</h1><p>不用拼手速，也没有广告。选一款自己喜欢的小游戏，慢慢玩。</p></div>
+  <div class="game-tabs" role="group" aria-label="选择小游戏">
+    <button type="button" class="game-tab active" data-game="sudoku" aria-pressed="true"><span>▦</span> 数独</button>
+    <button type="button" class="game-tab" data-game="twenty" aria-pressed="false"><span>2048</span> 合并数字</button>
+    <button type="button" class="game-tab" data-game="slide" aria-pressed="false"><span>▤</span> 数字华容道</button>
+  </div>
+  <section id="panel-sudoku" class="panel" aria-labelledby="s-title">
+    <div class="panel-head"><div><p class="eyebrow">LOGIC · 推理</p><h2 id="s-title">经典数独 9 × 9</h2><p>让每行、每列、每个九宫格都有 1—9，且不重复。</p></div><label class="level-label">难度 <select id="s-level"><option value="easy">轻松</option><option value="medium">进阶</option><option value="hard">烧脑</option></select></label></div>
+    <div class="mini-stats"><span>已填 <strong id="s-count">0/81</strong></span><span>用时 <strong id="s-time">00:00</strong></span><span>提示 <strong id="s-hints">3</strong> 次</span></div>
+    <div class="sudoku-layout">
+      <div class="sudoku-board" id="s-board" role="group" aria-label="数独棋盘"></div>
+      <div class="sudoku-tools">
+        <div class="tool-title">填入数字</div>
+        <div id="s-pad" class="number-pad" role="group" aria-label="选择数字"></div>
+        <div class="tool-buttons"><button id="s-erase" type="button">⌫ 擦除</button><button id="s-note" type="button" aria-pressed="false">✎ 笔记：关</button><button id="s-undo" type="button">↶ 撤销</button><button id="s-check" type="button">✓ 检查</button><button id="s-hint" type="button">✧ 提示</button><button id="s-new" type="button" class="primary">重新出题</button></div>
+        <p class="help-text">点选格子后点击数字。手机也能直接玩，打开笔记可记录候选数字。</p>
+      </div>
+    </div>
+    <p id="s-status" class="status" role="status" aria-live="polite">选择一个空格，开始解题。</p>
+  </section>
+  <section id="panel-twenty" class="panel" aria-labelledby="t-title" hidden>
+    <div class="panel-head"><div><p class="eyebrow">NUMBERS · 策略</p><h2 id="t-title">2048</h2><p>滑动或用方向按钮合并相同数字，尽量合出 2048。</p></div><button id="t-new" class="primary" type="button">新开一局</button></div>
+    <div class="mini-stats"><span>当前分数 <strong id="t-score">0</strong></span><span>最高分 <strong id="t-best">0</strong></span><button id="t-undo" type="button">↶ 撤销一步</button></div>
+    <div id="t-board" class="twenty-board" role="img" aria-label="2048数字棋盘"></div>
+    <div class="direction-controls" role="group" aria-label="移动数字"><div></div><button type="button" data-dir="up" aria-label="上移">↑</button><div></div><button type="button" data-dir="left" aria-label="左移">←</button><button type="button" data-dir="down" aria-label="下移">↓</button><button type="button" data-dir="right" aria-label="右移">→</button></div>
+    <p id="t-status" class="status" role="status" aria-live="polite">向同一方向移动，相同的数字会合并。</p>
+  </section>
+  <section id="panel-slide" class="panel" aria-labelledby="l-title" hidden>
+    <div class="panel-head"><div><p class="eyebrow">ORDER · 观察</p><h2 id="l-title">数字华容道</h2><p>点击空格旁边的数字，把 1—15 依次排好。</p></div><button id="l-new" class="primary" type="button">重新打乱</button></div>
+    <div class="mini-stats"><span>移动步数 <strong id="l-count">0</strong></span><span>目标 <strong>1 → 15</strong></span></div>
+    <div id="l-board" class="slide-board" role="group" aria-label="数字华容道棋盘"></div>
+    <p id="l-status" class="status" role="status" aria-live="polite">点击空白格相邻的数字即可移动。</p>
+  </section>
+</main>
+<footer>京城大师成都公开赛 · 休闲益智角　｜　<a href="/">返回规则库首页</a></footer>
+</div>
+<script defer src="/games.js"></script>
+</body>
+</html>
