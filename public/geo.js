@@ -48,7 +48,7 @@ const special={
 '哈密市':[product('哈密瓜','新疆哈密闻名的地方甜瓜。','Heavenly Hami Melons.jpg')],
 '银川市':[product('宁夏枸杞','宁夏地区代表性农产品。','Ningxia dried wolfberry.jpg')]
 };
-let provinces=[],pcas={},codeTree=[],twTree={},trail=['中国'],answerList=[],revealed=false,hintCount=0,twLoading=false;window.atlasProducts=[];window.atlasHierarchy=[];
+let provinces=[],pcas={},codeTree=[],twTree={},trail=['中国'],answerList=[],revealed=false,hintCount=0,twLoading=false;window.atlasProducts=[];window.atlasHierarchy=[];window.atlasVillageEntries=[];window.atlasVillageProvince='';
 const villageCache={},loadingVillage=new Set(),initialMsg='填写下辖地名可以获得积分，答案正确后可进入下一级。';
 let record={found:{},score:0,gameWins:{}};
 try{const obj=JSON.parse(localStorage.getItem('casual-atlas-progress-v1')||'{}');if(obj&&typeof obj==='object')record={found:obj.found&&typeof obj.found==='object'?obj.found:{},score:Number.isFinite(obj.score)?Math.max(0,obj.score):0,gameWins:obj.gameWins&&typeof obj.gameWins==='object'?obj.gameWins:{}};}catch{}
@@ -84,11 +84,37 @@ async function loadTaiwan(){
  }catch(error){$('#atlas-response').textContent=error.message;}
  finally{twLoading=false;if(provinceName()==='台湾省')render();}
 }
+function buildVillageEntries(province,data){
+ const root=codeTree.find(node=>normal(node.name)===normal(province));
+ const districtMap=new Map();
+ for(const city of root?.children||[]){
+  for(const area of city.children||[]){
+   districtMap.set(String(area.code),['中国',province,city.name,area.name]);
+  }
+ }
+ const result=[];
+ for(const [districtCode,streets] of Object.entries(data.index||{})){
+  const path=districtMap.get(String(districtCode));if(!path)continue;
+  for(const [streetName,streetCode] of Object.entries(streets||{})){
+   const villages=data.villages?.[streetCode]||[];
+   for(const village of villages){
+    if(!village)continue;
+    const full=[...path,streetName,village];
+    result.push({name:village,path:full,depth:5,parent:streetName,parentPath:full.slice(0,-1)});
+   }
+  }
+ }
+ return result;
+}
 async function loadVillages(province){
  const code=provinceCode();if(!code||villageCache[code]||loadingVillage.has(code))return;
  loadingVillage.add(code);
- try{villageCache[code]=await fetchJson('/geo/villages/'+code+'.json');}
- catch{villageCache[code]={index:{},villages:{},missing:true};}
+ try{
+  villageCache[code]=await fetchJson('/geo/villages/'+code+'.json');
+  window.atlasVillageEntries=buildVillageEntries(province,villageCache[code]);
+  window.atlasVillageProvince=province;
+ }
+ catch{villageCache[code]={index:{},villages:{},missing:true};window.atlasVillageEntries=[];window.atlasVillageProvince='';}
  finally{loadingVillage.delete(code);if(provinceName()===province)render();}
 }
 function children(){

@@ -59,3 +59,8 @@ assert.equal(new Set(nationwide.map(q=>q.answer)).size,5,'全国特产题的正�
 for(const q of nationwide)assert.equal(new Set(q.options).size,4,'全国特产题必须有四个省级选项');
 const unknownTown=engine.productsFor(GI.entries,['中国','四川省','成都市','不存在的区县']);
 assert.equal(unknownTown.source,'成都市','缺少区县核实信息时只应退回城市级');
+
+const supportedVillages=[{name:'甲村',path:['中国','四川省','成都市','武侯区','玉林街道','甲村'],depth:5,parent:'玉林街道',parentPath:['中国','四川省','成都市','武侯区','玉林街道']},{name:'乙村',path:['中国','四川省','成都市','武侯区','玉林街道','乙村'],depth:5,parent:'玉林街道',parentPath:['中国','四川省','成都市','武侯区','玉林街道']},{name:'丙村',path:['中国','四川省','成都市','武侯区','簇桥街道','丙村'],depth:5,parent:'簇桥街道',parentPath:['中国','四川省','成都市','武侯区','簇桥街道']},{name:'丁村',path:['中国','四川省','成都市','武侯区','簇桥街道','丁村'],depth:5,parent:'簇桥街道',parentPath:['中国','四川省','成都市','武侯区','簇桥街道']},{name:'戊村',path:['中国','四川省','成都市','青羊区','苏坡街道','戊村'],depth:5,parent:'苏坡街道',parentPath:['中国','四川省','成都市','青羊区','苏坡街道']},{name:'己村',path:['中国','四川省','成都市','青羊区','苏坡街道','己村'],depth:5,parent:'苏坡街道',parentPath:['中国','四川省','成都市','青羊区','苏坡街道']},{name:'庚村',path:['中国','四川省','成都市','青羊区','草堂街道','庚村'],depth:5,parent:'草堂街道',parentPath:['中国','四川省','成都市','青羊区','草堂街道']}];
+const villageRound=engine.placeQuestions(idx.concat(supportedVillages),['中国','四川省','成都市','武侯区'],'local','5',5);
+assert.ok(villageRound.length>=2,'村级可用目录必须支持当地归属题');
+for(const x of villageRound)assert.ok(x.options.includes(x.answer),'村级正确答案必须在选项里');

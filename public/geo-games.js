@@ -16,8 +16,10 @@ function award(){
 }
 function configure(){
  settings.hidden=!['place','line','hunt'].includes(game);
+ const levelLabel=level.closest('label');if(levelLabel)levelLabel.hidden=game!=='place';
  if(scope){scope.options[0].textContent=region.trail.length>1?'当前地区及下辖':'当前：全国';}
  heading.textContent=types[game]+' · '+displayPlace();
+ if(game!=='special')info.textContent='每局随机出题，同一轮不重复正确答案；得分每日按地区及玩法记录。';
  btns.forEach(b=>{const active=b.dataset.atlasGame===game;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
 }
 function start(mode=game){
@@ -51,9 +53,10 @@ function drawMatch(){
 }
 function gameEntries(){
  if(!index.length)return [];
- // Include lazily loaded village or Taiwanese village descendants of the current trail.
- const extra=region.trail.length>=4?region.children.filter(Boolean).map(name=>({name,path:[...region.trail,name],depth:region.trail.length,parent:region.trail.at(-1),parentPath:region.trail.slice()})):[];
- return index.concat(extra);
+ // In-country geographical data is lazy-loaded by province for fast mobile startup.
+ const villageData=region.trail[1]===window.atlasVillageProvince?(window.atlasVillageEntries||[]):[];
+ const extra=region.trail.length>=4&&region.trail[1]==='台湾省'?region.children.filter(Boolean).map(name=>({name,path:[...region.trail,name],depth:region.trail.length,parent:region.trail.at(-1),parentPath:region.trail.slice()})):[];
+ return index.concat(villageData,extra);
 }
 function startPlaces(){
  const all=gameEntries();
@@ -63,7 +66,7 @@ function startPlaces(){
   questions=core.placeQuestions(all,region.trail,'local','mixed',5);
   if(questions.length)say('此层级可用题目较少，已自动切换当前地区综合挑战。');
  }
- if(!questions.length){empty('当前范围暂无足够的不重复题目，可改选「全国综合」或返回上一级。');return;}
+ if(!questions.length){empty(desired==='5'?'先进入省份下的街道，加载村社区目录，再选择村社区挑战。':'当前范围暂无足够的不重复题目，可改选「全国综合」或返回上一级。');return;}
  drawQuestion();
 }
 function currentSource(){
