@@ -1,4 +1,5 @@
 FROM node:22-alpine
+# Wanxiang Chess learning lab; only site/ assets are included in the image.
 WORKDIR /app
 COPY server.js start.sh ./
 COPY site ./site
