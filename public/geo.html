@@ -13,7 +13,7 @@
 <header class="topbar"><a class="back" href="/">← 休闲游戏</a><span class="topbrand">中国地名探索 <small>· CHINA ATLAS</small></span><a class="other" href="#region-play">地方小游戏</a></header>
 <main id="atlas-main">
 <section class="intro"><div><div class="eyebrow">EXPLORE / PLAY / DISCOVER</div><h1>把中国地图，一层一层点亮。</h1><p>从省市区县走到街道、村和社区。记得就填，忘记就点提示；每到一处，还能探索当地特产，挑战专属地名和风物小游戏。</p></div><div class="intro-right"><strong id="atlas-score">0</strong><span>探索积分</span></div></section>
-<div class="quick-stats"><span>已解锁 <b id="atlas-found">0</b> 处地名</span><span>当前等级 <b id="atlas-level">地理新手</b></span><button type="button" id="atlas-daily">今日城市挑战 →</button></div>
+<div class="quick-stats"><span>已解锁 <b id="atlas-found">0</b> 处地名</span><span>当前等级 <b id="atlas-level">地理新手</b></span><span>通关记录 <b id="atlas-wins">0</b> 次</span><button type="button" id="atlas-daily">今日城市挑战 →</button></div>
 <div class="atlas-grid">
 <section class="map-panel" aria-labelledby="map-title">
 <div class="panel-heading"><div><p class="eyebrow">INTERACTIVE MAP</p><h2 id="map-title">中国地图</h2></div><button id="map-reset" type="button" class="soft-button">全国视图</button></div>
@@ -40,22 +40,28 @@
 <div class="atlas-game-tabs" role="group" aria-label="选择地方游戏">
 <button type="button" data-atlas-game="match" aria-pressed="true">地名翻牌配对</button>
 <button type="button" data-atlas-game="place" aria-pressed="false">地名归属挑战</button>
-<button type="button" data-atlas-game="special" aria-pressed="false">特产竞猜</button></div>
+<button type="button" data-atlas-game="special" aria-pressed="false">特产竞猜</button>
+<button type="button" data-atlas-game="line" aria-pressed="false">地名连线</button>
+<button type="button" data-atlas-game="hunt" aria-pressed="false">地图寻宝</button></div>
+<div id="atlas-game-settings" class="atlas-game-settings" hidden>
+<label>挑战范围 <select id="atlas-scope"><option value="local">当前地区及下辖</option><option value="all">全国所有地区</option></select></label>
+<label>挑战层级 <select id="atlas-difficulty"><option value="mixed">综合随机（城市·区县·街道）</option><option value="2">城市级</option><option value="3">区县级</option><option value="4">乡镇街道级</option><option value="5">村社区级（需先进入街道）</option></select></label></div>
+<p id="atlas-game-info" class="atlas-game-info">全国、省、市、区县可跨级挑战。特产竞猜每轮使用不同正确答案。</p>
 <h3 id="atlas-game-title" class="atlas-game-title">地名翻牌配对</h3>
 <div id="atlas-game-status" class="atlas-game-status" role="status" aria-live="polite">请选择地区，开始游戏。</div>
 <div id="atlas-game-board" class="atlas-game-board"></div>
 </section>
 <section id="atlas-specials" class="specials" aria-labelledby="special-title">
-<div class="section-head"><div><p class="eyebrow">LOCAL SPECIALTIES</p><h2 id="special-title">沿途特产图鉴</h2><p id="special-desc">点击地图上的地区，查看已收录的当地特产和实拍图片。</p></div><span class="section-note">真实图片 · 图片来源可查看</span></div>
-<div id="special-grid" class="special-grid"><div class="special-empty">选择地区后，将在这里展示相应特产。</div></div>
+<div class="section-head"><div><p class="eyebrow">LOCAL SPECIALTIES</p><h2 id="special-title">沿途特产图鉴</h2><p id="special-desc">点击地图上的地区，查看已收录的当地特产和实拍图片。</p></div><span class="section-note">公开图片有来源 · 未核实图片不展示</span></div>
+<div id="special-grid" class="special-grid"><div class="special-empty">选择地区后，将在这里展示相应特产。</div></div><button type="button" class="soft-button special-more" id="special-more" hidden>查看更多特产</button>
 </section>
 <details class="source-panel"><summary>地名数据库、地图与图片的来源及覆盖说明</summary>
 <p>大陆地名：省、市、县、乡镇、街道主要采用 <a href="https://github.com/modood/Administrative-divisions-of-China" target="_blank" rel="noopener">Administrative-divisions-of-China</a> 的历史统计区划资料；村、社区数据基于2023年统计口径，可能与现行行政归属不同。台湾地区村里资料采用 <a href="https://github.com/g0v/twgeojson" target="_blank" rel="noopener">g0v twgeojson</a> 的公开数据，部分名称保留当地使用的正体字。</p>
 <p>省级地图几何来自 <a href="https://github.com/Supeset/China-GeoData" target="_blank" rel="noopener">China-GeoData</a>（MIT）。地名目录不是实时民政核定数据，也不包含每一条自然村、路名和门牌。</p>
-<p>特产参考 <a href="https://xccys.moa.gov.cn/xxzlcx/202002/t20200227_6337876.htm" target="_blank" rel="noopener">农业农村部乡村特色产品目录</a> 和 <a href="https://www.cnipa.gov.cn/attach/0/baf15fc1f5b74750bf14e64ec11ca970.pdf" target="_blank" rel="noopener">国家知识产权局地理标志目录</a>。目前优先呈现已核查条目；照片来自 Wikimedia Commons 的公开图片，每张可查看文件页及署名。未收录的地区不强行使用不相关照片。</p>
+<p>特产参考 <a href="https://xccys.moa.gov.cn/xxzlcx/202002/t20200227_6337876.htm" target="_blank" rel="noopener">农业农村部乡村特色产品目录</a> 和 <a href="https://www.cnipa.gov.cn/attach/0/baf15fc1f5b74750bf14e64ec11ca970.pdf" target="_blank" rel="noopener">国家知识产权局地理标志目录</a>。本站另外采用 <a href="https://github.com/JinQiangShi/Chinese-Nationnal-Geographic-Products" target="_blank" rel="noopener">MIT 许可的地理标志产品资料集</a>（<a href="/geo/gi-source-license.txt" target="_blank" rel="noopener">数据署名及完整许可</a>），整理收录约4,400条历史地理标志公告产品，并非实时官方核定名录，可能存在行政区划变更和数据提取错误。区县只依据明确匹配的产地关联；其他情况注明上级地区代表，不将省市产品冒称为村级特产。照片来自 Wikimedia Commons，只有确认文件名的公开图片会展示，其他图片提供检索链接；各图片原页可核查具体授权。</p>
 </details>
 </main>
 <footer>休闲游戏 · 中国地名探索 <a href="/">返回游戏大厅</a></footer>
 </div>
-<script defer src="/geo-games.js"></script><script defer src="/geo.js"></script>
+<script defer src="/geo-quiz-core.js"></script><script defer src="/geo-products.js"></script><script defer src="/geo-games.js"></script><script defer src="/geo.js"></script>
 </body></html>

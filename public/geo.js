@@ -174,7 +174,6 @@ function render(){
  $('#atlas-breadcrumb').innerHTML=trail.map((n,i)=>'<button type="button" data-step="'+i+'">'+esc(n)+'</button>').join('<span class="sep">›</span>');
  $('#atlas-subtext').textContent=len<=2?'点选地图，也可以输入下一级地名':len<5?'可继续填空并进入街道或社区':'已深入到街道层级，可继续探索村和社区';
  if(!ch.length&&!loading)setResponse('当前层级没有更多下辖地名，或数据源暂未覆盖。返回上一级可继续探索。');
- showSpecialties();
  refreshMapSelection();
  const exact=special[trail.at(-1)],upper=special[provinceName()];
  const selected=exact||upper||[];
