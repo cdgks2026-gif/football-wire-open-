@@ -5,7 +5,8 @@ const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const u=a=>[...new Set((a||[]).filter(Boolean))];
 const btns=[...document.querySelectorAll('[data-atlas-game]')],board=$('#atlas-game-board'),status=$('#atlas-game-status'),heading=$('#atlas-game-title'),scope=$('#atlas-scope'),level=$('#atlas-difficulty'),settings=$('#atlas-game-settings'),info=$('#atlas-game-info');
 const types={match:'地名翻牌配对',place:'地名归属挑战',special:'地方特产竞猜',line:'地名连线',hunt:'地图寻宝'};
-let region={trail:['中国'],children:[],others:[],siblings:[]},index=[],products=[],game='match',token=0,deck=[],flipped=[],paired=new Set(),attempts=0,questions=[],q=0,correct=0,completed=false,locked=false,linePairs=[],lineLeft=null,lineMatched=new Set(),hunt=null,huntStep=1;
+const requestedMode=new URLSearchParams(location.search).get('game');
+let region={trail:['中国'],children:[],others:[],siblings:[]},index=[],products=[],game=(['match','place','special','line','hunt'].includes(requestedMode)?requestedMode:'match'),token=0,deck=[],flipped=[],paired=new Set(),attempts=0,questions=[],q=0,correct=0,completed=false,locked=false,linePairs=[],lineLeft=null,lineMatched=new Set(),hunt=null,huntStep=1;
 const displayPlace=()=>region.trail.at(-1)||'中国';
 function say(t){status.textContent=t;}
 const placeKey=path=>path.join('/');
@@ -209,5 +210,5 @@ window.addEventListener('atlas:products',()=>{
  products=globalThis.atlasProducts||[];
  if(game==='special')start();
 });
-start('match');
+start(game);
 })();

@@ -64,3 +64,9 @@ const supportedVillages=[{name:'甲村',path:['中国','四川省','成都市','
 const villageRound=engine.placeQuestions(idx.concat(supportedVillages),['中国','四川省','成都市','武侯区'],'local','5',5);
 assert.ok(villageRound.length>=2,'村级可用目录必须支持当地归属题');
 for(const x of villageRound)assert.ok(x.options.includes(x.answer),'村级正确答案必须在选项里');
+
+const homepage=fs.readFileSync(path.join(root,'index.html'),'utf8');
+for(const mode of ['match','place','special','line','hunt'])assert.ok(homepage.includes('?game='+mode+'#region-play'),'首页缺少玩法入口：'+mode);
+const gameCode=fs.readFileSync(path.join(root,'geo-games.js'),'utf8');
+assert.ok(gameCode.includes("new URLSearchParams(location.search).get('game')"),'游戏必须支持首页直达指定模式');
+console.log('Homepage links to 5 playable atlas modes.');
