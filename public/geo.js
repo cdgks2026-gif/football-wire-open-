@@ -48,7 +48,7 @@ const special={
 '哈密市':[product('哈密瓜','新疆哈密闻名的地方甜瓜。','Heavenly Hami Melons.jpg')],
 '银川市':[product('宁夏枸杞','宁夏地区代表性农产品。','Ningxia dried wolfberry.jpg')]
 };
-let provinces=[],pcas={},codeTree=[],twTree={},trail=['中国'],answerList=[],revealed=false,hintCount=0,twLoading=false;
+let provinces=[],pcas={},codeTree=[],twTree={},trail=['中国'],answerList=[],revealed=false,hintCount=0,twLoading=false;window.atlasProducts=[];window.atlasHierarchy=[];
 const villageCache={},loadingVillage=new Set(),initialMsg='填写下辖地名可以获得积分，答案正确后可进入下一级。';
 let record={found:{},score:0,gameWins:{}};
 try{const obj=JSON.parse(localStorage.getItem('casual-atlas-progress-v1')||'{}');if(obj&&typeof obj==='object')record={found:obj.found&&typeof obj.found==='object'?obj.found:{},score:Number.isFinite(obj.score)?Math.max(0,obj.score):0,gameWins:obj.gameWins&&typeof obj.gameWins==='object'?obj.gameWins:{}};}catch{}
@@ -120,7 +120,7 @@ function children(){
 function setResponse(message){$('#atlas-response').textContent=message;}
 window.addEventListener('atlas:reward',event=>{
  const mode=event.detail?.game;
- if(!['match','place','special'].includes(mode))return;
+ if(!['match','place','special','line','hunt'].includes(mode))return;
  const now=new Date(),day=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
  const key=[...trail,mode,day].join('/');
  if(record.gameWins[key])return;
@@ -128,7 +128,7 @@ window.addEventListener('atlas:reward',event=>{
 });
 function statRender(){
  const num=Object.keys(record.found).length;
- $('#atlas-found').textContent=num;$('#atlas-score').textContent=record.score;
+ $('#atlas-found').textContent=num;$('#atlas-score').textContent=record.score;const wins=$('#atlas-wins');if(wins)wins.textContent=Object.keys(record.gameWins||{}).length;
  $('#atlas-level').textContent=num>=500?'地名大师':num>=100?'城市达人':num>=25?'全国旅人':num>=5?'探索学徒':'地理新手';
 }
 function alternativePlaces(){
@@ -182,10 +182,18 @@ function render(){
  const siblings=trail.length>1?(trail.length===2?provinces.map(p=>p.properties.name):[]):[];
  window.dispatchEvent(new CustomEvent('atlas:region',{detail:{
   trail:[...trail],children:[...ch],others:alternativePlaces(),siblings,
-  specialties:selected.map(x=>({name:x.name,file:x.file})),specialtySource:source,
+  manual:selected.map(x=>({name:x.name,file:x.file,description:x.description})),specialties:selected.map(x=>({name:x.name,file:x.file})),specialtySource:source,
   specialtyOptions:uniqueNames(Object.values(special).flatMap(items=>items.map(x=>x.name)))
  }}));
 }
+window.addEventListener('atlas:navigate',event=>{
+ const path=event.detail?.trail;
+ if(!Array.isArray(path)||path[0]!=='中国'||!provinces.some(p=>p.properties.name===path[1]))return;
+ trail=path.slice(0,5);revealed=false;hintCount=0;$('#atlas-answer').value='';
+ render();focusMap();
+ if(provinceName()==='台湾省')loadTaiwan();
+ else if(trail.length>=4)loadVillages(provinceName());
+});
 function jumpTo(index){
  if(!Number.isInteger(index)||index<0||index>=trail.length)return;
  trail=trail.slice(0,index+1);revealed=false;hintCount=0;
@@ -404,8 +412,14 @@ Promise.all([
 ]).then(([map,coded,codes,extra])=>{
  provinces=map.features.filter(x=>x?.properties?.name);
  pcas=coded;codeTree=codes;window.atlasExtra=extra;
+ if(window.AtlasQuizCore)window.atlasHierarchy=window.AtlasQuizCore.buildIndex(coded,extra,provinces.map(p=>p.properties.name));
  drawMap();render();
  $('#map-message').textContent='地图加载完成，可点击省份开始探索。';
+ fetchJson('/geo/gi-products.json').then(data=>{
+  if(!Array.isArray(data.entries))throw Error('特产数据格式不正确');
+  window.atlasProducts=data.entries;
+  window.dispatchEvent(new Event('atlas:products'));
+ }).catch(err=>console.warn('地理标志产品目录加载失败',err?.message||err));
 }).catch(err=>{
  $('#map-message').textContent='地图数据暂无法读取，请刷新页面重试：'+err.message;
  $('#atlas-question').textContent='地名资料未加载';
