@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d18"><meta name="description" content="王者万象棋非官方学习平台：英雄棋手百科、阵容构筑研究、阵营联动、天赋、效果、版本更新、答题训练和复盘。">
+<title>万象研习社 · 王者万象棋学习系统</title><link rel="stylesheet" href="/style.css">
+</head><body>
+<a class="skip" href="#main">跳转到正文</a>
+<div class="app-shell">
+<aside class="sidebar" aria-label="站点导航">
+<a href="#home" class="logo"><span class="logo-icon">象</span><span class="logo-copy"><strong>万象研习社</strong><small>CHESS THEORY LAB</small></span></a>
+<p class="nav-label">学习中枢</p>
+<nav id="side-nav">
+<a class="nav-item active" data-page="home" href="#home"><b>◈</b>总览仪表盘</a>
+<a class="nav-item" data-page="library" href="#library"><b>▦</b>全能图鉴</a>
+<a class="nav-item" data-page="lab" href="#lab"><b>♙</b>阵容实验室</a>
+<a class="nav-item" data-page="guide" href="#guide"><b>◇</b>机制与羁绊</a>
+<a class="nav-item" data-page="quiz" href="#quiz"><b>✦</b>训练考核</a>
+<a class="nav-item" data-page="records" href="#records"><b>▤</b>对局复盘</a>
+</nav>
+<p class="nav-label nav-lower">版本与资料</p>
+<nav><a class="nav-item" data-page="patch" href="#patch"><b>↗</b>10·08 版本变动</a><a class="nav-item" data-page="sources" href="#sources"><b>ⓘ</b>资料来源说明</a></nav>
+<div class="side-footer"><strong>知识库快照</strong><span>2026.10.11 · v1.5.1 参考</span><small>非官方 · 免费 · 浏览器本地存储</small></div>
+</aside>
+<div class="content-shell">
+<header class="topbar"><div class="mobile-brand"><span class="mobile-logo">象</span><strong>万象研习社</strong></div>
+<div class="breadcrumb" id="crumb"><span>策略研习 / </span><strong>总览仪表盘</strong></div>
+<div class="top-actions"><button id="global-search-btn" class="top-search" type="button">⌕ <span>快速检索英雄、天赋、棋手</span><kbd>/</kbd></button><span class="version-pill">S 赛季 · 资料快照</span></div>
+</header>
+<main id="main">
+<section class="page active" id="page-home">
+<div class="hero-banner"><div class="hero-copy"><div class="eyebrow">TACTICS · LIBRARY · PRACTICE</div><h1>懂每一张牌，<br><em>做对每一次选择。</em></h1><p>不靠死记阵容。研究英雄、阵营、棋手与成长机制，在模拟构筑中形成自己的打法。</p>
+<div class="hero-actions"><button class="btn primary" data-go="lab">开始阵容推演 <span>↗</span></button><button class="btn outline" data-go="library">查阅全部资料</button></div></div>
+<div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="piece piece-main">象</div><div class="piece piece-a">将</div><div class="piece piece-b">帅</div><div class="piece piece-c">马</div><span class="art-caption">THINK AHEAD. PLAY BETTER.</span></div></div>
+<div class="stats-grid" id="home-stats"></div>
+<div class="section-title"><div><span class="eyebrow">YOUR LEARNING PATH</span><h2>四步掌握万象棋</h2></div><button class="link-btn" data-go="guide">查看学习体系 →</button></div>
+<div class="path-grid" id="learning-path"></div>
+<div class="home-two"><article class="panel"><div class="panel-head"><div><span class="eyebrow">META INSIGHTS</span><h3>你应该先掌握这些机制</h3></div><button class="link-btn" data-go="guide">全部机制 →</button></div><div id="featured-mechanics"></div></article>
+<article class="panel"><div class="panel-head"><div><span class="eyebrow">PATCH NOTES</span><h3>最新版本重点</h3></div><span class="mini-pill">10月8日 v1.5.1</span></div><div id="featured-patch"></div></article></div>
+</section>
+<section class="page" id="page-library"><div class="page-heading"><span class="eyebrow">COMPENDIUM / SEARCH</span><h1>全能图鉴</h1><p>英雄、六大阵营、棋手、天赋、已核实的装备和效果变动，统一查询。</p></div>
+<div class="panel toolbar-panel"><div class="tabbar" id="library-tabs" role="group"><button class="active" data-tab="heroes">英雄</button><button data-tab="masters">棋手</button><button data-tab="talents">天赋</button><button data-tab="equipment">装备与效果</button></div>
+<div class="filters"><label class="searchbox">⌕ <input id="library-query" autocomplete="off" placeholder="搜索名称、阵营、关键字"></label><select id="library-camp" aria-label="选择阵营"><option value="">全部阵营</option></select><select id="library-cost" aria-label="选择品阶"><option value="">全部品阶</option><option value="1">1阶</option><option value="2">2阶</option><option value="3">3阶</option><option value="4">4阶</option><option value="5">5阶</option></select></div><div class="results-summary" id="library-summary"></div></div>
+<div id="library-content" class="catalog-grid"></div></section>
+<section class="page" id="page-lab"><div class="page-heading"><span class="eyebrow">BUILDER / SCENARIO</span><h1>阵容实验室</h1><p>挑选棋手与英雄，设置禁入阵营。辅助判断构筑完整度、核心缺牌与分阶段取舍。</p></div>
+<div class="lab-layout"><div class="panel"><div class="panel-head"><h3>本局条件</h3><button class="text-button" id="lab-reset">重置阵容</button></div>
+<div class="two-fields"><label>当前棋手<select id="lab-master"></select></label><label>比赛阶段<select id="lab-phase"><option value="early">前期 · 过渡</option><option value="mid" selected>中期 · 成型</option><option value="late">后期 · 决赛</option></select></label></div>
+<label class="form-label">被禁用阵营（可多选模拟）</label><div id="ban-options" class="chip-row"></div>
+<label class="form-label">阵容预设（从旧版 V2.0 继承）</label><select id="lab-plan"><option value="">自由构筑 · 不套模板</option></select><div class="hint" id="plan-note">选择预设可自动填入核心与发动机，或在下方自由配队。</div>
+<div class="builder-title"><strong>你的上场阵容</strong><span id="board-cap">0 / 7 个位置</span></div><div class="board-grid" id="board-grid"></div><div class="button-row"><button class="btn primary" id="analyze">分析当前阵容</button><button class="btn" id="save-team">保存当前构筑</button><button class="btn" id="copy-team">复制摘要</button></div><div id="team-save-feedback" class="small"></div></div>
+<div class="panel"><div class="panel-head"><h3>英雄备选池</h3><span class="mini-pill">点选加入，最多7位</span></div><label class="searchbox">⌕ <input id="pick-query" placeholder="搜索你想添加的英雄"></label><div class="hero-pick-list" id="hero-pick-list"></div></div></div>
+<div id="lab-analysis" class="panel analysis-panel"></div><div class="panel"><div class="panel-head"><h3>已保存阵容</h3><button class="text-button" id="export-all">导出全部学习数据</button></div><div id="saved-teams"></div></div>
+</section>
+<section class="page" id="page-guide"><div class="page-heading"><span class="eyebrow">KNOWLEDGE / MECHANICS</span><h1>机制与阵营联动</h1><p>万象棋的“羁绊”主要体现为阵营专属牌、关键词与英雄效果的联动，具体以卡文为准。</p></div><div class="panel"><div class="panel-head"><h3>六大阵营索引</h3><span class="mini-pill">点击查英雄</span></div><div class="camp-overview" id="camp-overview"></div></div><div class="panel"><div class="panel-head"><h3>机制知识卡</h3><span class="mini-pill">读完可标记已掌握</span></div><div id="mechanic-list" class="mechanics-grid"></div></div></section>
+<section class="page" id="page-quiz"><div class="page-heading"><span class="eyebrow">PRACTICE / MEMORY</span><h1>训练考核</h1><p>认卡、阵营归属、英雄品阶、棋手知识和最新更新；随机出题并记录本地成绩。</p></div>
+<div class="quiz-layout"><div class="panel"><div class="panel-head"><h3>今日学习</h3><span id="quiz-counter" class="mini-pill">未开始</span></div><div class="quiz-start"><label>训练专题<select id="quiz-topic"><option value="mixed">综合训练</option><option value="camp">英雄阵营</option><option value="cost">英雄品阶</option><option value="patch">版本改动</option><option value="master">棋手定位</option></select></label><button class="btn primary" id="quiz-start">生成10道练习题</button></div><div id="quiz-area" class="quiz-area"><div class="empty-state">选择专题开始训练。每轮尽量避免重复考同一位英雄。</div></div></div>
+<div class="panel"><div class="panel-head"><h3>本地学习成绩</h3></div><div id="quiz-progress"></div><button class="btn subtle" id="reset-study">仅重置练习成绩</button></div></div></section>
+<section class="page" id="page-records"><div class="page-heading"><span class="eyebrow">REVIEW / NOTES</span><h1>对局复盘记录</h1><p>记录本局禁入、棋手、核心、转型判断和失误。所有记录仅保存在当前浏览器。</p></div><div class="panel"><form id="review-form"><div class="two-fields"><label>本局棋手<select id="review-master"></select></label><label>最终名次<select id="review-rank"><option value="1">第1名</option><option value="2">第2名</option><option value="3">第3名</option><option value="4">第4名</option><option value="5">第5名</option><option value="6">第6名</option></select></label></div>
+<div class="two-fields"><label>阵容关键词<input id="review-core" required maxlength="100" placeholder="如：曹操、甄姬、露娜"></label><label>禁入阵营<input id="review-ban" maxlength="100" placeholder="如：河洛"></label></div><label>复盘要点<textarea id="review-notes" rows="5" maxlength="1800" placeholder="前期何时亏血？关键天赋和效果牌如何选择？哪一回合需要转型？"></textarea></label><div class="button-row"><button class="btn primary" type="submit">保存这局复盘</button></div></form></div><div id="record-list"></div></section>
+<section class="page" id="page-patch"><div class="page-heading"><span class="eyebrow">UPDATE TRACKER</span><h1>版本变化追踪</h1><p>最新核实：2026年10月8日 v1.5.1。不代表所有服务器环境均为相同版本。</p></div><div class="panel"><label class="searchbox">⌕ <input id="patch-query" placeholder="搜索棋手、英雄、天赋或道具"></label><div id="patch-list" class="patch-list"></div></div></section>
+<section class="page" id="page-sources"><div class="page-heading"><span class="eyebrow">PROVENANCE / LIMITATIONS</span><h1>来源与资料边界</h1><p>区分官方公告、你先前的 V2.0 整理数据，以及非官方社区研究。</p></div><div class="panel"><h3>数据说明</h3><p id="source-status" class="source-notice"></p><div id="source-links" class="source-links"></div><h3>本工具不包含</h3><p>不提供游戏外挂、代打、代替客户端的自动操作；不声称实时全量卡文、即时胜率、官方排行或精确的模拟战斗结果。实验室评分是学习用途的启发式构筑完整度，不是实际胜率。</p></div></section>
+</main>
+<footer class="footer"><span>万象研习社 · 非官方学习与阵容研究平台</span><span>本地保存 · 资料核实日期 2026-10-11 · 游戏商标与角色归权利人所有</span></footer>
+</div></div>
+<div class="modal" id="detail-modal" hidden><div class="modal-backdrop" data-dismiss></div><div class="modal-body" role="dialog" aria-modal="true" aria-labelledby="detail-title"><button class="modal-close" data-dismiss aria-label="关闭">×</button><div id="detail-content"></div></div></div>
+<script defer src="/app.js"></script>
+</body></html>
