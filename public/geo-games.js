@@ -81,7 +81,7 @@ function startSpecial(){
  if(!questions.length){empty('当前地区暂无足够的可用特产题目，不能通过重复同一个答案凑满五道题。');return;}
  const fallback=data.level.includes('fallback')?'本轮采用上级「'+data.source+'」的资料，不代表这些特产产于当前区县、街道或村庄。':
    data.level==='national'?'全国地理标志产品综合挑战。':'已从「'+data.source+'」现有资料中随机选题。';
- info.textContent='本轮 '+questions.length+' 题，正确特产不重复。'+fallback;
+ info.textContent='本轮 '+questions.length+' 题，正确答案不重复。'+fallback;
  drawQuestion();
 }
 function drawQuestion(){
@@ -91,7 +91,7 @@ function drawQuestion(){
  '<div class="atlas-quiz-options">'+question.options.map((v,i)=>'<button type="button" data-choice="'+i+'">'+safe(v)+'</button>').join('')+'</div>'+
  '<p class="atlas-game-foot">第 '+(q+1)+' / '+questions.length+' 题 · 答对 '+correct+' 题</p>';
  if(game==='place')say('当前范围：'+(scope.value==='all'?'全国（包含下级城市、区县和街道）':displayPlace()+'及下辖')+'。请选择正确的归属。');
- else say('根据已收录资料作答，每题的正确产品不会重复。');
+ else say('根据已收录资料作答，同轮正确答案不会重复。');
 }
 function completedQuiz(){
  completed=true;

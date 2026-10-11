@@ -52,3 +52,10 @@ assert.ok(chengdu.products.every(x=>x[2]==='成都市'),'成都市题库不得�
 const wuhouCatalog=engine.productsFor(GI.entries,['中国','四川省','成都市','武侯区']);
 assert.ok(wuhouCatalog.products.every(x=>x[1]==='四川省'),'区县回退题库省份必须准确');
 console.log('V2 checked:',idx.length,'geographical names;',GI.entries.length,'GI products; 5 distinct quiz answers');
+
+const nationwide=engine.productQuestions(GI.entries,GI.entries,'中国',5);
+assert.equal(nationwide.length,5,'全国特产应能测试五个不同省份的产品来源');
+assert.equal(new Set(nationwide.map(q=>q.answer)).size,5,'全国特产题的正确省份不可重复');
+for(const q of nationwide)assert.equal(new Set(q.options).size,4,'全国特产题必须有四个省级选项');
+const unknownTown=engine.productsFor(GI.entries,['中国','四川省','成都市','不存在的区县']);
+assert.equal(unknownTown.source,'成都市','缺少区县核实信息时只应退回城市级');

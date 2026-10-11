@@ -88,6 +88,26 @@ function productsFor(entries,trail){
  return {source:province,level:'province-fallback',products:inProvince};
 }
 function productQuestions(products,pool,source,limit=5,rng=Math.random){
+ // Nationwide questions must ask province of origin, otherwise no false product choices exist.
+ if(source==='中国'){
+  const allProvinces=u(pool.map(x=>x[1]));
+  const picked=[],used=new Set();
+  for(const item of shuffle(products,rng)){
+   if(picked.length>=limit)break;
+   if(used.has(item[1])||!item[0]||!item[1])continue;
+   const names=u(products.filter(x=>x[0]===item[0]).map(x=>x[1]));
+   // Discard products with several candidate provinces.
+   if(names.length!==1)continue;
+   const options=choices(item[1],allProvinces,rng);
+   if(options.length!==4)continue;
+   picked.push({text:'地理标志产品「'+item[0]+'」的资料所列省级产地是哪里？',
+    answer:item[1],options,
+    explanation:'收录产地：'+item[1]+' / '+item[2],
+    place:item[1]+'/'+item[2]+'/'+item[0]});
+   used.add(item[1]);
+  }
+  return picked;
+ }
  const correct=u(products.map(x=>x[0]));
  const uniqueProducts=shuffle(correct,rng);
  const all=u(pool.map(x=>x[0]));
@@ -96,11 +116,10 @@ function productQuestions(products,pool,source,limit=5,rng=Math.random){
  for(const name of uniqueProducts){
   if(out.length>=limit)break;
   const item=products.find(x=>x[0]===name);
-  // Distractors from other regions; descriptions may be used only when actual metadata exists.
   const opts=choices(name,other,rng);
   if(opts.length<4)break;
   const desc=String(item[4]||'').trim();
-  const withDesc=desc.length>=24&&out.length%3===1;
+  const withDesc=desc.length>=24&&out.length%3===1&&!desc.includes(name);
   out.push({
    text:withDesc?'根据产品资料描述，猜出对应的特产：'+desc.slice(0,65)+(desc.length>65?'…':''):
     '以下哪项是「'+source+'」收录的地理标志产品？',
