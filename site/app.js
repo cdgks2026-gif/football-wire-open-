@@ -3,7 +3,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const CAMPS=['河洛','逐鹿','三分之地','日落海','大河流域','无阵营'];
 const KEY='wxq-academy-v1';
-const blank=()=>({team:[],bans:[],master:'',phase:'mid',plan:'',saved:[],reviews:[],known:[],quiz:{attempts:0,correct:0,history:[]}});
+const blank=()=>({team:[],bans:[],master:'',phase:'mid',plan:'',saved:[],reviews:[],known:[],decision:{round:8,hp:65,energy:10,shop:''},quiz:{attempts:0,correct:0,history:[]}});
 let DB=null,S=blank(),tab='heroes',round=[],qIndex=0,qCorrect=0,qLocked=false,page='home';
 const titles={home:'总览仪表盘',library:'全能图鉴',lab:'阵容实验室',guide:'机制与阵营联动',quiz:'训练考核',records:'对局复盘',patch:'版本变化追踪',sources:'来源与资料边界'};
 try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object'){S={...blank(),...raw};S.quiz={...blank().quiz,...(raw.quiz||{})};}}catch{}
@@ -117,6 +117,7 @@ function renderLab(){
   return '<button type="button" data-slot="'+i+'" title="'+(name?'点击移除 '+esc(name):'空位置')+'" class="board-slot '+(h?'filled':'')+'">'+(h?'<b>'+esc(h.name)+'</b><span>'+esc(h.camp)+'</span><small>'+h.cost+'阶 ×</small>':'<b>＋</b><span>空位</span>')+'</button>';
  }).join('');
  renderPick();renderAnalysis();renderSaved();
+ if(S.decision)for(const [k,v] of Object.entries(S.decision)){const el=$('#turn-'+k);if(el&&document.activeElement!==el)el.value=v;}
 }
 function renderPick(){
  const query=$('#pick-query').value.trim().toLowerCase();
@@ -169,6 +170,38 @@ function renderAnalysis(){
  '<strong>限制及风险</strong>'+(warnings.length?warnings.map(x=>'<p class="alert">• '+esc(x)+'</p>').join(''):'<p class="positive">尚未发现明显的禁入冲突。仍须结合商店、血量、对手及等级判断。</p>')+
  (plan?'<p><strong>旧版预设的适用边界：</strong>'+esc(plan.weakness||'请按实际来牌调整。')+'</p>':'')+
  '</div>';
+}
+function renderTurnAdvice(){
+ const round=Math.min(99,Math.max(1,Number($('#turn-round').value)||1));
+ const hp=Math.min(100,Math.max(0,Number($('#turn-hp').value)||0));
+ const energy=Math.min(999,Math.max(0,Number($('#turn-energy').value)||0));
+ const shop=$('#turn-shop').value.trim().slice(0,120);
+ S.decision={round,hp,energy,shop};save();
+ const plan=S.plan?DB.plans.find(p=>p.id===S.plan):null;
+ const heroes=S.team.map(heroByName).filter(Boolean);
+ const missing=plan?(plan.core||[]).filter(name=>!S.team.includes(name)):[];
+ const conflicts=heroes.filter(h=>S.bans.includes(h.camp));
+ const available=unique(shop.split(/[、，,\s;；]+/).filter(Boolean));
+ const shopHeroes=available.map(heroByName).filter(Boolean);
+ const accessible=shopHeroes.filter(h=>!S.bans.includes(h.camp));
+ const wanted=accessible.filter(h=>missing.includes(h.name));
+ const watch=[];
+ if(conflicts.length)watch.push({importance:'优先处理',message:'当前阵容含禁入阵营：'+conflicts.map(h=>h.name).join('、')+'。请核对是否误录入旧阵容，以及实际可获取的替代牌。'});
+ if(hp<=30)watch.push({importance:'生存优先',message:'血量偏低，下一回合的即时战力和保护核心通常比单纯囤积经济更值得检查。先比较能实际改善战斗的购买、站位和觉醒选择。'});
+ else if(hp<=55)watch.push({importance:'控制风险',message:'血量处于需要警惕的区间。可以继续养成，但要评估下一场对局是否需要补前排或补控制。'});
+ else watch.push({importance:'经营弹性',message:'目前血量较有余地，可以比较保留能量与补齐成长发动机的长期收益，不必因为一张非核心牌打乱计划。'});
+ if(wanted.length)watch.push({importance:'优先核对商店',message:'商店出现预设所缺核心：'+wanted.map(h=>h.name).join('、')+'。检查本回合是否足以承担实际购买与必要升级费用，再决定是否围绕其转型。'});
+ else if(missing.length)watch.push({importance:'核心缺牌',message:'当前预设还缺 '+missing.join('、')+'。不要假设下一轮一定刷到，先准备能上场的备用过渡阵容。'});
+ if(accessible.length)watch.push({importance:'当前来牌',message:'商店中识别到可用英雄：'+accessible.map(h=>h.name).join('、')+'。比较与当前技能标签、棋手和阶段的联动，不要只按品阶决定。'});
+ if(shopHeroes.some(h=>S.bans.includes(h.camp)))watch.push({importance:'禁入检查',message:'商店录入项涉及禁入阵营：'+shopHeroes.filter(h=>S.bans.includes(h.camp)).map(h=>h.name).join('、')+'，请检查输入或实际禁入规则。'});
+ if(energy<5)watch.push({importance:'经济空间',message:'剩余能量较少，谨慎安排刷新、升阶或觉醒的支出；具体消耗须以当前游戏客户端为准。'});
+ else if(energy>=20&&hp>=50)watch.push({importance:'资源效率',message:'当前仍有一定能量与生存空间，建议比较长期成长、关键卡购买、升阶和保留资源的边际收益。'});
+ if(round<=5)watch.push({importance:'开局阶段',message:'优先确认低阶稳定阵容与资源路线；过早围绕稀有高阶核心定死打法容易被卡池来牌限制。'});
+ else if(round>=13)watch.push({importance:'后期兑现',message:'检查培养资源是否真正转化成主C生存与输出，必要时退出价值衰减的纯经济功能位。'});
+ const summary=plan?'参考方案：'+plan.name+'。'+(round<=5?plan.early:round<=12?plan.mid:plan.late):'自由构筑：优先确认阵容是否拥有实际输出核心、成长机制、保护位与功能位。';
+ $('#turn-result').innerHTML='<div class="analysis-text"><strong>本回合决策参考（回合 '+round+' · 血量 '+hp+' · 能量 '+energy+'）</strong><p>'+esc(summary)+'</p>'+
+ watch.map((x,i)=>'<p><span class="'+(i===0&&hp<=30?'alert':'positive')+'">'+esc(x.importance)+'：</span>'+esc(x.message)+'</p>').join('')+
+ '<p class="small">说明：这些建议是启发式风险提示，不包含实时商店概率、隐藏池信息或已验证战斗结算；实际开销以客户端为准。</p></div>';
 }
 function applyPlan(id){
  const p=DB.plans.find(x=>x.id===id);S.plan=id||'';
@@ -270,6 +303,7 @@ function exportData(){
 function copyText(str){if(navigator.clipboard?.writeText){navigator.clipboard.writeText(str).then(()=>qs('#team-save-feedback','已复制构筑摘要。')).catch(()=>qs('#team-save-feedback','浏览器禁止复制，可使用导出功能。'));}else qs('#team-save-feedback','请使用浏览器的复制功能。');}
 document.addEventListener('click',event=>{
  const go=event.target.closest('[data-go]');if(go){goto(go.dataset.go);return;}
+ const modalMaster=event.target.closest('[data-modal-master]');if(modalMaster){S.master=modalMaster.dataset.modalMaster;save();closeModal();goto('lab');return;}
  if(event.target.matches('[data-dismiss]')){closeModal();return;}
  const d=event.target.closest('[data-detail]');if(d){showDetail(d.dataset.detail,d.dataset.id);return;}
  const m=event.target.closest('[data-mechanic]');if(m){const x=DB.mechanics[Number(m.dataset.mechanic)];modal('<div class="eyebrow">MECHANIC</div><h2 id="detail-title">'+esc(x.title)+'</h2><p>'+esc(x.text)+'</p><span class="stat-label">'+esc(x.source)+'</span>');return;}
@@ -304,6 +338,7 @@ $('#save-team').addEventListener('click',()=>{
 $('#copy-team').addEventListener('click',()=>copyText('王者万象棋构筑：'+S.team.join('、')+'\n棋手：'+(S.master||'未指定')+'\n禁入：'+S.bans.join('、')+'\n阶段：'+S.phase));
 $('#export-all').addEventListener('click',exportData);
 $('#analyze').addEventListener('click',()=>{renderAnalysis();$('#lab-analysis').scrollIntoView({behavior:'smooth',block:'start'});});
+$('#turn-analyze').addEventListener('click',renderTurnAdvice);
 $('#quiz-start').addEventListener('click',startQuiz);
 $('#reset-study').addEventListener('click',()=>{
  if(!confirm('只清空练习成绩？阵容、复盘和已掌握机制不会删除。'))return;S.quiz=blank().quiz;save();renderQuizProgress();

@@ -30,3 +30,10 @@ for(const s of ['buff-overview','hero-pick-list','board-grid','quiz-area','revie
 for(const keyword of ['renderLibrary','renderLab','makeQuestions','startQuiz','renderReviews','renderPatches','heroDetails','talentCards','effectCards','equipmentCards','buffGroups'])assert.ok(js.includes(keyword),'implementation missing '+keyword);
 assert.ok(db.changes.some(x=>x.date==='2026-10-08'&&x.name==='春风化雨'));
 console.log('Wanxiang learning app OK:',db.heroes.length,'heroes',db.talentCards.length,'talents',db.equipmentCards.length,'equipment',db.effectCards.length,'effects',db.buffGroups.length,'keyword groups');
+
+const decisionFields=['turn-round','turn-hp','turn-energy','turn-shop','turn-analyze','turn-result'];
+for(const id of decisionFields)assert.ok(html.includes('id="'+id+'"'),'decision field missing: '+id);
+assert.ok(js.includes('function renderTurnAdvice()'),'missing in-round learning assistant');
+assert.ok(js.includes("$('#turn-analyze').addEventListener('click',renderTurnAdvice)"),'decision helper click not wired');
+assert.ok(js.includes("event.target.closest('[data-modal-master]')"),'master modal transfer must work');
+console.log('Round decision assistant and modal navigation present');

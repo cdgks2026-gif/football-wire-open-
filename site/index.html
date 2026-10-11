@@ -47,7 +47,16 @@
 <label class="form-label">阵容预设（从旧版 V2.0 继承）</label><select id="lab-plan"><option value="">自由构筑 · 不套模板</option></select><div class="hint" id="plan-note">选择预设可自动填入核心与发动机，或在下方自由配队。</div>
 <div class="builder-title"><strong>你的上场阵容</strong><span id="board-cap">0 / 7 个位置</span></div><div class="board-grid" id="board-grid"></div><div class="button-row"><button class="btn primary" id="analyze">分析当前阵容</button><button class="btn" id="save-team">保存当前构筑</button><button class="btn" id="copy-team">复制摘要</button></div><div id="team-save-feedback" class="small"></div></div>
 <div class="panel"><div class="panel-head"><h3>英雄备选池</h3><span class="mini-pill">点选加入，最多7位</span></div><label class="searchbox">⌕ <input id="pick-query" placeholder="搜索你想添加的英雄"></label><div class="hero-pick-list" id="hero-pick-list"></div></div></div>
-<div id="lab-analysis" class="panel analysis-panel"></div><div class="panel"><div class="panel-head"><h3>已保存阵容</h3><button class="text-button" id="export-all">导出全部学习数据</button></div><div id="saved-teams"></div></div>
+<div id="lab-analysis" class="panel analysis-panel"></div>
+<div class="panel" id="turn-advisor"><div class="panel-head"><div><span class="eyebrow">ROUND-BY-ROUND DECISION</span><h3>实战回合决策助手</h3></div><span class="mini-pill">检查清单 · 非精确战斗模拟</span></div>
+<p class="small">填写实际局面，结合上方阵容与禁入阵营生成建议。不会替你读取游戏画面，也不承诺特定胜率。</p>
+<div class="advisor-fields">
+<label>当前回合<input id="turn-round" type="number" min="1" max="99" value="8"></label>
+<label>当前血量<input id="turn-hp" type="number" min="0" max="100" value="65"></label>
+<label>可用能量<input id="turn-energy" type="number" min="0" max="999" value="10"></label>
+<label>当前商店可选英雄<input id="turn-shop" type="text" maxlength="120" placeholder="如：曹操、甄姬、李元芳"></label></div>
+<div class="button-row"><button class="btn primary" id="turn-analyze" type="button">生成本回合建议</button></div><div id="turn-result" aria-live="polite"></div>
+</div><div class="panel"><div class="panel-head"><h3>已保存阵容</h3><button class="text-button" id="export-all">导出全部学习数据</button></div><div id="saved-teams"></div></div>
 </section>
 <section class="page" id="page-guide"><div class="page-heading"><span class="eyebrow">KNOWLEDGE / MECHANICS</span><h1>机制与阵营联动</h1><p>万象棋的“羁绊”主要体现为阵营专属牌、关键词与英雄效果的联动，具体以卡文为准。</p></div><div class="panel"><div class="panel-head"><h3>六大阵营索引</h3><span class="mini-pill">点击查英雄</span></div><div class="camp-overview" id="camp-overview"></div></div><div class="panel"><div class="panel-head"><h3>词条 / 羁绊联动索引</h3><span class="mini-pill">43组历史关联标签 · 点击展开</span></div><div class="catalog-grid" id="buff-overview"></div></div><div class="panel"><div class="panel-head"><h3>机制知识卡</h3><span class="mini-pill">读完可标记已掌握</span></div><div id="mechanic-list" class="mechanics-grid"></div></div></section>
 <section class="page" id="page-quiz"><div class="page-heading"><span class="eyebrow">PRACTICE / MEMORY</span><h1>训练考核</h1><p>认卡、阵营归属、英雄品阶、棋手知识和最新更新；随机出题并记录本地成绩。</p></div>
