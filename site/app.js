@@ -124,33 +124,51 @@ function renderPick(){
  $('#hero-pick-list').innerHTML=pool.map(h=>'<button type="button" class="hero-pick" data-pick="'+esc(h.name)+'" '+((S.team.includes(h.name)||S.team.length>=7||S.bans.includes(h.camp))?'disabled':'')+'><strong>'+esc(h.name)+'</strong><span>'+esc(h.camp)+' · '+h.cost+'阶'+(S.bans.includes(h.camp)?' · 禁入':'')+'</span></button>').join('');
 }
 function renderAnalysis(){
- const heroes=S.team.map(heroByName).filter(Boolean),counts=Object.fromEntries(CAMPS.map(c=>[c,heroes.filter(h=>h.camp===c).length]));
+ const heroes=S.team.map(heroByName).filter(Boolean);
+ const counts=Object.fromEntries(CAMPS.map(c=>[c,heroes.filter(h=>h.camp===c).length]));
  const plan=S.plan?DB.plans.find(p=>p.id===S.plan):null;
- const oldBans=heroes.filter(h=>S.bans.includes(h.camp));
+ const bannedHeroes=heroes.filter(h=>S.bans.includes(h.camp));
  const covered=plan?(plan.core||[]).filter(n=>S.team.includes(n)).length:0;
  const coreTotal=plan?(plan.core||[]).length:0;
- const focus=Math.max(...Object.values(counts),0);
- // Educational completeness heuristic, emphatically NOT match win odds.
+ const linkGroups=(DB.buffGroups||[]).filter(x=>x.kind==='词条');
+ const links=linkGroups.map(x=>({
+  name:x.name,
+  active:x.members.filter(n=>S.team.includes(n)),
+  candidates:x.members.filter(n=>!S.team.includes(n)&&heroByName(n)&&!S.bans.includes(heroByName(n).camp)).slice(0,6)
+ })).filter(x=>x.active.length>0).sort((a,b)=>b.active.length-a.active.length);
+ const shared=links.filter(x=>x.active.length>=2);
+ const maxOverlap=links.length?links[0].active.length:0;
+ // This scoring rubric is explicitly NOT a combat calculation or fixed trait breakpoint.
  const score=Math.min(100,Math.max(0,
-  (heroes.length>=4?22:heroes.length*5)+(oldBans.length?-30:18)+
-  (heroes.some(h=>h.cost<=2)?10:0)+(focus>=3?15:focus*3)+
+  (heroes.length>=4?22:heroes.length*5)+(bannedHeroes.length?-30:18)+
+  (heroes.some(h=>h.cost<=2)?10:0)+(maxOverlap>=2?15:maxOverlap*3)+
   (plan?(coreTotal?Math.round(25*covered/coreTotal):10):8)
  ));
  const warnings=[];
  if(!heroes.length)warnings.push('尚未选择英雄，先从右侧加入几个角色。');
- if(oldBans.length)warnings.push('阵容含禁入阵营英雄：'+oldBans.map(h=>h.name).join('、')+'；该局可能无法获取。');
+ if(bannedHeroes.length)warnings.push('阵容中含本局禁入英雄：'+bannedHeroes.map(h=>h.name).join('、')+'。');
  if(heroes.length>=5&&!heroes.some(h=>h.cost<=2))warnings.push('全部以中高阶为主，前期过渡可能有较大压力。');
  if(plan&&covered<coreTotal)warnings.push('预设核心缺件：'+plan.core.filter(x=>!S.team.includes(x)).join('、')+'。');
- if(S.phase==='early'&&heroes.filter(h=>h.cost>=4).length>=2)warnings.push('前期包含多位4/5阶卡，需准备可买到的低阶替代。');
- if(S.phase==='late'&&heroes.filter(h=>h.cost>=4).length===0)warnings.push('后期仍未引入高阶关键牌，应核对主C的等级与战斗兑现。');
- const masterAdvice=S.master?DB.masters[S.master]:'未指定棋手。建议先选择自己实际使用的棋手。';
- const planAdvice=plan?(S.phase==='early'?plan.early:S.phase==='mid'?plan.mid:plan.late):'尚未选择预设。请重点确认主C、成长发动机、前排/保护，以及当前版本的禁入限制。';
- $('#lab-analysis').innerHTML='<div class="panel-head"><h3>构筑诊断 · 理论完整度</h3><span class="mini-pill">启发式，非胜率</span></div><div class="metric-row">'+
- [[''+score+'/100','方案完整度'],[heroes.length+'/7','已上场英雄'],[focus,'最多同阵营数量'],[oldBans.length,'禁入冲突']].map(x=>'<div class="metric-box"><strong>'+esc(x[0])+'</strong><span>'+esc(x[1])+'</span></div>').join('')+'</div>'+
- '<div class="analysis-text"><strong>阵营分布</strong><p>'+CAMPS.filter(c=>counts[c]).map(c=>esc(c)+' '+counts[c]).join(' · ')+'</p>'+
- '<strong>阶段建议</strong><p>'+esc(planAdvice)+'</p><strong>棋手定位</strong><p>'+esc(masterAdvice)+'</p>'+
- '<strong>注意事项</strong>'+(warnings.length?warnings.map(w=>'<p class="alert">• '+esc(w)+'</p>').join(''):'<p class="positive">暂未发现明显的禁入冲突；仍需结合商店、血量、对手与当前英雄等级判断。</p>')+
- (plan?'<p><strong>方案适用边界：</strong>'+esc(plan.weakness||'请按实际来牌调整。')+'</p>':'')+'</div>';
+ if(S.phase==='early'&&heroes.filter(h=>h.cost>=4).length>=2)warnings.push('前期包含多位4/5阶牌，建议准备低阶过渡。');
+ if(S.phase==='late'&&heroes.filter(h=>h.cost>=4).length===0)warnings.push('后期缺少高阶牌，须核对主C实际等级及战斗兑现。');
+ const masterAdvice=S.master?DB.masters[S.master]:'未指定棋手。建议先选择本局实际棋手。';
+ const planAdvice=plan?(S.phase==='early'?plan.early:S.phase==='mid'?plan.mid:plan.late):'先确认主C、成长发动机、前排与保护是否齐全，再考虑阶段资源投入。';
+ const linkHtml=links.length?links.slice(0,7).map(x=>
+  '<p><span class="positive">'+esc(x.name)+'</span> · 已选：'+esc(x.active.join('、'))+
+  (x.candidates.length?'；候选：'+esc(x.candidates.join('、')):'')+'</p>'
+ ).join(''):'<p>尚无可识别的历史机制标签，可先从英雄详情中的关键词入手。</p>';
+ $('#lab-analysis').innerHTML='<div class="panel-head"><h3>构筑诊断 · 理论完整度</h3><span class="mini-pill">非胜率 · 不存在自动人数羁绊</span></div>'+
+ '<div class="metric-row">'+[
+  [score+'/100','启发式方案完整度'],[heroes.length+'/7','已选英雄'],[maxOverlap,'同词条最多关联'],[bannedHeroes.length,'禁入冲突']
+ ].map(x=>'<div class="metric-box"><strong>'+esc(x[0])+'</strong><span>'+esc(x[1])+'</span></div>').join('')+'</div>'+
+ '<div class="analysis-text"><strong>阵营分布（仅为所属关系，不按人数自动加成）</strong>'+
+ '<p>'+CAMPS.filter(c=>counts[c]).map(c=>esc(c)+' '+counts[c]).join(' · ')+'</p>'+
+ '<strong>关键词关联线索</strong><p class="stat-label">以下表示相关英雄具有相同机制标签，不代表已触发战斗加成。效果和触发顺序必须查阅对应卡文。</p>'+
+ linkHtml+'<p>当前找到 '+shared.length+' 条含至少两名已选英雄的共同关键词。</p>'+
+ '<strong>阶段运营</strong><p>'+esc(planAdvice)+'</p><strong>棋手定位</strong><p>'+esc(masterAdvice)+'</p>'+
+ '<strong>限制及风险</strong>'+(warnings.length?warnings.map(x=>'<p class="alert">• '+esc(x)+'</p>').join(''):'<p class="positive">尚未发现明显的禁入冲突。仍须结合商店、血量、对手及等级判断。</p>')+
+ (plan?'<p><strong>旧版预设的适用边界：</strong>'+esc(plan.weakness||'请按实际来牌调整。')+'</p>':'')+
+ '</div>';
 }
 function applyPlan(id){
  const p=DB.plans.find(x=>x.id===id);S.plan=id||'';
