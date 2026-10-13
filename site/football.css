@@ -124,3 +124,13 @@
 .marketcard .value{min-height:46px}
 .marketcard .tm-meta{font-size:11px}
 @media(max-width:640px){.tm-meta{font-size:9px}.tm-value{font-size:13px}}
+
+/* Automatic external historical market-data lookup */
+.market-sync{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:14px 0;padding:14px 16px}
+.market-sync-detail{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0}
+.market-sync-detail strong{font-size:14px;color:#d9f5bd}
+.market-sync-detail span{font-size:12px;color:#b8d8cc;overflow-wrap:anywhere}
+.market-sync-detail small{font-size:11px;color:#9cafa9;line-height:1.6}
+.market-sync button{flex-shrink:0;font-size:12px}
+.market-sync button:disabled{opacity:.55;cursor:wait}
+@media(max-width:570px){.market-sync{flex-direction:column;align-items:stretch}.market-sync button{width:100%}}
