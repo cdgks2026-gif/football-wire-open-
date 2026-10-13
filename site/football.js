@@ -163,13 +163,52 @@ function windowStatus(league=state.league){
    "转会窗已关闭 · 下次 "+(future?.name||"注册期")+" "+(future?.start||"待定")};
 }
 
+// Published Transfermarkt values are separate from simulated buy/sell offers.
+const tmSnapshot=window.FOOTBALL_TM_VALUES||{sourced:{},bulk:{}};
+function tmRecord(player){
+ if(!player||player.synthetic||!player.english)return null;
+ const record=tmSnapshot.sourced?.[player.english]||tmSnapshot.bulk?.[player.english];
+ if(!record||!Number.isFinite(Number(record.eur))||Number(record.eur)<=0)return null;
+ return record;
+}
+function marketValueMarkup(player){
+ if(player.synthetic)return '<span class="tm-not-verified">虚构青训球员 · 无德转数据</span>';
+ const tm=tmRecord(player);
+ if(!tm)return '<span class="tm-not-verified">德转待核实</span>';
+ const url=String(tm.url||"");
+ const source=/^https:\/\/www\.transfermarkt\.[a-z.]+\//.test(url)?
+   '<a class="tm-source" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">查看德转</a>':"";
+ return '<span class="tm-value">'+money(Math.round(Number(tm.eur)/10000))+'</span>'+
+  '<small class="tm-meta">德转历史估值 · '+esc(tm.date||"日期未知")+' '+source+'</small>';
+}
+function updatePlayerValuation(p){
+ const record=tmRecord(p);
+ if(record){
+  p.marketEUR=Math.round(Number(record.eur));
+  p.marketDate=record.date;
+  p.marketSource=record.source;
+  p.price=Math.max(1,Math.round(p.marketEUR/10000));
+ }else{
+  p.marketEUR=null;p.marketDate=null;p.marketSource=null;
+  // Gameplay-only asking-price seed: do NOT display or call it market value.
+  const quote=valuation(p,p.originLeague||"英超");
+  const cap=p.pos==="G"?1200:p.pos==="D"?4000:6000;
+  p.price=Math.max(2,Math.min(quote,cap));
+ }
+ return p;
+}
+function syncMarketValues(){
+ if(!state?.squads)return;
+ for(const team of state.squads)for(const p of team)updatePlayerValuation(p);
+}
+
 function newPlayer(info,power,index,league="英超"){
   const id=state.nextId++;
   const age=initialAge(info.name)??rnd(18,34),ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
   const potential=clamp(ability+rnd(1,12),ability,98);
   const obj={id,name:info.cn||info.name,english:info.name,pos:info.pos,age,ability,potential,originLeague:league,
     fitness:rnd(85,100),form:rnd(74,94),played:0,goals:0,assists:0,injury:0};
-  obj.price=valuation(obj,league);
+  updatePlayerValuation(obj);
   return obj;
 }
 function fixtures(){
@@ -216,7 +255,7 @@ function start(id){
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
  moods:allClubs.map(()=>rnd(66,85))};
  allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power,0,c.league)));ensureSquad(i);});
- state.fixtures=fixtures();state.matchDates=fixtureDates(state.league,state.year,state.fixtures.length);state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
+ state.fixtures=fixtures();state.matchDates=fixtureDates(state.league,state.year,state.fixtures.length);syncMarketValues();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
  news("欢迎执教"+allClubs[id].name+"！"+league+leagueRounds()+"轮"+
  (fullLeagues.has(league)?"完整联赛":"精选俱乐部模拟联赛")+"，全球转会开启。");
  save();currentView="dashboard";render();
@@ -233,6 +272,7 @@ function canRelease(owner,player){
 function offerFloor(owner,player){
  const quality=Math.max(0,player.ability-78);
  const prestige=(allClubs[owner]?.power||76)>=85?.10:0;
+ // This is a simulated asking price, not Transfermarkt's published market value.
  return Math.max(1,Math.ceil(player.price*(1.05+quality*.014+prestige)));
 }
 function playerFor(id){
@@ -350,6 +390,7 @@ function load(){
     state.news=Array.isArray(state.news)?state.news:[];
     news("经济体系已升级：身价和资金统一为欧元计价，并按旧币值转换现有存档预算；历史旧币种报价清空。");
   }
+  syncMarketValues();
   save();
  }catch(error){state=null;}
 }
@@ -544,7 +585,7 @@ function newSeason(){
    if(p.age>31&&Math.random()<.45)p.ability=clamp(p.ability-1,45,99);
    else if(p.age<25&&p.ability<p.potential&&Math.random()<.55)p.ability++;
  }));
- state.squads.forEach(team=>team.forEach(p=>{p.price=valuation(p,p.originLeague||state.league);}));
+ syncMarketValues(); // Keep verified Transfermarkt snapshot values fixed, not ability-generated.
  state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
  news("新赛季："+state.league+" "+leagueRounds()+"轮。新的转会期已开启，球员身价与合同市场同步刷新。");save();
 }
@@ -696,7 +737,7 @@ function renderSquad(){
   $("scorerList").innerHTML=[...squad].sort((a,b)=>(b.goals||0)-(a.goals||0)||b.ability-a.ability)
   .slice(0,7).map((p,i)=>'<div class="office-row"><span>'+(i+1)+'. '+esc(p.name)+
   (p.synthetic?' <small>模拟青训</small>':'')+'</span><strong>'+(p.goals||0)+' 球 · '+(p.assists||0)+' 助</strong></div>').join("");
-  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>模拟身价</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+'</td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+money(p.price)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
+  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+'</td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
 }
 function renderTactics(){
   $("formationSelect").value=state.tactics.formation;$("styleSelect").value=state.tactics.style;$("trainingSelect").value=state.tactics.training;
@@ -766,7 +807,7 @@ function renderMarket(){
  ' · '+byPos[player.pos]+'</div><h3>'+esc(player.name)+'</h3>'+
  '<p>'+esc(player.english||"")+'</p><p>能力 '+player.ability+
  ' · 游戏潜力 '+player.potential+' · 状态 '+player.form+'</p>'+
- '<div class="value">'+money(player.price)+'</div>'+
+ '<div class="value">'+marketValueMarkup(player)+'</div>'+
  '<button type="button" class="primary" data-offer="'+player.id+'">'+
  (!transfer.open?"查看详情 · 关窗中":state.negotiations[player.id]?.status==="counter"?"继续谈判":"向俱乐部报价")+'</button></article>').join("")
  ||'<div class="panel">没有符合条件的球员。请修改联赛、球队或搜索关键词。</div>';
@@ -806,10 +847,10 @@ function openBid(id){
  $("bidDetails").innerHTML="<strong>"+esc(player.name)+"</strong><p>"+
    esc(player.english||"")+"</p><p>当前所属："+esc(allClubs[owner].league)+" · "+
    esc(allClubs[owner].name)+"</p><p>位置："+byPos[player.pos]+
-   " · 能力："+player.ability+" · 参考身价："+money(player.price)+"</p>";
+   " · 能力："+player.ability+"</p><div class='tm-bid-value'>"+marketValueMarkup(player)+"</div>";
  $("bidAmount").value=Number(toDisplay(activeCounter||Math.min(asking,Math.max(1,state.budget))).toFixed(1));
  $("bidCurrencyLabel").textContent="你的转会报价（单位：万"+(displayCurrency==="GBP"?"英镑 £":"欧元 €")+"）";
- $("bidInfo").textContent="俱乐部起始要价约 "+money(asking)+"，当前预算 "+
+ $("bidInfo").textContent="俱乐部模拟起始要价 "+money(asking)+"（并非德转身价），当前预算 "+
    money(state.budget)+"。你可以主动提交低价，对方会结合球员能力、球队实力和谈判轮次还价。";
  $("bidFeedback").textContent="";
  const status=windowStatus();
