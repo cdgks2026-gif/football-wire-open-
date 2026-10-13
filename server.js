@@ -8,7 +8,7 @@ const root=path.resolve('/app/site');
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8'};
 const files={'/':'football.html','/index.html':'football.html','/game':'football.html','/game/':'football.html',
  '/football.html':'football.html','/football.css':'football.css','/football.js':'football.js',
- '/football-data.js':'football-data.js','/football-world.js':'football-world.js','/football-clubs.js':'football-clubs.js'};
+ '/football-data.js':'football-data.js','/football-world.js':'football-world.js','/football-clubs.js':'football-clubs.js','/football-values.js':'football-values.js'};
 http.createServer((req,res)=>{
  const pathname=String(req.url||'/').split('?')[0];
  const head={'Cache-Control':'no-store, max-age=0, must-revalidate',
