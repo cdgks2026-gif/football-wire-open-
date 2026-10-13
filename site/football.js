@@ -7,12 +7,18 @@ const $ = id => document.getElementById(id);
 const realData=window.FOOTBALL_DATABASE;
 if(!realData||realData.clubs?.length!==20){root.textContent="2026/27真实球员数据库未加载，请刷新页面。";return;}
 const clubInfo=realData.clubs;
+const worldData=window.FOOTBALL_WORLD;
+const worldClubs=worldData?.clubs || [];
+const allClubs=clubInfo.map(c=>({...c,league:"英超"})).concat(worldClubs);
 const byPos = {G:"门将",D:"后卫",M:"中场",F:"前锋"};
 const patterns = {"4-3-3":{G:1,D:4,M:3,F:3},"4-2-3-1":{G:1,D:4,M:5,F:1},"4-4-2":{G:1,D:4,M:4,F:2}};
-const STORAGE = "chengdu_football_dynasty_v2";
+const STORAGE = "chengdu_football_dynasty_v3";
+const OLD_STORAGE = "chengdu_football_dynasty_v2";
 const LEAGUE_ROUNDS=(clubInfo.length-1)*2;
 const MAX_SQUAD=35;
-let state = null, currentView = "dashboard", toastTimer = null;
+let state=null,currentView="dashboard",toastTimer=null;
+let bidTarget=null;
+let marketFilter={q:"",league:"",club:"",pos:"",sort:"rating",limit:24};
 const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
 const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -26,12 +32,17 @@ const featuredRatings={
 "Martin Odegaard":89,"William Saliba":90,"David Raya":88,"Bruno Guimaraes":87,
 "Kai Havertz":86,"Carlos Baleba":84,"Benjamin Sesko":85,"Bryan Mbeumo":85,
 "Sandro Tonali":88,"Rayan Cherki":89,"Hugo Ekitike":86,"Viktor Gyokeres":88,
-"Marcus Rashford":84,"Matheus Cunha":85,"Morgan Rogers":86};
+"Marcus Rashford":84,"Matheus Cunha":85,"Morgan Rogers":86,
+"Kylian Mbappe":95,"Lamine Yamal":94,"Cristiano Ronaldo":89,"Lionel Messi":89,
+"Harry Kane":94,"Vinicius Junior":93,"Jude Bellingham":93,"Pedri":92,
+"Rodri":92,"Raphinha":91,"Lautaro Martinez":91,"Ousmane Dembele":92,
+"Vitinha":91,"Jamal Musiala":92,"Michael Olise":90,"Declan Rice":90,
+"Kevin De Bruyne":89,"Scott McTominay":87,"Wu Lei":77,"Wei Shihao":76};
 function newPlayer(info,power,index){
   const id=state.nextId++;
   const age=rnd(18,34),ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
   const potential=clamp(ability+rnd(1,12),ability,98);
-  return {id,name:info.name,pos:info.pos,age,ability,potential,
+  return {id,name:info.cn||info.name,english:info.name,pos:info.pos,age,ability,potential,
     fitness:rnd(85,100),form:rnd(74,94),
     price:Math.round((ability-52)*(ability-52)*2.4+rnd(150,800)),played:0};
 }
@@ -51,46 +62,61 @@ function fixtures(){
 function emptyStandings(){return clubInfo.map((_,id)=>({id,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}));}
 function start(id){
  state={clubId:id,year:2026,season:1,round:0,nextId:1,budget:clubInfo[id].budget,
- aiBudgets:clubInfo.map(c=>c.budget),squads:[],market:[],
- table:emptyStandings(),fixtures:fixtures(),results:[],news:[],lastResult:"",titles:0,
+ aiBudgets:clubInfo.map(c=>c.budget),worldBudgets:worldClubs.map(c=>c.budget),
+ squads:[],worldSquads:[],market:[],table:emptyStandings(),fixtures:fixtures(),results:[],
+ news:[],lastResult:"",titles:0,
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
  moods:clubInfo.map(()=>rnd(66,85))};
  clubInfo.forEach(c=>state.squads.push(c.players.map((entry,i)=>newPlayer(entry,c.power,i))));
- fillMarket();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
- news("欢迎执教"+clubInfo[id].name+"！2026/27英超20队、38轮，球员采用现实名单。");
+ worldClubs.forEach(c=>state.worldSquads.push(c.players.map((entry,i)=>newPlayer(entry,c.power,i))));
+ state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
+ news("欢迎执教"+clubInfo[id].name+"！转会市场已开放全球精选球员交易。");
  save();currentView="dashboard";render();
 }
+function squadFor(id){
+ return id<clubInfo.length?state.squads[id]:state.worldSquads[id-clubInfo.length];
+}
+function fundsFor(id){
+ if(id===state.clubId)return state.budget;
+ return id<clubInfo.length?state.aiBudgets[id]:state.worldBudgets[id-clubInfo.length];
+}
+function setFunds(id,value){
+ if(id===state.clubId)state.budget=value;
+ else if(id<clubInfo.length)state.aiBudgets[id]=value;
+ else state.worldBudgets[id-clubInfo.length]=value;
+}
 function canRelease(owner,player){
- const squad=state.squads[owner],limits={G:2,D:5,M:5,F:3};
- return !!(squad&&squad.length>18&&squad.filter(p=>p.pos===player.pos).length>limits[player.pos]);
+ const team=squadFor(owner);
+ if(!team||!team.some(p=>p.id===player.id))return false;
+ if(owner>=clubInfo.length)return true; // The worldwide scouting lists are excerpts, not full squads.
+ const minimum={G:1,D:3,M:3,F:1};
+ return team.length>13&&team.filter(p=>p.pos===player.pos).length>minimum[player.pos];
 }
-function fillMarket(){
- const pool=[];
- state.squads.forEach((squad,owner)=>{
-  if(owner===state.clubId)return;
-  const eligible=squad.filter(p=>canRelease(owner,p)).sort((a,b)=>b.ability-a.ability);
-  for(const p of eligible.slice(2,5))pool.push({...p,owner});
-  if(Math.random()<.35&&eligible[0])pool.push({...eligible[0],owner});
- });
- state.market=[...new Map(pool.map(p=>[p.id,p])).values()].slice(0,72);
+function offerFloor(owner,player){
+ const quality=Math.max(0,player.ability-78);
+ const prestige=(allClubs[owner]?.power||76)>=85?.10:0;
+ return Math.max(1,Math.ceil(player.price*(1.05+quality*.014+prestige)));
 }
-function findListed(id){
- const listed=state.market.find(p=>p.id===id);
- if(!listed||!Number.isInteger(listed.owner))return null;
- const player=state.squads[listed.owner]?.find(p=>p.id===id);
- return player&&canRelease(listed.owner,player)?{listed,player,owner:listed.owner}:null;
+function playerFor(id){
+ for(let owner=0;owner<allClubs.length;owner++){
+  const player=squadFor(owner)?.find(p=>p.id===id);
+  if(player)return {player,owner};
+ }
+ return null;
 }
-function transferListed(id,buyer){
- const item=findListed(id);
- if(!item||item.owner===buyer||state.squads[buyer].length>=MAX_SQUAD)return null;
- const fee=item.player.price;
- if(buyer===state.clubId){if(state.budget<fee)return null;state.budget-=fee;}
- else{if(state.aiBudgets[buyer]<fee)return null;state.aiBudgets[buyer]-=fee;}
- if(item.owner===state.clubId)state.budget+=fee;else state.aiBudgets[item.owner]+=fee;
- state.squads[item.owner]=state.squads[item.owner].filter(p=>p.id!==id);
- state.squads[buyer].push(item.player);
- state.market=state.market.filter(p=>p.id!==id);
- return {player:item.player,from:item.owner,fee};
+function transferPlayer(id,buyer,fee){
+ const found=playerFor(id);
+ if(!found||found.owner===buyer||!canRelease(found.owner,found.player))return null;
+ const targetTeam=squadFor(buyer),seller=squadFor(found.owner);
+ if(!targetTeam||targetTeam.length>=MAX_SQUAD)return null;
+ if(fundsFor(buyer)<fee||!Number.isSafeInteger(fee)||fee<1)return null;
+ setFunds(buyer,fundsFor(buyer)-fee);
+ setFunds(found.owner,fundsFor(found.owner)+fee);
+ seller.splice(seller.findIndex(p=>p.id===id),1);
+ targetTeam.push(found.player);
+ if(found.owner===state.clubId)
+   state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
+ return {player:found.player,from:found.owner,fee,buyer};
 }
 function bestXI(team,formation) {
   const plan=patterns[formation]||patterns["4-3-3"];
@@ -117,7 +143,37 @@ function rank(){return standings().findIndex(row=>row.id===state.clubId)+1;}
 function nextFixture(){if(state.round>=state.fixtures.length)return null;return state.fixtures[state.round].find(g=>g.home===state.clubId||g.away===state.clubId);}
 function news(text){state.news.unshift({round:state.round,season:state.season,text});state.news=state.news.slice(0,24);}
 function save(){if(!state)return;try{localStorage.setItem(STORAGE,JSON.stringify(state));}catch(error){/* private mode: the game remains playable */}}
-function load(){try{const parsed=JSON.parse(localStorage.getItem(STORAGE)||"null");if(parsed&&Number.isInteger(parsed.clubId)&&parsed.clubId>=0&&parsed.clubId<clubInfo.length&&Array.isArray(parsed.squads)&&parsed.squads.length===clubInfo.length&&Array.isArray(parsed.fixtures)&&parsed.fixtures.length===LEAGUE_ROUNDS&&Array.isArray(parsed.aiBudgets)&&parsed.tactics&&Array.isArray(parsed.market))state=parsed;}catch(error){state=null;}}
+function load(){
+ let parsed=null;
+ try{
+  const old=localStorage.getItem(STORAGE)||localStorage.getItem(OLD_STORAGE);
+  if(old)parsed=JSON.parse(old);
+  if(!parsed||!Number.isInteger(parsed.clubId)||parsed.clubId<0||
+     parsed.clubId>=clubInfo.length||!Array.isArray(parsed.squads)||
+     parsed.squads.length!==clubInfo.length||
+     !Array.isArray(parsed.fixtures)||parsed.fixtures.length!==LEAGUE_ROUNDS||
+     !parsed.tactics||!Array.isArray(parsed.aiBudgets))return;
+  state=parsed;
+  const byEnglish=new Map(realData.clubs.flatMap(c=>c.players.map(p=>[p.name,p.cn])));
+  const byChinese=new Map(realData.clubs.flatMap(c=>c.players.map(p=>[p.cn,p.name])));
+  for(const group of state.squads){
+   for(const player of group){
+     const english=player.english||byChinese.get(player.name)||player.name;
+     if(byEnglish.has(english)){player.english=english;player.name=byEnglish.get(english);}
+   }
+  }
+  if(!Array.isArray(state.worldSquads)||state.worldSquads.length!==worldClubs.length){
+   state.worldSquads=[];
+   state.worldBudgets=worldClubs.map(c=>c.budget);
+   state.nextId=Math.max(state.nextId||1, ...state.squads.flatMap(team=>team.map(p=>p.id)))+1;
+   worldClubs.forEach(c=>state.worldSquads.push(c.players.map((entry,i)=>newPlayer(entry,c.power,i))));
+  }
+  if(!Array.isArray(state.worldBudgets)||state.worldBudgets.length!==worldClubs.length)
+    state.worldBudgets=worldClubs.map(c=>c.budget);
+  state.market=[]; // Old limited listings are replaced by global live club rosters.
+  if(!localStorage.getItem(STORAGE))save();
+ }catch(error){state=null;}
+}
 function goalDraw(lambda){
   const limit=Math.exp(-clamp(lambda,.15,4)),u=Math.random();let product=1,k=0;
   while(product>limit&&k<7){product*=Math.random();k++;}
@@ -165,15 +221,22 @@ function fatigue(){
   });
 }
 function aiTransfer(){
- const clubs=clubInfo.map((_,i)=>i).filter(i=>i!==state.clubId).sort(()=>Math.random()-.5);
- for(const buyer of clubs){
-   const pool=state.market.filter(p=>p.owner!==buyer&&p.owner!==state.clubId
-       &&state.squads[buyer].length<MAX_SQUAD&&state.aiBudgets[buyer]>=p.price
-       &&canRelease(p.owner,p));
-   if(!pool.length)continue;
-   const deal=transferListed(pool[rnd(0,pool.length-1)].id,buyer);
-   if(deal){news(clubInfo[buyer].name+"从"+clubInfo[deal.from].name+"签下"+deal.player.name+"，花费"+money(deal.fee)+"。");break;}
+ const buyers=clubInfo.map((_,i)=>i).filter(id=>id!==state.clubId);
+ const buyer=buyers[rnd(0,buyers.length-1)];
+ const available=[];
+ for(let owner=0;owner<allClubs.length;owner++){
+  if(owner===buyer||owner===state.clubId)continue;
+  for(const player of squadFor(owner)){
+    if(canRelease(owner,player) && squadFor(buyer).length<MAX_SQUAD &&
+       fundsFor(buyer)>offerFloor(owner,player) && player.ability>=79)
+      available.push({owner,player});
+  }
  }
+ if(!available.length)return;
+ const found=available[rnd(0,available.length-1)];
+ const fee=offerFloor(found.owner,found.player);
+ const deal=transferPlayer(found.player.id,buyer,fee);
+ if(deal)news(allClubs[buyer].name+"从"+allClubs[deal.from].name+"签下"+deal.player.name+"，转会费"+money(fee)+"。");
 }
 function simulateOne(){
   if(state.round>=LEAGUE_ROUNDS)return;
@@ -200,40 +263,43 @@ function newSeason(){
  state.table=emptyStandings();state.results=[];state.fixtures=fixtures();
  state.budget+=6000+(clubInfo.length+1-finish)*450;
  state.aiBudgets=state.aiBudgets.map(v=>v+8500);
+ state.worldBudgets=state.worldBudgets.map(v=>v+7500);
  state.lastResult="";
- state.squads.forEach(team=>team.forEach(p=>{
+ [...state.squads,...state.worldSquads].forEach(team=>team.forEach(p=>{
    p.age++;p.fitness=100;p.form=rnd(72,92);p.played=0;
    if(p.age>31&&Math.random()<.45)p.ability=clamp(p.ability-1,45,99);
    else if(p.age<25&&p.ability<p.potential&&Math.random()<.55)p.ability++;
  }));
- fillMarket();state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
- news("新赛季开始：20支球队、38轮比赛。转会预算已更新。");save();
+ state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
+ news("新赛季开启：英超38轮，全球转会市场持续开放。");save();
 }
-function buy(id){
- const listed=findListed(id);
- if(!listed||listed.owner===state.clubId)return show("该球员已下架或无法出售。");
- if(state.squads[state.clubId].length>=MAX_SQUAD)return show("一线队已满35人，请先出售球员。");
- if(state.budget<listed.player.price)return show("转会预算不足。");
- const deal=transferListed(id,state.clubId);
- if(!deal)return show("交易失败，请选择其他球员。");
- news("转会完成："+deal.player.name+"从"+clubInfo[deal.from].name+"加盟"+clubInfo[state.clubId].name+"，转会费"+money(deal.fee)+"。");
- save();render();show("签约成功："+deal.player.name);
+function buy(id,fee){
+ const found=playerFor(id);
+ if(!found||found.owner===state.clubId)return {ok:false,message:"该球员已被买走。"};
+ if(!canRelease(found.owner,found.player))return {ok:false,message:"卖方目前不愿意出售该球员。"};
+ if(squadFor(state.clubId).length>=MAX_SQUAD)return {ok:false,message:"一线队已满35人，先出售部分球员。"};
+ if(!Number.isSafeInteger(fee)||fee<1)return {ok:false,message:"请填写有效报价。"};
+ if(state.budget<fee)return {ok:false,message:"转会预算不足，最高可报价"+money(state.budget)+"。"};
+ const minimum=offerFloor(found.owner,found.player);
+ if(fee<minimum)return {ok:false,message:allClubs[found.owner].name+"拒绝了报价，估计至少需要"+money(minimum)+"。"};
+ const deal=transferPlayer(id,state.clubId,fee);
+ if(!deal)return {ok:false,message:"转会失败，球员已不可交易。"};
+ news("成功收购"+deal.player.name+"：从"+allClubs[deal.from].name+"转入"+clubInfo[state.clubId].name+"，花费"+money(deal.fee)+"。");
+ save();render();show("转会成功："+deal.player.name);
+ return {ok:true,message:"签约成功！"+deal.player.name+"已进入你的球员阵容。"};
 }
 function sell(id){
- const squad=state.squads[state.clubId],p=squad.find(x=>x.id===id);
- if(!p)return;
- if(!canRelease(state.clubId,p))return show("该位置缺少替补，暂时不能出售。");
- const fee=Math.round(p.price*.78);
- const bidders=clubInfo.map((_,i)=>i).filter(i=>i!==state.clubId
-      &&state.squads[i].length<MAX_SQUAD&&state.aiBudgets[i]>=fee);
- if(!bidders.length)return show("目前没有预算足够的买家。");
- const buyer=bidders[rnd(0,bidders.length-1)];
- state.squads[state.clubId]=squad.filter(x=>x.id!==id);
- state.squads[buyer].push(p);state.aiBudgets[buyer]-=fee;state.budget+=fee;
- state.market=state.market.filter(x=>x.id!==id);
- state.lineup=bestXI(state.clubId,state.tactics.formation).map(x=>x.id);
- news(p.name+"转会"+clubInfo[buyer].name+"，收回"+money(fee)+"转会费。");
- save();render();show("出售成功，资金已入账。");
+ const found=playerFor(id);
+ if(!found||found.owner!==state.clubId)return show("该球员已不在你的队中。");
+ if(!canRelease(state.clubId,found.player))return show("该位置人数不足，无法出售。");
+ const price=Math.max(1,Math.round(found.player.price*.85));
+ const buyers=allClubs.map((_,i)=>i).filter(i=>i!==state.clubId
+  &&squadFor(i).length<MAX_SQUAD &&fundsFor(i)>=price);
+ if(!buyers.length)return show("目前没有能支付这笔转会费的买家。");
+ const buyer=buyers[rnd(0,buyers.length-1)],deal=transferPlayer(id,buyer,price);
+ if(!deal)return show("转会未能完成。");
+ news(deal.player.name+"转会"+allClubs[buyer].name+"，俱乐部获得"+money(price)+"。");
+ save();render();show("出售成功："+deal.player.name+"，已收到转会费。");
 }
 function swap(id){
   const squad=state.squads[state.clubId],p=squad.find(x=>x.id===id);
