@@ -21,6 +21,7 @@ const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length-1)*2:38;
 const MAX_SQUAD=35;
 let state=null,currentView="dashboard",toastTimer=null;
 let bidTarget=null;
+let setupLeague="英超";
 let marketFilter={q:"",league:"",club:"",pos:"",sort:"rating",limit:24};
 const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
@@ -382,14 +383,23 @@ function tableHTML(short){
   return '<table class="data-table"><thead><tr><th>#</th><th>球队</th><th>赛</th><th>胜</th><th>平</th><th>负</th><th>净胜</th><th>分</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function renderSetup(){
-  $("setup").hidden=!!state;$("workspace").hidden=!state;
-  $("saveBtn").hidden=!state;$("resetBtn").hidden=!state;
-  if(state)return;
-  $("clubGrid").innerHTML=clubInfo.map((c,id)=>'<button type="button" class="clubitem" data-club="'+id+'">'+badge(id)+'<strong>'+esc(c.name)+'</strong><small>初始实力 '+c.power+' · '+money(c.budget)+'</small><span class="pick">开启执教生涯 ↗</span></button>').join("");
+ $("setup").hidden=!!state;$("workspace").hidden=!state;
+ $("saveBtn").hidden=!state;$("resetBtn").hidden=!state;
+ if(state)return;
+ $("setupLeague").value=setupLeague;
+ const clubs=allClubs.map((c,id)=>({...c,id})).filter(c=>c.league===setupLeague);
+ const full=fullLeagues.has(setupLeague);
+ $("setupLeagueHint").textContent=setupLeague+"共有"+clubs.length+
+ "支可执教俱乐部 · 每队"+Math.max(0,(clubs.length-1)*2)+
+ "轮。"+(full?"完整联赛名单；缺失的实名球员用明确标注的模拟青训球员补充。":
+ "精选俱乐部小型模拟比赛，尚未覆盖此联赛全部真实参赛球队。");
+ $("clubGrid").innerHTML=clubs.map(c=>'<button type="button" class="clubitem" data-club="'+c.id+'">'+
+ badge(c.id)+'<strong>'+esc(c.name)+'</strong><small>初始实力 '+c.power+
+ ' · '+money(c.budget)+'</small><span class="pick">执教 '+esc(setupLeague)+' ↗</span></button>').join("");
 }
 function render(){
   renderSetup();if(!state)return;
-  $("statClub").textContent=clubInfo[state.clubId].name;
+  $("statClub").textContent=clubInfo[state.clubId].name+" · "+state.league;
   $("statSeason").textContent=state.year+"/"+String((state.year+1)%100).padStart(2,"0");
   $("statRound").textContent=state.round+" / "+leagueRounds()+" 轮";
   $("statBudget").textContent=money(state.budget);
@@ -535,7 +545,7 @@ function closeBid(){
  else dlg.removeAttribute("open");
 }
 function renderLeague(){
-  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("fullTable").innerHTML=tableHTML(false);
+  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("leagueDescription").textContent=state.league+" · "+state.leagueIds.length+"支球队，主客场双循环 "+leagueRounds()+"轮，合计 "+(state.leagueIds.length*leagueRounds()/2)+" 场。对阵赛程为游戏生成，非官方现实赛程。";$("fullTable").innerHTML=tableHTML(false);
   $("fixtureList").innerHTML=state.fixtures.map((games,index)=>'<div class="fixture-round"><strong>第 '+(index+1)+' 轮 '+(index===state.round?'· 下一轮':'')+'</strong>'+games.map(g=>{
     const r=state.results.find(x=>x.round===index+1&&x.home===g.home&&x.away===g.away);
     return '<div class="fixture '+(g.home===state.clubId||g.away===state.clubId?'mine':'')+'"><span>'+esc(clubInfo[g.home].name)+'</span><b>'+(r?r.hg+" : "+r.ag:"—")+'</b><span>'+esc(clubInfo[g.away].name)+'</span></div>';
@@ -551,6 +561,7 @@ root.addEventListener("click",ev=>{
   if(data.sell!==undefined){sell(Number(data.sell));return;}
   if(data.swap!==undefined){swap(Number(data.swap));return;}
 });
+$("setupLeague").addEventListener("change",ev=>{setupLeague=ev.target.value;renderSetup();});
 $("marketSearch").addEventListener("input",ev=>{marketFilter.q=ev.target.value.slice(0,120);marketFilter.limit=24;renderMarket();});
 $("marketLeague").addEventListener("change",ev=>{marketFilter.league=ev.target.value;marketFilter.club="";marketFilter.limit=24;renderMarket();});
 $("marketClub").addEventListener("change",ev=>{marketFilter.club=ev.target.value;marketFilter.limit=24;renderMarket();});
