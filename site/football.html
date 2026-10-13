@@ -7,6 +7,7 @@
   <meta name="description" content="绿茵王朝：自动化足球经理模拟游戏，经营俱乐部、战术排阵、转会、模拟联赛。">
   <title>绿茵王朝 | 足球经理</title>
   <link rel="stylesheet" href="/football.css">
+  <script src="/football-data.js" defer></script>
   <script src="/football.js" defer></script>
 </head>
 <body>
@@ -18,10 +19,10 @@
   </header>
 
   <section id="setup" class="setup">
-    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>8 支俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>自动本地存档</span></div></div>
-    <div class="section-title"><h2>选择执教球队</h2><span>演示版球员与数值为虚构模拟数据</span></div>
+    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>20 支真实英超俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>自动本地存档</span></div></div>
+    <div class="section-title"><h2>选择执教球队</h2><span>球员所属俱乐部采用2026年9月英超公布名单</span></div>
     <div id="clubGrid" class="clubgrid"></div>
-    <p class="disclaimer">本游戏为独立模拟作品，非任何俱乐部或联赛官方游戏。数据为游戏内生成，不代表现实阵容或战绩。</p>
+    <p class="disclaimer">本游戏为独立非官方作品。现实球员姓名与初始球队参考英超 2026/27 赛季阵容（2026年9月名单）；能力值、潜力、年龄、身价、预算及赛果属于游戏模拟，不代表现实数据。</p>
   </section>
 
   <div id="workspace" hidden>
@@ -79,16 +80,16 @@
       </section>
 
       <section id="view-market" class="view" hidden>
-        <div class="section-title"><div><h2>转会市场</h2><p>寻找自由市场球员，预算充足即可直接签约；电脑球队也会参与竞争。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="section-title"><div><h2>转会市场</h2><p>与其他真实英超俱乐部进行模拟转会，支付转会费后，球员会从原球队转入你的球队；电脑球队也会自主交易。</p></div><span id="marketBudget" class="tag"></span></div>
         <div id="marketList" class="marketgrid"></div>
       </section>
 
       <section id="view-league" class="view" hidden>
-        <div class="section-title"><div><h2>联赛中心</h2><p>8 队双循环，14 轮。所有比赛同时模拟并即时更新积分。</p></div><span id="leagueRound" class="tag"></span></div>
+        <div class="section-title"><div><h2>联赛中心</h2><p>20 队主客场双循环、每队 38 轮，共 380 场。每轮 10 场比赛同步模拟。游戏赛程为随机编排，并非官方比赛日程。</p></div><span id="leagueRound" class="tag"></span></div>
         <div class="leaguegrid"><div class="panel"><div class="panelheading"><span>积分榜</span><span class="tag">胜 3 分 · 平 1 分</span></div><div id="fullTable" class="tablewrap"></div></div><div class="panel"><div class="panelheading"><span>赛程与结果</span><span class="tag">本赛季</span></div><div id="fixtureList" class="fixtures"></div></div></div>
       </section>
     </main>
-    <footer class="footer">绿茵王朝 · 规则驱动的独立模拟游戏 · 进度仅存储在当前浏览器</footer>
+    <footer class="footer">绿茵王朝 · 规则驱动的独立模拟游戏 · 进度仅存储在当前浏览器（新版独立存档）</footer>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
