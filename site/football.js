@@ -6,15 +6,18 @@ root.dataset.ready = "1";
 const $ = id => document.getElementById(id);
 const realData=window.FOOTBALL_DATABASE;
 if(!realData||realData.clubs?.length!==20){root.textContent="2026/27真实球员数据库未加载，请刷新页面。";return;}
-const clubInfo=realData.clubs;
 const worldData=window.FOOTBALL_WORLD;
 const worldClubs=worldData?.clubs || [];
-const allClubs=clubInfo.map(c=>({...c,league:"英超"})).concat(worldClubs);
+const allClubs=realData.clubs.map(c=>({...c,league:"英超"})).concat(worldClubs,window.FOOTBALL_LEAGUE_ADDITIONS||[]);
+const clubInfo=allClubs;
+const leagueList=["英超","西甲","德甲","意甲","法甲","中超","葡超","荷甲","沙特联","美职联"];
+const fullLeagues=new Set(["英超","西甲","德甲","意甲","法甲","中超"]);
 const byPos = {G:"门将",D:"后卫",M:"中场",F:"前锋"};
 const patterns = {"4-3-3":{G:1,D:4,M:3,F:3},"4-2-3-1":{G:1,D:4,M:5,F:1},"4-4-2":{G:1,D:4,M:4,F:2}};
-const STORAGE = "chengdu_football_dynasty_v3";
-const OLD_STORAGE = "chengdu_football_dynasty_v2";
-const LEAGUE_ROUNDS=(clubInfo.length-1)*2;
+const STORAGE="chengdu_football_dynasty_v4";
+const OLD_STORAGE="chengdu_football_dynasty_v3";
+const OLDER_STORAGE="chengdu_football_dynasty_v2";
+const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length-1)*2:38;
 const MAX_SQUAD=35;
 let state=null,currentView="dashboard",toastTimer=null;
 let bidTarget=null;
@@ -47,48 +50,60 @@ function newPlayer(info,power,index){
     price:Math.round((ability-52)*(ability-52)*2.4+rnd(150,800)),played:0};
 }
 function fixtures(){
- const count=clubInfo.length;
- let order=clubInfo.map((_,i)=>i),first=[];
- for(let r=0;r<count-1;r++){
+ const ids=state.leagueIds,n=ids.length;
+ if(n<2||n%2)throw Error("Invalid league field");
+ let order=ids.slice(),first=[];
+ for(let r=0;r<n-1;r++){
   const games=[];
-  for(let i=0;i<count/2;i++){
-    const a=order[i],b=order[count-1-i];
-    games.push((r+i)%2?{home:b,away:a}:{home:a,away:b});
+  for(let i=0;i<n/2;i++){
+   const a=order[i],b=order[n-1-i];
+   games.push((r+i)%2?{home:b,away:a}:{home:a,away:b});
   }
-  first.push(games);order=[order[0],order[count-1],...order.slice(1,count-1)];
+  first.push(games);
+  order=[order[0],order[n-1],...order.slice(1,n-1)];
  }
  return first.concat(first.map(games=>games.map(g=>({home:g.away,away:g.home}))));
 }
 function emptyStandings(){return clubInfo.map((_,id)=>({id,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}));}
+const academySurnames=["李","王","张","刘","陈","赵","周","吴","孙","胡","朱","高","林","何","马","罗","徐","郭","梁","谢"];
+function youthPlayer(owner,pos,i){
+ const id=state.nextId++,pwr=allClubs[owner].power||74;
+ const name="青训·"+academySurnames[(owner*7+i*3)%20]+
+ ["俊杰","嘉伟","志豪","博文","宇轩","哲宇","浩然","昊天","子航","明轩"][(owner+i)%10];
+ const ability=clamp(pwr+rnd(-17,-5),48,88);
+ return {id,name,english:"Generated academy player",pos,age:rnd(17,21),ability,
+ potential:clamp(ability+rnd(8,21),ability,97),fitness:rnd(84,100),form:rnd(75,96),
+ price:Math.round((ability-50)**2*1.6+200),played:0,synthetic:true};
+}
+function ensureSquad(owner){
+ const squad=state.squads[owner],minimum={G:2,D:7,M:6,F:4};
+ for(const pos of ["G","D","M","F"]){
+  const missing=Math.max(0,minimum[pos]-squad.filter(p=>p.pos===pos).length);
+  for(let i=0;i<missing;i++)squad.push(youthPlayer(owner,pos,i));
+ }
+}
 function start(id){
- state={clubId:id,year:2026,season:1,round:0,nextId:1,budget:clubInfo[id].budget,negotiations:{},
- aiBudgets:clubInfo.map(c=>c.budget),worldBudgets:worldClubs.map(c=>c.budget),
- squads:[],worldSquads:[],market:[],table:emptyStandings(),fixtures:fixtures(),results:[],
- news:[],lastResult:"",titles:0,
+ if(!Number.isInteger(id)||!allClubs[id])return;
+ const league=allClubs[id].league;
+ const leagueIds=allClubs.map((c,i)=>c.league===league?i:-1).filter(i=>i>=0);
+ state={clubId:id,league,leagueIds,year:2026,season:1,round:0,nextId:1,
+ budget:allClubs[id].budget,aiBudgets:allClubs.map(c=>c.budget),
+ squads:[],worldSquads:[],worldBudgets:[],market:[],table:emptyStandings(),
+ fixtures:[],results:[],news:[],lastResult:"",titles:0,negotiations:{},
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
- moods:clubInfo.map(()=>rnd(66,85))};
- clubInfo.forEach(c=>state.squads.push(c.players.map((entry,i)=>newPlayer(entry,c.power,i))));
- worldClubs.forEach(c=>state.worldSquads.push(c.players.map((entry,i)=>newPlayer(entry,c.power,i))));
- state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
- news("欢迎执教"+clubInfo[id].name+"！转会市场已开放全球精选球员交易。");
+ moods:allClubs.map(()=>rnd(66,85))};
+ allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power)));ensureSquad(i);});
+ state.fixtures=fixtures();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
+ news("欢迎执教"+allClubs[id].name+"！"+league+leagueRounds()+"轮"+
+ (fullLeagues.has(league)?"完整联赛":"精选俱乐部模拟联赛")+"，全球转会开启。");
  save();currentView="dashboard";render();
 }
-function squadFor(id){
- return id<clubInfo.length?state.squads[id]:state.worldSquads[id-clubInfo.length];
-}
-function fundsFor(id){
- if(id===state.clubId)return state.budget;
- return id<clubInfo.length?state.aiBudgets[id]:state.worldBudgets[id-clubInfo.length];
-}
-function setFunds(id,value){
- if(id===state.clubId)state.budget=value;
- else if(id<clubInfo.length)state.aiBudgets[id]=value;
- else state.worldBudgets[id-clubInfo.length]=value;
-}
+function squadFor(id){return state.squads[id];}
+function fundsFor(id){return id===state.clubId?state.budget:state.aiBudgets[id];}
+function setFunds(id,value){if(id===state.clubId)state.budget=value;else state.aiBudgets[id]=value;}
 function canRelease(owner,player){
  const team=squadFor(owner);
- if(!team||!team.some(p=>p.id===player.id))return false;
- if(owner>=clubInfo.length)return true; // The worldwide scouting lists are excerpts, not full squads.
+ if(!team||player.synthetic||!team.some(p=>p.id===player.id))return false;
  const minimum={G:1,D:3,M:3,F:1};
  return team.length>13&&team.filter(p=>p.pos===player.pos).length>minimum[player.pos];
 }
@@ -112,10 +127,8 @@ function transferPlayer(id,buyer,fee){
  if(fundsFor(buyer)<fee||!Number.isSafeInteger(fee)||fee<1)return null;
  setFunds(buyer,fundsFor(buyer)-fee);
  setFunds(found.owner,fundsFor(found.owner)+fee);
- seller.splice(seller.findIndex(p=>p.id===id),1);
- targetTeam.push(found.player);
- if(found.owner===state.clubId)
-   state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
+ seller.splice(seller.findIndex(p=>p.id===id),1);targetTeam.push(found.player);
+ if(found.owner===state.clubId)state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
  return {player:found.player,from:found.owner,fee,buyer};
 }
 function bestXI(team,formation) {
@@ -138,7 +151,7 @@ function userXI(){
   }
   return state.lineup.map(id=>list.find(p=>p.id===id)).filter(Boolean);
 }
-function standings(){return [...state.table].sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf||a.id-b.id);}
+function standings(){return state.leagueIds.map(id=>state.table[id]).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf||a.id-b.id);}
 function rank(){return standings().findIndex(row=>row.id===state.clubId)+1;}
 function nextFixture(){if(state.round>=state.fixtures.length)return null;return state.fixtures[state.round].find(g=>g.home===state.clubId||g.away===state.clubId);}
 function news(text){state.news.unshift({round:state.round,season:state.season,text});state.news=state.news.slice(0,24);}
@@ -151,7 +164,7 @@ function load(){
   if(!parsed||!Number.isInteger(parsed.clubId)||parsed.clubId<0||
      parsed.clubId>=clubInfo.length||!Array.isArray(parsed.squads)||
      parsed.squads.length!==clubInfo.length||
-     !Array.isArray(parsed.fixtures)||parsed.fixtures.length!==LEAGUE_ROUNDS||
+     !Array.isArray(parsed.fixtures)||parsed.fixtures.length!==leagueRounds()||
      !parsed.tactics||!Array.isArray(parsed.aiBudgets))return;
   state=parsed;
   const byEnglish=new Map(realData.clubs.flatMap(c=>c.players.map(p=>[p.name,p.cn])));
@@ -240,7 +253,7 @@ function aiTransfer(){
  if(deal)news(allClubs[buyer].name+"从"+allClubs[deal.from].name+"签下"+deal.player.name+"，转会费"+money(fee)+"。");
 }
 function simulateOne(){
-  if(state.round>=LEAGUE_ROUNDS)return;
+  if(state.round>=leagueRounds())return;
   const games=state.fixtures[state.round];
   const output=games.map(resultFor);
   output.forEach(applyResult);
@@ -251,11 +264,11 @@ function simulateOne(){
   fatigue();
   news("第"+state.round+"轮 "+state.lastResult+"。当前排名第"+rank()+"。");
   if(state.round%3===0)aiTransfer();
-  if(state.round===LEAGUE_ROUNDS){const champion=standings()[0].id;if(champion===state.clubId)state.titles++;news("赛季结束！"+clubInfo[champion].name+"夺得冠军。你最终排名第"+rank()+"。");}
+  if(state.round===leagueRounds()){const champion=standings()[0].id;if(champion===state.clubId)state.titles++;news("赛季结束！"+clubInfo[champion].name+"夺得冠军。你最终排名第"+rank()+"。");}
 }
 function advance(amount){
-  if(state.round>=LEAGUE_ROUNDS){newSeason();render();return;}
-  let n=Math.min(Math.max(1,amount),LEAGUE_ROUNDS-state.round);
+  if(state.round>=leagueRounds()){newSeason();render();return;}
+  let n=Math.min(Math.max(1,amount),leagueRounds()-state.round);
   for(let i=0;i<n;i++)simulateOne();
   save();render();show("已完成"+n+"轮模拟，当前排名第"+rank()+"。");
 }
@@ -293,7 +306,7 @@ function negotiationInfo(id){
 function recordNegotiation(id,fields){
  const previous=state.negotiations[id]||{};
  state.negotiations[id]={...previous,...fields,
-   season:state.season,round:state.round,expiresRound:Math.min(LEAGUE_ROUNDS,state.round+5)};
+   season:state.season,round:state.round,expiresRound:Math.min(leagueRounds(),state.round+5)};
  save();
 }
 function buy(id,fee){
@@ -362,7 +375,7 @@ function render(){
   renderSetup();if(!state)return;
   $("statClub").textContent=clubInfo[state.clubId].name;
   $("statSeason").textContent=state.year+"/"+String((state.year+1)%100).padStart(2,"0");
-  $("statRound").textContent=state.round+" / "+LEAGUE_ROUNDS+" 轮";
+  $("statRound").textContent=state.round+" / "+leagueRounds()+" 轮";
   $("statBudget").textContent=money(state.budget);
   $("statRank").textContent="第 "+rank()+" 名";
   root.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===currentView));
@@ -506,7 +519,7 @@ function closeBid(){
  else dlg.removeAttribute("open");
 }
 function renderLeague(){
-  $("leagueRound").textContent="已进行 "+state.round+" / "+LEAGUE_ROUNDS+" 轮";$("fullTable").innerHTML=tableHTML(false);
+  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("fullTable").innerHTML=tableHTML(false);
   $("fixtureList").innerHTML=state.fixtures.map((games,index)=>'<div class="fixture-round"><strong>第 '+(index+1)+' 轮 '+(index===state.round?'· 下一轮':'')+'</strong>'+games.map(g=>{
     const r=state.results.find(x=>x.round===index+1&&x.home===g.home&&x.away===g.away);
     return '<div class="fixture '+(g.home===state.clubId||g.away===state.clubId?'mine':'')+'"><span>'+esc(clubInfo[g.home].name)+'</span><b>'+(r?r.hg+" : "+r.ag:"—")+'</b><span>'+esc(clubInfo[g.away].name)+'</span></div>';
@@ -546,7 +559,7 @@ $("bidForm").addEventListener("submit",ev=>{
 });
 $("playOne").addEventListener("click",()=>advance(1));
 $("playFive").addEventListener("click",()=>advance(5));
-$("playSeason").addEventListener("click",()=>advance(LEAGUE_ROUNDS));
+$("playSeason").addEventListener("click",()=>advance(leagueRounds()));
 $("autoLineup").addEventListener("click",()=>{state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);save();render();show("已重新安排最强首发。");});
 $("saveBtn").addEventListener("click",()=>{save();show("进度已保存到当前浏览器。");});
 $("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？当前浏览器中的足球游戏进度将清除，无法撤销。"))return;state=null;currentView="dashboard";try{localStorage.removeItem(STORAGE);}catch(error){}renderSetup();});
