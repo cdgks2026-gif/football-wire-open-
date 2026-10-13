@@ -476,7 +476,7 @@ function tableHTML(short){
 }
 function renderSetup(){
  $("setup").hidden=!!state;$("workspace").hidden=!state;
- $("saveBtn").hidden=!state;$("resetBtn").hidden=!state;
+ $("saveBtn").hidden=!state;$("resetBtn").hidden=!state;$("exportBtn").hidden=!state;
  if(state)return;
  $("setupLeague").value=setupLeague;
  const clubs=allClubs.map((c,id)=>({...c,id})).filter(c=>c.league===setupLeague);
@@ -691,7 +691,33 @@ $("playFive").addEventListener("click",()=>advance(5));
 $("playSeason").addEventListener("click",()=>advance(leagueRounds()));
 $("autoLineup").addEventListener("click",()=>{state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);save();render();show("已重新安排最强首发。");});
 $("saveBtn").addEventListener("click",()=>{save();show("进度已保存到当前浏览器。");});
-$("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？当前浏览器中的足球游戏进度将清除，无法撤销。"))return;state=null;currentView="dashboard";try{localStorage.removeItem(STORAGE);}catch(error){}renderSetup();});
+$("exportBtn").addEventListener("click",()=>{
+ if(!state)return;
+ const blob=new Blob([JSON.stringify({format:"football-dynasty-save",version:4,state},null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="绿茵王朝-"+state.league+"-"+state.year+"-存档.json";
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),3000);show("已生成可备份的存档文件。");
+});
+$("importBtn").addEventListener("click",()=>{$("importFile").click();});
+$("importFile").addEventListener("change",async ev=>{
+ const file=ev.target.files?.[0];
+ if(!file)return;
+ try{
+  if(file.size>6000000)throw Error("文件超过6MB。");
+  const obj=JSON.parse(await file.text());
+  if(obj.format!=="football-dynasty-save"||!obj.state||
+    !Number.isInteger(obj.state.clubId)||obj.state.clubId<0||
+    !allClubs[obj.state.clubId]||!Array.isArray(obj.state.squads)||
+    !obj.state.squads.length||!Array.isArray(obj.state.fixtures)||
+    !Array.isArray(obj.state.aiBudgets))
+    throw Error("不是有效的绿茵王朝存档。");
+  localStorage.setItem(STORAGE,JSON.stringify(obj.state));state=null;
+  load();if(!state)throw Error("存档数据不完整。");
+  render();show("存档导入成功。");
+ }catch(e){show("导入失败："+e.message);}finally{ev.target.value="";}
+});
+$("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？当前浏览器中的足球游戏进度将清除，无法撤销。"))return;state=null;currentView="dashboard";try{[STORAGE,OLD_STORAGE,OLDER_STORAGE].forEach(k=>localStorage.removeItem(k));}catch(error){}renderSetup();});
 [["formationSelect","formation"],["styleSelect","style"],["trainingSelect","training"]].forEach(([id,key])=>{
   $(id).addEventListener("change",ev=>{
     state.tactics[key]=ev.target.value;
