@@ -53,3 +53,10 @@
 #bidDialog .bid-quote{color:#dbf4bd;font-size:12px;line-height:1.6}
 #bidDialog .accept-counter{border-color:#acd77e;color:#d4f5aa}
 @media(max-width:550px){.offer-row{gap:7px}.offer-row small{font-size:10px}}
+
+/* League selection for full 20/18/16 club seasons */
+.setup-filters{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:15px 0 20px;padding:14px;background:#14222c;border:1px solid #30434b;border-radius:13px}
+.setup-filters label{font-size:13px;font-weight:700;white-space:nowrap}
+.setup-filters select{min-width:170px;background:#20323a;border:1px solid #4c615c;color:#eef6ef;padding:12px;border-radius:9px}
+.setup-filters .fine{margin:0;flex:1;min-width:220px}
+@media(max-width:600px){.setup-filters{align-items:stretch}.setup-filters select{flex:1}.setup-filters .fine{min-width:100%}}
