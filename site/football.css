@@ -84,3 +84,31 @@
 .topactions{flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:950px){.office-grid{grid-template-columns:1fr 1fr}.office-grid>.panel:last-child{grid-column:span 2}}
 @media(max-width:640px){.office-grid{grid-template-columns:1fr}.office-grid>.panel:last-child{grid-column:auto}.topactions{gap:5px}.topactions .outline{font-size:11px;padding:8px 9px;min-height:36px}.goal-event{font-size:11px}}
+
+/* 2026/27 transfer valuation, seasonal calendar and currency selection */
+.currency-switch{display:flex;flex-direction:column;gap:3px;font-size:10px;color:#8bb8b0;white-space:nowrap}
+.currency-switch select{border:1px solid #44625e;border-radius:8px;background:#1e3337;color:#dcf6e6;min-height:34px;padding:5px;font-size:12px}
+.statstrip{grid-template-columns:repeat(6,minmax(0,1fr))}
+.statstrip b{font-size:clamp(12px,1.5vw,18px);overflow-wrap:anywhere}
+.round-calendar{display:flex;flex-wrap:wrap;gap:8px;padding:13px 0;border-top:1px solid #304342}
+.calendar-title{display:flex;align-items:center;justify-content:space-between;flex-basis:100%;gap:8px;font-size:12px;color:#d2f2d0}
+.calendar-title span{font-size:11px;color:#8eaba6}
+.calendar-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#1f3837;border:1px solid #355551;border-radius:9px;font-size:11px;color:#b7d2cf}
+.calendar-chip b{color:#cfff92}
+.transfer-window{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding:16px 19px;border-left:4px solid #8aa8a0}
+.transfer-window strong{font-size:17px}
+.transfer-window span{font-size:13px;color:#e5f5e5}
+.transfer-window small,.window-calendar small{font-size:11px;color:#9eafb3;line-height:1.7}
+.transfer-window.window-open{border-left-color:#b1f47b}
+.transfer-window.window-open strong{color:#c7f88e}
+.transfer-window.window-closed{border-left-color:#dda364}
+.transfer-window.window-closed strong{color:#ebba80}
+.window-calendar{padding:12px 19px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px}
+.window-calendar>strong{font-size:13px;color:#e2f5df}
+.window-calendar span{font-size:12px;color:#c3d6d2;padding:6px 8px;background:#253d3e;border-radius:8px}
+.window-calendar small{flex-basis:100%}
+#bidSubmit:disabled,.accept-counter:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:950px){.statstrip{grid-template-columns:repeat(3,minmax(0,1fr))}.statstrip>div{border-bottom:1px solid #30424a}}
+@media(max-width:510px){.statstrip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .currency-switch{order:-1;margin-right:auto}.calendar-title{flex-direction:column;align-items:flex-start}
+ .window-calendar{align-items:flex-start;flex-direction:column}.window-calendar small{flex-basis:auto}}
