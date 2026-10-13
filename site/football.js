@@ -164,12 +164,58 @@ function windowStatus(league=state.league){
 }
 
 // Published Transfermarkt values are separate from simulated buy/sell offers.
-const tmSnapshot=window.FOOTBALL_TM_VALUES||{sourced:{},bulk:{}};
+let tmSnapshot=window.FOOTBALL_TM_VALUES||{sourced:{},bulk:{}};
 function tmRecord(player){
  if(!player||player.synthetic||!player.english)return null;
- const record=tmSnapshot.sourced?.[player.english]||tmSnapshot.bulk?.[player.english];
+ const manual=tmSnapshot.sourced?.[player.english],historical=tmSnapshot.bulk?.[player.english];
+ const record=historical?.date&&manual?.date&&historical.date>manual.date?
+   historical:(manual||historical);
  if(!record||!Number.isFinite(Number(record.eur))||Number(record.eur)<=0)return null;
  return record;
+}
+let marketRefreshLast="";
+async function syncMarketData(manual=false){
+ const label=$("marketRefreshStatus"),button=$("refreshMarketBtn");
+ if(!label)return;
+ if(manual){
+  label.textContent="正在检查公开德转历史数据源…";
+  if(button)button.disabled=true;
+ }
+ try{
+  if(typeof fetch!=="function")throw Error("浏览器未提供检索功能");
+  const controller=typeof AbortController==="function"?new AbortController():null;
+  const timer=controller?setTimeout(()=>controller.abort(),35000):null;
+  let response;
+  try{response=await fetch(manual?"/api/market-refresh":"/api/market-values",{
+    method:manual?"POST":"GET",cache:"no-store",signal:controller?.signal
+  });}finally{if(timer)clearTimeout(timer);}
+  if(!response.ok)throw Error("服务器返回 HTTP "+response.status);
+  const data=await response.json();
+  if(!data?.ok||!data.values||!data.values.bulk)throw Error("返回数据无效");
+  const incoming=data.values;
+  const fresh=JSON.stringify(tmSnapshot.bulk||{})!==JSON.stringify(incoming.bulk||{}) ||
+    JSON.stringify(tmSnapshot.sourced||{})!==JSON.stringify(incoming.sourced||{});
+  tmSnapshot={...tmSnapshot,...incoming,
+    sourced:{...(tmSnapshot.sourced||{}),...(incoming.sourced||{})},
+    bulk:incoming.bulk||tmSnapshot.bulk||{}};
+  window.FOOTBALL_TM_VALUES=tmSnapshot;
+  const matched=Number(tmSnapshot.coverage)||Object.keys(tmSnapshot.bulk||{}).length;
+  const time=data.checkedAt?data.checkedAt.slice(0,16).replace("T"," " )+" UTC":"首次检查尚未完成";
+  marketRefreshLast=(data.status||"历史数据可用")+" · "+matched+
+   "名球员匹配 · 数据源最近记录 "+(tmSnapshot.datasetCutoff||"未知")+
+   " · 最近检查 "+time+(data.lastError?" · 保留已核实数据":"");
+  label.textContent=marketRefreshLast;
+  if(state&&fresh){
+    const previous=new Map(state.squads.flatMap(team=>team.map(p=>[p.id,p.price])));
+    syncMarketValues();
+    const changed=state.squads.flat().filter(p=>previous.get(p.id)!==p.price);
+    for(const p of changed)if(state.negotiations?.[p.id]?.status!=="signed")delete state.negotiations[p.id];
+    save();render();
+    label.textContent=marketRefreshLast+" · 已同步"+changed.length+"位球员身价";
+  }
+ }catch(e){
+  label.textContent="自动检索暂不可用，继续使用本地已核实身价（"+e.message+"）";
+ }finally{if(button)button.disabled=false;}
 }
 function marketValueMarkup(player){
  if(player.synthetic)return '<span class="tm-not-verified">虚构青训球员 · 无德转数据</span>';
@@ -179,7 +225,9 @@ function marketValueMarkup(player){
  const source=/^https:\/\/www\.transfermarkt\.[a-z.]+\//.test(url)?
    '<a class="tm-source" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">查看德转</a>':"";
  return '<span class="tm-value">'+money(Math.round(Number(tm.eur)/10000))+'</span>'+
-  '<small class="tm-meta">德转历史估值 · '+esc(tm.date||"日期未知")+' '+source+'</small>';
+  '<small class="tm-meta">德转历史估值 · '+
+    (tm.date?'估值日期 '+esc(tm.date):'历史快照 '+esc(tm.snapshot||tmSnapshot.asOf||"日期未知")+
+     '（个人更新日未核实）')+' '+source+'</small>';
 }
 function updatePlayerValuation(p){
  const record=tmRecord(p);
@@ -891,6 +939,7 @@ root.addEventListener("click",ev=>{
   if(data.promote!==undefined){promoteYouth();return;}
 });
 $("setupLeague").addEventListener("change",ev=>{setupLeague=ev.target.value;renderSetup();});
+$("refreshMarketBtn").addEventListener("click",()=>{void syncMarketData(true);});
 $("currencySelect").addEventListener("change",ev=>{
  displayCurrency=ev.target.value==="GBP"?"GBP":"EUR";
  try{localStorage.setItem("football_display_currency_v1",displayCurrency);}catch(e){}
@@ -960,4 +1009,8 @@ $("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？�
 });
 try{displayCurrency=localStorage.getItem("football_display_currency_v1")==="GBP"?"GBP":"EUR";}catch(e){}
 load();render();
+const initialLookup=setTimeout(()=>{void syncMarketData(false);},1500);
+if(typeof initialLookup?.unref==="function")initialLookup.unref();
+const periodicLookup=setInterval(()=>{void syncMarketData(false);},6*60*60*1000);
+if(typeof periodicLookup?.unref==="function")periodicLookup.unref();
 })();
