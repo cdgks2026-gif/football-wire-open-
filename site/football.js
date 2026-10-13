@@ -14,19 +14,31 @@ const leagueList=["英超","西甲","德甲","意甲","法甲","中超","葡超"
 const fullLeagues=new Set(["英超","西甲","德甲","意甲","法甲","中超"]);
 const byPos = {G:"门将",D:"后卫",M:"中场",F:"前锋"};
 const patterns = {"4-3-3":{G:1,D:4,M:3,F:3},"4-2-3-1":{G:1,D:4,M:5,F:1},"4-4-2":{G:1,D:4,M:4,F:2}};
-const STORAGE="chengdu_football_dynasty_v4";
-const OLD_STORAGE="chengdu_football_dynasty_v3";
-const OLDER_STORAGE="chengdu_football_dynasty_v2";
+const STORAGE="chengdu_football_dynasty_v5";
+const OLD_STORAGE="chengdu_football_dynasty_v4";
+const OLDER_STORAGE="chengdu_football_dynasty_v3";
+const OLDEST_STORAGE="chengdu_football_dynasty_v2";
 const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length%2?state.leagueIds.length*2:(state.leagueIds.length-1)*2):38;
 const MAX_SQUAD=35;
 let state=null,currentView="dashboard",toastTimer=null;
 let bidTarget=null;
+let displayCurrency="EUR";
+const GAME_GBP_RATE=0.845; // Static in-game reference, EUR -> GBP, not a live FX feed
 let setupLeague="英超";
 let marketFilter={q:"",league:"",club:"",pos:"",sort:"rating",limit:24};
 const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
 const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = value => value >= 10000 ? "¥"+(value/10000).toFixed(2)+"亿" : "¥"+Math.round(value).toLocaleString("zh-CN")+"万";
+// Internal values are integer units of €10,000; currency selection affects display only.
+const toDisplay=value=>displayCurrency==="GBP"?Number(value)*GAME_GBP_RATE:Number(value);
+const fromDisplay=value=>Math.round(Number(value)/(displayCurrency==="GBP"?GAME_GBP_RATE:1));
+function money(value){
+ const amt=Math.max(0,toDisplay(value)),unit=displayCurrency==="GBP"?"£":"€";
+ if(amt>=10000)return unit+(amt/10000).toFixed(2)+"亿";
+ if(amt>=100)return unit+Math.round(amt).toLocaleString("zh-CN")+"万";
+ if(amt>=1)return unit+Number(amt.toFixed(1)).toLocaleString("zh-CN")+"万";
+ return unit+Math.round(amt*10).toLocaleString("zh-CN")+"千";
+}
 const badge = id => '<span class="clublogo club-'+id+'">'+clubInfo[id].short+'</span>';
 const drawName = i => firstNames[(i*7+3)%firstNames.length]+"·"+lastNames[(i*11+5)%lastNames.length];
 const featuredRatings={
@@ -42,13 +54,109 @@ const featuredRatings={
 "Rodri":92,"Raphinha":91,"Lautaro Martinez":91,"Ousmane Dembele":92,
 "Vitinha":91,"Jamal Musiala":92,"Michael Olise":90,"Declan Rice":90,
 "Kevin De Bruyne":89,"Scott McTominay":87,"Wu Lei":77,"Wei Shihao":76};
-function newPlayer(info,power,index){
+
+const CSL_DOMESTIC=new Set(("Wu Lei,Wei Shihao,Wang Yudong,Yan Junling,Chen Wei,Zhang Linpeng,Wang Shenchao,Wei Zhen,"+
+"Xue Qinghao,Ma Zhen,Zhu Chenjie,Jiang Shenglong,Wu Xi,Gao Tianyi,Xu Haoyang,Jian Tao,Hu Hetao,"+
+"Yang Mingyang,Hou Sen,Wang Gang,Zhang Xizhe,Wang Dalei,Zheng Zheng,Gao Zhunyi,Li Yuanyi,"+
+"Xie Wenneng,Zhao Bo,Cheng Jin,Liu Dianzuo,Deng Hanwen,Fang Jingqi,Ming Tian,Ba Dun,"+
+"Wang Guoming,Zhong Yihao,Dai Weijun,Bao Yaxiong,Mou Pengfei,Liu Junshuai,He Yiran,"+
+"Sui Weijie,Lv Zhuoyi,Han Rongze,Xu Bin,Ji Jiabao,Yu Da Bao").split(","));
+const EURO_MILLION_CURVE=[
+ [50,0.18],[55,0.35],[60,0.7],[65,1.55],[70,3.7],
+ [75,8],[80,22],[85,50],[90,105],[95,180],[99,240]
+];
+const STAR_EURO_MILLION={
+ "Kylian Mbappe":190,"Erling Haaland":185,"Lamine Yamal":180,
+ "Jude Bellingham":160,"Vinicius Junior":150,"Bukayo Saka":135,
+ "Florian Wirtz":125,"Cole Palmer":125,"Alexander Isak":110,
+ "Harry Kane":65,"Cristiano Ronaldo":9,"Lionel Messi":12,
+ "Wu Lei":0.55,"Wei Shihao":0.55,"Wang Yudong":2.2,
+ "Zhu Chenjie":1.1,"Jiang Shenglong":0.85,"Yan Junling":0.20,
+ "Felipe":1.0,"Cryzan":3.0,"Zeca":2.2,"Leonardo":3.5
+};
+const LEAGUE_VALUE_MULT={英超:1,西甲:.93,德甲:.91,意甲:.88,法甲:.77,
+ 中超:.12,葡超:.67,荷甲:.66,沙特联:.66,美职联:.55};
+function euroCurve(ability){
+ const a=clamp(ability,50,99);
+ for(let i=1;i<EURO_MILLION_CURVE.length;i++){
+  const [hi,v]=EURO_MILLION_CURVE[i],[lo,w]=EURO_MILLION_CURVE[i-1];
+  if(a<=hi)return w+(v-w)*(a-lo)/(hi-lo);
+ }
+ return 240;
+}
+function valuation(player,league){
+ if(player.synthetic){
+  const scaled=clamp((player.ability-45)*1.25,3,95);
+  return Math.max(2,Math.round(scaled*(league==="中超"?.13:.8)));
+ }
+ const age=player.age;
+ const ageFactor=age<=21?1.15:age<=26?1.08:age<=29?1:age<=31?.78:age<=33?.54:age<=36?.34:.20;
+ const posFactor=player.pos==="G"?.72:player.pos==="D"?.86:1;
+ const isDomestic=league==="中超"&&CSL_DOMESTIC.has(player.english);
+ let million=STAR_EURO_MILLION[player.english];
+ if(million===undefined){
+  million=euroCurve(player.ability)*ageFactor*posFactor*(LEAGUE_VALUE_MULT[league]||.8);
+  if(league==="中超")million=Math.min(million,isDomestic?2.3:6);
+  if(league==="沙特联")million=Math.min(million,75);
+ }
+ return Math.max(2,Math.round(million*100));
+}
+function initialBudget(club){
+ const league=club.league,power=club.power||75;
+ const scale={英超:1,西甲:.80,德甲:.72,意甲:.70,法甲:.52,
+ 中超:.055,葡超:.40,荷甲:.36,沙特联:.55,美职联:.23}[league]||.5;
+ // 100 units = €1m; budgets intentionally differ by league.
+ return Math.round((5000+Math.max(0,power-73)*630)*scale);
+}
+function initialAge(name){
+ return {"Cristiano Ronaldo":41,"Lionel Messi":39,"Wu Lei":34,
+ "Wei Shihao":31,"Wang Yudong":19,"Kylian Mbappe":27,
+ "Erling Haaland":26,"Harry Kane":33,"Lamine Yamal":19,
+ "Jude Bellingham":23,"Vinicius Junior":26}[name];
+}
+const zdate=(y,m,d)=>String(y)+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+const dateAdd=(iso,days)=>new Date(Date.parse(iso+"T12:00:00Z")+days*86400000).toISOString().slice(0,10);
+function fixtureDates(league,year,count){
+ const china=league==="中超";
+ const start=china?zdate(year,3,6):zdate(year,8,22);
+ const end=china?zdate(year,11,8):zdate(year+1,5,30);
+ const days=Math.round((Date.parse(end)-Date.parse(start))/86400000);
+ return Array.from({length:count},(_,i)=>dateAdd(start,Math.round(days*i/Math.max(1,count-1))));
+}
+function gameDate(){
+ if(!state)return "";
+ if(state.round===0)return state.league==="中超"?zdate(state.year,1,20):zdate(state.year,7,15);
+ return dateAdd(state.matchDates[Math.min(state.round-1,state.matchDates.length-1)],1);
+}
+function registrationWindows(league,year){
+ if(league==="中超")return [
+  {start:zdate(year,1,1),end:zdate(year,3,6),name:"冬季注册期"},
+  {start:zdate(year,6,18),end:zdate(year,7,22),name:"夏季注册期"}
+ ];
+ return [
+  {start:zdate(year,6,15),end:zdate(year,9,1),name:"夏季转会窗"},
+  {start:zdate(year+1,1,1),end:zdate(year+1,2,1),name:"冬季转会窗"}
+ ];
+}
+function windowStatus(league=state.league){
+ const date=gameDate(), year=Number(date.slice(0,4));
+ const spans=[...registrationWindows(league,year-1),...registrationWindows(league,year),
+   ...registrationWindows(league,year+1)];
+ const active=spans.find(w=>w.start<=date&&w.end>=date);
+ const future=spans.filter(w=>w.start>date).sort((a,b)=>a.start.localeCompare(b.start))[0];
+ return {open:!!active,date,active,next:future,
+  text:active?active.name+"开放中 · 截止 "+active.end:
+   "转会窗已关闭 · 下次 "+(future?.name||"注册期")+" "+(future?.start||"待定")};
+}
+
+function newPlayer(info,power,index,league="英超"){
   const id=state.nextId++;
-  const age=rnd(18,34),ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
+  const age=initialAge(info.name)??rnd(18,34),ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
   const potential=clamp(ability+rnd(1,12),ability,98);
-  return {id,name:info.cn||info.name,english:info.name,pos:info.pos,age,ability,potential,
-    fitness:rnd(85,100),form:rnd(74,94),
-    price:Math.round((ability-52)*(ability-52)*2.4+rnd(150,800)),played:0,goals:0,assists:0,injury:0};
+  const obj={id,name:info.cn||info.name,english:info.name,pos:info.pos,age,ability,potential,
+    fitness:rnd(85,100),form:rnd(74,94),played:0,goals:0,assists:0,injury:0};
+  obj.price=valuation(obj,league);
+  return obj;
 }
 function fixtures(){
  const ids=state.leagueIds,count=ids.length,n=count+(count%2);
@@ -74,7 +182,7 @@ function youthPlayer(owner,pos,i){
  const ability=clamp(pwr+rnd(-17,-5),48,88);
  return {id,name,english:"Generated academy player",pos,age:rnd(17,21),ability,
  potential:clamp(ability+rnd(8,21),ability,97),fitness:rnd(84,100),form:rnd(75,96),
- price:Math.round((ability-50)**2*1.6+200),played:0,goals:0,assists:0,injury:0,synthetic:true};
+ price:Math.max(2,Math.round((ability-45)*(allClubs[owner].league==="中超"?.12:.9))),played:0,goals:0,assists:0,injury:0,synthetic:true};
 }
 function ensureSquad(owner){
  const squad=state.squads[owner],minimum={G:2,D:7,M:6,F:4};
@@ -88,13 +196,13 @@ function start(id){
  const league=allClubs[id].league;
  const leagueIds=allClubs.map((c,i)=>c.league===league?i:-1).filter(i=>i>=0);
  state={clubId:id,league,leagueIds,year:2026,season:1,round:0,nextId:1,
- budget:allClubs[id].budget,aiBudgets:allClubs.map(c=>c.budget),
+ budget:initialBudget(allClubs[id]),aiBudgets:allClubs.map(c=>initialBudget(c)),
  squads:[],worldSquads:[],worldBudgets:[],market:[],finance:{earned:0,spent:0,academy:1,stadium:1,training:1,promoted:0,fanSupport:74},lastEvents:[],table:emptyStandings(),
  fixtures:[],results:[],news:[],lastResult:"",titles:0,negotiations:{},
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
  moods:allClubs.map(()=>rnd(66,85))};
- allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power)));ensureSquad(i);});
- state.fixtures=fixtures();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
+ allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power,0,c.league)));ensureSquad(i);});
+ state.fixtures=fixtures();state.matchDates=fixtureDates(state.league,state.year,state.fixtures.length);state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
  news("欢迎执教"+allClubs[id].name+"！"+league+leagueRounds()+"轮"+
  (fullLeagues.has(league)?"完整联赛":"精选俱乐部模拟联赛")+"，全球转会开启。");
  save();currentView="dashboard";render();
