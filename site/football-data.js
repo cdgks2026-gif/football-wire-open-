@@ -492,16 +492,8 @@ window.FOOTBALL_DATABASE={
           "name": "Josh Acheampong"
         },
         {
-          "pos": "D",
-          "name": "Tosin Adarabioyo"
-        },
-        {
           "pos": "M",
           "name": "Valentin Barco"
-        },
-        {
-          "pos": "M",
-          "name": "Enzo Fernandez"
         },
         {
           "pos": "M",
@@ -538,10 +530,6 @@ window.FOOTBALL_DATABASE={
         {
           "pos": "F",
           "name": "Jamie Gittens"
-        },
-        {
-          "pos": "F",
-          "name": "Liam Delap"
         },
         {
           "pos": "F",
@@ -1038,10 +1026,6 @@ window.FOOTBALL_DATABASE={
         },
         {
           "pos": "D",
-          "name": "Ethan Pinnock"
-        },
-        {
-          "pos": "D",
           "name": "Kristoffer Ajer"
         },
         {
@@ -1107,6 +1091,10 @@ window.FOOTBALL_DATABASE={
         {
           "pos": "F",
           "name": "Keane Lewis-Potter"
+        },
+        {
+          "pos": "D",
+          "name": "Benjamin Fredrick"
         }
       ]
     },
