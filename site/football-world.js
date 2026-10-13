@@ -1,4 +1,4 @@
-/* 精选海外与中超转会球员候选；不是全球全量实时数据库，非官方注册名单。 */
+/* 全球转会精选球员候选，非实时全量名单。 */
 window.FOOTBALL_WORLD={
   "version": 1,
   "clubs": [
@@ -1137,7 +1137,7 @@ window.FOOTBALL_WORLD={
           "name": "Wei Zhen"
         },
         {
-          "pos": "M",
+          "pos": "F",
           "cn": "武磊",
           "name": "Wu Lei"
         },
@@ -1224,11 +1224,6 @@ window.FOOTBALL_WORLD={
         },
         {
           "pos": "D",
-          "cn": "莱切特",
-          "name": "Timo Letschert"
-        },
-        {
-          "pos": "D",
           "cn": "胡荷韬",
           "name": "Hu Hetao"
         },
@@ -1236,11 +1231,6 @@ window.FOOTBALL_WORLD={
           "pos": "M",
           "cn": "罗慕洛",
           "name": "Romulo"
-        },
-        {
-          "pos": "M",
-          "cn": "周定洋",
-          "name": "Tim Chow"
         },
         {
           "pos": "M",
@@ -1261,6 +1251,16 @@ window.FOOTBALL_WORLD={
           "pos": "F",
           "cn": "韦林顿·席尔瓦",
           "name": "Wellington Silva"
+        },
+        {
+          "pos": "M",
+          "cn": "茹萨",
+          "name": "Matheus Jussa"
+        },
+        {
+          "pos": "D",
+          "cn": "贺一然",
+          "name": "He Yiran"
         }
       ]
     },
