@@ -10,6 +10,7 @@
   <script src="/football-data.js" defer></script>
   <script src="/football-world.js" defer></script>
   <script src="/football-clubs.js" defer></script>
+  <script src="/football-values.js" defer></script>
   <script src="/football.js" defer></script>
 </head>
 <body>
@@ -28,7 +29,7 @@
       <p id="setupLeagueHint" class="fine">选择联赛，挑选你想执教的俱乐部。</p>
     </div>
     <div id="clubGrid" class="clubgrid"></div>
-    <p class="disclaimer">独立非官方模拟作品。英超有501位现实球员的中文姓名；其他联赛已录入精选球员，未收录的阵容位置由标记为「青训」的虚拟球员补位。六大主要联赛支持完整参赛球队数量和主客场赛制；葡超、荷甲、沙特联及美职联为精选小型模拟赛制。球员能力、年龄、预算与赛果均是模拟数据，非官方赛程。各轮比赛日期按赛季区间生成，并非官方具体对阵日程。英镑显示采用固定游戏参考汇率，不实时更新。</p>
+    <p class="disclaimer">独立非官方模拟作品。英超有501位现实球员的中文姓名；其他联赛已录入精选球员，未收录的阵容位置由标记为「青训」的虚拟球员补位。六大主要联赛支持完整参赛球队数量和主客场赛制；葡超、荷甲、沙特联及美职联为精选小型模拟赛制。球员能力、年龄、预算与赛果均是模拟数据，非官方赛程。德转估值为注明日期的历史或核实数据，不是实时授权API；转会报价属于游戏谈判模拟。各轮比赛日期按赛季区间生成，并非官方具体对阵日程。英镑显示采用固定游戏参考汇率，不实时更新。</p>
   </section>
 
   <div id="workspace" hidden>
@@ -66,7 +67,7 @@
       </section>
 
       <section id="view-squad" class="view" hidden>
-        <div class="section-title"><div><h2>一线队阵容</h2><p>能力、状态与体能会影响模拟比赛。可以将球员挂牌出售，再补强短板。</p></div><span id="squadCount" class="tag"></span></div>
+        <div class="section-title"><div><h2>一线队阵容</h2><p>德转身价与俱乐部模拟要价分开显示。能力、状态与体能只影响游戏比赛，不用于伪造德转估值。</p></div><span id="squadCount" class="tag"></span></div>
         <div id="squadTable" class="tablewrap panel"></div><div class="panel scorers-panel"><div class="panelheading"><span>本赛季球队射手榜</span><span class="tag">仅统计模拟联赛</span></div><div id="scorerList"></div></div>
       </section>
 
@@ -86,7 +87,7 @@
       </section>
 
       <section id="view-market" class="view" hidden>
-        <div class="section-title"><div><h2>转会市场</h2><p>球员按欧元估值，可切换英镑显示。报价与签约遵循你执教联赛的注册期；关窗期间仍可查看并关注球员。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="section-title"><div><h2>转会市场</h2><p>已核实球员显示德转估值；未匹配数据的球员会标明「待核实」，不再编造德转身价。报价与签约遵循你执教联赛的注册期；关窗期间仍可查看并关注球员。</p></div><span id="marketBudget" class="tag"></span></div>
         <div class="transfer-window panel" id="transferWindow" aria-live="polite"></div>
         <div class="window-calendar panel" id="windowCalendar"></div>
         <div class="market-controls panel">
@@ -96,7 +97,7 @@
           <label>场上位置<select id="marketPos"><option value="">全部位置</option><option value="G">门将</option><option value="D">后卫</option><option value="M">中场</option><option value="F">前锋</option></select></label>
           <label>排序<select id="marketSort"><option value="rating">能力由高到低</option><option value="priceHigh">身价由高到低</option><option value="priceLow">身价由低到高</option><option value="name">球员姓名</option></select></label>
         </div>
-        <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>身价为游戏模拟的市场估值，非 Transfermarkt 实时报价</span></div>
+        <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>已核实者展示德转身价和时间；缺失数据标「待核实」，不以能力值冒充德转</span></div>
         <div id="marketList" class="marketgrid"></div>
         <section class="panel offer-log"><div class="panelheading"><span>谈判办公室</span><span class="tag" id="offerCount">历史记录</span></div>
           <div id="offerHistory" aria-live="polite"></div>
