@@ -39,3 +39,17 @@
 .marketcard p{overflow-wrap:anywhere}
 @media(max-width:900px){.market-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.market-controls label:first-child{grid-column:span 3}}
 @media(max-width:550px){.market-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}.market-controls label:first-child{grid-column:span 2}.market-summary{font-size:11px}}
+
+/* Transfer office: record of simulated negotiations and counteroffers */
+.offer-log{margin-top:22px}
+.offer-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid #2f424a;padding:12px 2px;font-size:13px}
+.offer-row:last-child{border-bottom:0}
+.offer-row>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.offer-row>div:last-child{align-items:flex-end;flex-shrink:0}
+.offer-row small{font-size:11px;color:#9caeb2}
+.offer-row strong{font-size:13px;color:#e3f4e6}
+.offer-row .action{background:#28473d;color:#dbffab;border:1px solid #56766a;border-radius:8px;padding:6px 9px;font-size:11px}
+.bid-actions{display:grid;gap:9px}
+#bidDialog .bid-quote{color:#dbf4bd;font-size:12px;line-height:1.6}
+#bidDialog .accept-counter{border-color:#acd77e;color:#d4f5aa}
+@media(max-width:550px){.offer-row{gap:7px}.offer-row small{font-size:10px}}
