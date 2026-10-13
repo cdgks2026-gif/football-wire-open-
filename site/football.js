@@ -716,7 +716,17 @@ function marketCandidates(){
  return result;
 }
 function renderMarket(){
+ const transfer=windowStatus();
  $("marketBudget").textContent="可用预算 "+money(state.budget);
+ $("transferWindow").className="transfer-window panel "+(transfer.open?"window-open":"window-closed");
+ $("transferWindow").innerHTML='<strong>'+(transfer.open?'转会窗口开放':'转会窗口关闭')+
+ '</strong><span>游戏日期 '+transfer.date+' · '+esc(transfer.text)+'</span>'+
+ '<small>关窗后可搜索球员，但不能签约或注册。此处限制依据买方所在联赛。</small>';
+ const active=transfer.active,upcoming=transfer.next;
+ $("windowCalendar").innerHTML='<strong>'+esc(state.league)+' · 注册时间表</strong>'+
+ (active?'<span>当前：'+active.start+' 至 '+active.end+'</span>':'')+
+ (upcoming?'<span>下一次：'+upcoming.start+' 至 '+upcoming.end+'</span>':'')+
+ '<small>英超参考2026/27官方日期，中超参考2026年国际足联注册期；其余联赛采用简化模拟窗口。</small>';
  const leagueSelect=$("marketLeague"),clubSelect=$("marketClub");
  if(!leagueSelect.dataset.initialized){
    const leagues=leagueList;
@@ -744,7 +754,7 @@ function renderMarket(){
  ' · 游戏潜力 '+player.potential+' · 状态 '+player.form+'</p>'+
  '<div class="value">'+money(player.price)+'</div>'+
  '<button type="button" class="primary" data-offer="'+player.id+'">'+
- (state.negotiations[player.id]?.status==="counter"?"继续谈判":"向俱乐部报价")+'</button></article>').join("")
+ (!transfer.open?"查看详情 · 关窗中":state.negotiations[player.id]?.status==="counter"?"继续谈判":"向俱乐部报价")+'</button></article>').join("")
  ||'<div class="panel">没有符合条件的球员。请修改联赛、球队或搜索关键词。</div>';
  $("marketMore").hidden=page.length>=items.length;
  $("marketMore").textContent="加载更多（已显示 "+page.length+" / "+items.length+"）";
@@ -768,7 +778,7 @@ function showOfferFeedback(result){
  const info=bidTarget===null?null:negotiationInfo(bidTarget);
  const active=result.kind==="counter" ? result.counter : info?.activeCounter||0;
  $("acceptCounter").hidden=!active;
- $("acceptCounter").disabled=!!(active && state.budget<active);
+ $("acceptCounter").disabled=!windowStatus().open || !!(active && state.budget<active);
  $("acceptCounter").textContent=active?"接受还价 "+money(active)+" 并签约":"接受对方还价并签约";
  $("bidQuote").textContent=active?
    "卖方已提出还价。若预算不足，可先出售球员补充资金，报价将保留至有效期结束。":"";
@@ -783,10 +793,14 @@ function openBid(id){
    esc(player.english||"")+"</p><p>当前所属："+esc(allClubs[owner].league)+" · "+
    esc(allClubs[owner].name)+"</p><p>位置："+byPos[player.pos]+
    " · 能力："+player.ability+" · 参考身价："+money(player.price)+"</p>";
- $("bidAmount").value=activeCounter||Math.min(asking,Math.max(1,state.budget));
+ $("bidAmount").value=Number(toDisplay(activeCounter||Math.min(asking,Math.max(1,state.budget))).toFixed(1));
+ $("bidCurrencyLabel").textContent="你的转会报价（单位：万"+(displayCurrency==="GBP"?"英镑 £":"欧元 €")+"）";
  $("bidInfo").textContent="俱乐部起始要价约 "+money(asking)+"，当前预算 "+
    money(state.budget)+"。你可以主动提交低价，对方会结合球员能力、球队实力和谈判轮次还价。";
  $("bidFeedback").textContent="";
+ const status=windowStatus();
+ $("bidWindowInfo").textContent=status.open?"当前可以提交报价。":"目前"+status.text+"。可查看要价，但暂不能成交。";
+ $("bidSubmit").disabled=!status.open;
  showOfferFeedback({kind:activeCounter?"counter":"start",counter:activeCounter,message:
    activeCounter?"上一次还价 "+money(activeCounter)+" 有效至本赛季第 "+(saved.expiresRound+1)+" 轮。":""});
  const dlg=$("bidDialog");
@@ -819,6 +833,12 @@ root.addEventListener("click",ev=>{
   if(data.promote!==undefined){promoteYouth();return;}
 });
 $("setupLeague").addEventListener("change",ev=>{setupLeague=ev.target.value;renderSetup();});
+$("currencySelect").addEventListener("change",ev=>{
+ displayCurrency=ev.target.value==="GBP"?"GBP":"EUR";
+ try{localStorage.setItem("football_display_currency_v1",displayCurrency);}catch(e){}
+ render();
+ if(bidTarget!==null)openBid(bidTarget);
+});
 $("marketSearch").addEventListener("input",ev=>{marketFilter.q=ev.target.value.slice(0,120);marketFilter.limit=24;renderMarket();});
 $("marketLeague").addEventListener("change",ev=>{marketFilter.league=ev.target.value;marketFilter.club="";marketFilter.limit=24;renderMarket();});
 $("marketClub").addEventListener("change",ev=>{marketFilter.club=ev.target.value;marketFilter.limit=24;renderMarket();});
@@ -837,7 +857,7 @@ $("bidDialog").addEventListener("close",()=>{bidTarget=null;});
 $("bidForm").addEventListener("submit",ev=>{
  ev.preventDefault();
  if(bidTarget===null)return;
- const amount=Number($("bidAmount").value);
+ const amount=fromDisplay($("bidAmount").value);
  const result=buy(bidTarget,amount);
  if(result.ok){closeBid();}else{showOfferFeedback(result);renderMarket();}
 });
@@ -880,5 +900,6 @@ $("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？�
     save();render();show("战术设置已更新。");
   });
 });
+try{displayCurrency=localStorage.getItem("football_display_currency_v1")==="GBP"?"GBP":"EUR";}catch(e){}
 load();render();
 })();
