@@ -302,6 +302,63 @@ function aiTransfer(){
  const deal=transferPlayer(found.player.id,buyer,fee);
  if(deal)news(allClubs[buyer].name+"从"+allClubs[deal.from].name+"签下"+deal.player.name+"，转会费"+money(fee)+"。");
 }
+function updateFinance(game){
+ const finance=state.finance,home=game.home===state.clubId;
+ const income=(home?rnd(350,550)+finance.stadium*95:rnd(85,145))+65+finance.training*10;
+ const wage=Math.round(state.squads[state.clubId].reduce((sum,p)=>sum+Math.max(3,(p.ability-48)*.19),0));
+ finance.earned+=income;finance.spent+=wage;
+ state.budget=Math.max(0,state.budget+income-wage);
+ const win=home?game.hg>game.ag:game.ag>game.hg,loss=home?game.hg<game.ag:game.ag<game.hg;
+ finance.fanSupport=clamp(finance.fanSupport+(win?2:loss?-2:0),15,98);
+}
+function facilityCost(key){
+ return Math.ceil(({stadium:2900,training:2300,academy:1700}[key]||2500)* (state.finance[key]||1)*1.55);
+}
+function upgradeFacility(key){
+ if(!["stadium","training","academy"].includes(key))return;
+ const f=state.finance,lvl=f[key]||1,cost=facilityCost(key);
+ if(lvl>=5)return show("设施已满级。");
+ if(state.budget<cost)return show("预算不足，需要"+money(cost)+"。");
+ state.budget-=cost;f.spent+=cost;f[key]=lvl+1;
+ news("升级"+({stadium:"球场商业设施",training:"训练中心",academy:"青训学院"}[key])+"至"+f[key]+"级，投入"+money(cost)+"。");
+ save();render();show("设施升级成功。");
+}
+function promoteYouth(){
+ const f=state.finance,price=Math.round(900+(f.academy-1)*300);
+ if(state.squads[state.clubId].length>=MAX_SQUAD)return show("阵容已满35人。");
+ if(f.promoted>=2)return show("本赛季最多提拔2名青训球员。");
+ if(state.budget<price)return show("预算不足，需要"+money(price)+"。");
+ const pos=["F","M","D","G"][(f.promoted+state.round)%4];
+ const p=youthPlayer(state.clubId,pos,state.round+f.promoted+25);
+ p.ability=clamp(p.ability+(f.academy-1)*3,50,89);
+ p.potential=clamp(p.potential+(f.academy-1)*2,p.ability,99);
+ state.squads[state.clubId].push(p);state.budget-=price;f.spent+=price;f.promoted++;
+ news("模拟青训球员"+p.name+"升入一线队，位置"+byPos[p.pos]+"，能力"+p.ability+"，潜力"+p.potential+"。");
+ save();render();show("提拔成功："+p.name);
+}
+function renderOffice(){
+ const f=state.finance,ranked=rank(),target=allClubs[state.clubId].power>=85?4:
+ allClubs[state.clubId].power>=80?7:Math.min(12,state.leagueIds.length);
+ const levelText={stadium:"球场商业设施",training:"训练中心",academy:"青训学院"};
+ $("financeReport").innerHTML='<div class="office-value">'+money(state.budget)+'</div>'+
+ '<div class="office-row"><span>本赛季收入</span><strong>'+money(f.earned)+'</strong></div>'+
+ '<div class="office-row"><span>本赛季运营与建设支出</span><strong>'+money(f.spent)+'</strong></div>'+
+ '<p class="fine">每轮结算票房、模拟赞助费与工资支出。</p>';
+ $("boardReport").innerHTML='<div class="office-value">目标：前 '+target+' 名</div>'+
+ '<div class="office-row"><span>目前联赛排名</span><strong>第'+ranked+'名</strong></div>'+
+ '<div class="office-row"><span>球迷支持度</span><strong>'+f.fanSupport+'/100</strong></div>'+
+ '<progress class="meter" max="100" value="'+f.fanSupport+'"></progress>'+
+ '<p class="fine">董事会目标按初始实力设置；胜负影响支持度。</p>';
+ $("facilityReport").innerHTML=Object.entries(levelText).map(([key,title])=>{
+  const level=f[key]||1,cost=facilityCost(key);
+  return '<div class="facility"><div><strong>'+title+'</strong><small>等级'+level+'/5 · '+
+    (key==="stadium"?"提高主场收入":key==="training"?"提升球员训练效果":"提升模拟青训培养潜力")+
+    '</small></div><button type="button" class="action" data-upgrade="'+key+'" '+(level>=5?"disabled":"")+
+    '>'+(level>=5?"已满级":"投入"+money(cost))+'</button></div>';
+ }).join("")+'<div class="facility"><div><strong>提拔青训球员</strong><small>每赛季最多2人，均标记为虚构球员</small></div>'+
+ '<button type="button" class="action" data-promote="1">培养'+money(900+(f.academy-1)*300)+'</button></div>';
+}
+
 function simulateOne(){
   if(state.round>=leagueRounds())return;
   const games=state.fixtures[state.round];
@@ -441,7 +498,7 @@ function render(){
   $("statRank").textContent="第 "+rank()+" 名";
   root.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===currentView));
   root.querySelectorAll(".view").forEach(v=>v.hidden=v.id!=="view-"+currentView);
-  renderDashboard();renderSquad();renderTactics();renderMarket();renderLeague();
+  renderDashboard();renderSquad();renderTactics();renderMarket();renderLeague();renderOffice();
 }
 function renderDashboard(){
   const game=nextFixture();$("stageLabel").textContent=game?"第 "+(state.round+1)+" 轮":"赛季已结束";
@@ -595,6 +652,8 @@ root.addEventListener("click",ev=>{
   if(data.offer!==undefined){openBid(Number(data.offer));return;}
   if(data.sell!==undefined){sell(Number(data.sell));return;}
   if(data.swap!==undefined){swap(Number(data.swap));return;}
+  if(data.upgrade!==undefined){upgradeFacility(data.upgrade);return;}
+  if(data.promote!==undefined){promoteYouth();return;}
 });
 $("setupLeague").addEventListener("change",ev=>{setupLeague=ev.target.value;renderSetup();});
 $("marketSearch").addEventListener("input",ev=>{marketFilter.q=ev.target.value.slice(0,120);marketFilter.limit=24;renderMarket();});
