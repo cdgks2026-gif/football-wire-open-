@@ -204,6 +204,8 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname.startsWith('/api/')) return reply(req, res, 410, JSON.stringify({ error: '网站已更新为狼人杀规则库，请返回首页查阅。' }), 'application/json; charset=utf-8');
     if (pathname === '/') pathname = '/index.html';
+    // Football manager is isolated from the existing rulebook home page.
+    if (pathname === '/game' || pathname === '/game/') pathname = '/football.html';
     const storedName = pathname.slice(1);
     const asset = allowedUploads.has(storedName) ? await readStoredAsset(storedName) : assets.get(pathname);
     if (!asset) {
