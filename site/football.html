@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/football.css">
   <script src="/football-data.js" defer></script>
   <script src="/football-world.js" defer></script>
+  <script src="/football-clubs.js" defer></script>
   <script src="/football.js" defer></script>
 </head>
 <body>
@@ -20,15 +21,19 @@
   </header>
 
   <section id="setup" class="setup">
-    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>20 支真实英超俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>多轮转会谈判</span><span>自动本地存档</span></div></div>
-    <div class="section-title"><h2>选择执教球队</h2><span>球员所属俱乐部采用2026年9月英超公布名单</span></div>
+    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>六大完整模拟联赛</span><span>主客场双循环</span><span>全球球星转会</span><span>多轮转会谈判</span><span>自动本地存档</span></div></div>
+    <div class="section-title"><h2>选择执教球队</h2><span>英超、西甲、意甲各38轮 · 德甲、法甲各34轮 · 中超30轮</span></div>
+    <div class="setup-filters">
+      <label for="setupLeague">选择联赛</label><select id="setupLeague" aria-label="选择执教联赛"><option value="英超">英超</option><option value="西甲">西甲</option><option value="德甲">德甲</option><option value="意甲">意甲</option><option value="法甲">法甲</option><option value="中超">中超</option><option value="葡超">葡超 · 精选</option><option value="荷甲">荷甲 · 精选</option><option value="沙特联">沙特联 · 精选</option><option value="美职联">美职联 · 精选</option></select>
+      <p id="setupLeagueHint" class="fine">选择联赛，挑选你想执教的俱乐部。</p>
+    </div>
     <div id="clubGrid" class="clubgrid"></div>
-    <p class="disclaimer">本游戏为非官方独立模拟。英超初始球员参考2026/27赛季9月阵容；其他联赛为精选候选球员而非完整注册名单，部分球队资料可能随转会变化。年龄、能力、身价、交易和赛果均为游戏模拟，不代表真实报价。</p>
+    <p class="disclaimer">独立非官方模拟作品。英超有501位现实球员的中文姓名；其他联赛已录入精选球员，未收录的阵容位置由标记为「青训」的虚拟球员补位。六大主要联赛支持完整参赛球队数量和主客场赛制；葡超、荷甲、沙特联及美职联为精选小型模拟赛制。球员能力、年龄、预算与赛果均是模拟数据，非官方赛程。</p>
   </section>
 
   <div id="workspace" hidden>
     <section class="statstrip">
-      <div><small>当前执教</small><b id="statClub">—</b></div>
+      <div><small>当前俱乐部 / 联赛</small><b id="statClub">—</b></div>
       <div><small>模拟赛季</small><b id="statSeason">—</b></div>
       <div><small>赛程进度</small><b id="statRound">—</b></div>
       <div><small>转会预算</small><b id="statBudget">—</b></div>
@@ -98,7 +103,7 @@
       </section>
 
       <section id="view-league" class="view" hidden>
-        <div class="section-title"><div><h2>联赛中心</h2><p>20 队主客场双循环、每队 38 轮，共 380 场。每轮 10 场比赛同步模拟。游戏赛程为随机编排，并非官方比赛日程。</p></div><span id="leagueRound" class="tag"></span></div>
+        <div class="section-title"><div><h2>联赛中心</h2><p id="leagueDescription">所选联赛按主客场双循环进行，实际对阵为游戏自动生成。</p></div><span id="leagueRound" class="tag"></span></div>
         <div class="leaguegrid"><div class="panel"><div class="panelheading"><span>积分榜</span><span class="tag">胜 3 分 · 平 1 分</span></div><div id="fullTable" class="tablewrap"></div></div><div class="panel"><div class="panelheading"><span>赛程与结果</span><span class="tag">本赛季</span></div><div id="fixtureList" class="fixtures"></div></div></div>
       </section>
     </main>
