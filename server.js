@@ -6,7 +6,7 @@ const path=require('node:path');
 const port=Number(process.env.PORT)||8080;
 const root=path.resolve('/app/site');
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml'};
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/data.json':'data.json','/game':'football.html','/game/':'football.html','/football.html':'football.html','/football.css':'football.css','/football.js':'football.js','/football-data.js':'football-data.js'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/data.json':'data.json','/game':'football.html','/game/':'football.html','/football.html':'football.html','/football.css':'football.css','/football.js':'football.js','/football-data.js':'football-data.js','/football-world.js':'football-world.js'};
 http.createServer((req,res)=>{
  const pathname=String(req.url||'/').split('?')[0];
  const head={'Cache-Control':'no-store, max-age=0, must-revalidate','X-Content-Type-Options':'nosniff',
