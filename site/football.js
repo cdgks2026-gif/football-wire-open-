@@ -361,9 +361,85 @@ function renderTactics(){
   $("pitch").innerHTML='<div class="center-circle"></div>'+["F","M","D","G"].map(pos=>'<div class="pitchrow">'+groups[pos].map(p=>'<div class="pitchplayer"><div class="shirt">'+p.ability+'</div><span>'+esc(p.name.split("·").pop())+'</span></div>').join("")+'</div>').join("");
   $("lineupRoster").innerHTML='<div class="panelheading"><span>阵容轮换</span><span class="tag">首发 11 人</span></div>'+state.squads[state.clubId].map(p=>'<div class="rosterline"><span>'+esc(p.name)+' <small>'+byPos[p.pos]+' '+p.ability+'</small></span>'+(starters.has(p.id)?'<small>首发</small>':'<button type="button" data-swap="'+p.id+'">替换上场</button>')+'</div>').join("");
 }
+function marketCandidates(){
+ const result=[];
+ for(let owner=0;owner<allClubs.length;owner++){
+   if(owner===state.clubId)continue;
+   const club=allClubs[owner];
+   if(marketFilter.league&&club.league!==marketFilter.league)continue;
+   if(marketFilter.club&&String(owner)!==marketFilter.club)continue;
+   for(const player of squadFor(owner)){
+     if(marketFilter.pos&&player.pos!==marketFilter.pos)continue;
+     const q=marketFilter.q.toLowerCase().trim();
+     if(q&&!([player.name,player.english||"",club.name,club.league].join(" ").toLowerCase().includes(q)))continue;
+     if(!canRelease(owner,player))continue;
+     result.push({owner,club,player});
+   }
+ }
+ result.sort((a,b)=>{
+   if(marketFilter.sort==="priceLow")return a.player.price-b.player.price;
+   if(marketFilter.sort==="priceHigh")return b.player.price-a.player.price;
+   if(marketFilter.sort==="name")return a.player.name.localeCompare(b.player.name,"zh");
+   return b.player.ability-a.player.ability||a.player.price-b.player.price;
+ });
+ return result;
+}
 function renderMarket(){
-  $("marketBudget").textContent="可用预算 "+money(state.budget);
-  $("marketList").innerHTML=state.market.length?state.market.filter(p=>findListed(p.id)).map(p=>'<article class="marketcard"><div class="badge">'+clubInfo[p.owner].name+' · '+byPos[p.pos]+' · 模拟年龄 '+p.age+' · 潜力 '+p.potential+'</div><h3>'+esc(p.name)+'</h3><p>能力 '+p.ability+' · 状态 '+p.form+' · 体能 '+p.fitness+'</p><div class="value">'+money(p.price)+'</div><button type="button" class="primary" data-sign="'+p.id+'" '+(state.budget<p.price?'disabled title="预算不足"':'')+'>签约球员</button></article>').join(""):'<div class="panel">当前市场球员已被签约，请进入下一赛季刷新。</div>';
+ $("marketBudget").textContent="可用预算 "+money(state.budget);
+ const leagueSelect=$("marketLeague"),clubSelect=$("marketClub");
+ if(!leagueSelect.dataset.initialized){
+   const leagues=["英超",...new Set(worldClubs.map(c=>c.league))];
+   leagueSelect.innerHTML='<option value="">全球全部联赛</option>'+
+       leagues.map(l=>'<option value="'+esc(l)+'">'+esc(l)+'</option>').join("");
+   leagueSelect.dataset.initialized="1";
+ }
+ leagueSelect.value=marketFilter.league;
+ const selectedClubs=allClubs.map((c,i)=>({...c,id:i})).filter(c=>
+   (!marketFilter.league||c.league===marketFilter.league)&&c.id!==state.clubId);
+ const current=selectedClubs.some(c=>String(c.id)===marketFilter.club)?marketFilter.club:"";
+ marketFilter.club=current;
+ clubSelect.innerHTML='<option value="">全部俱乐部</option>'+
+   selectedClubs.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join("");
+ clubSelect.value=marketFilter.club;
+ $("marketSearch").value=marketFilter.q;
+ $("marketPos").value=marketFilter.pos;
+ $("marketSort").value=marketFilter.sort;
+ const items=marketCandidates(),page=items.slice(0,marketFilter.limit);
+ $("marketCount").textContent="当前找到 "+items.length+" 位可交易球员 · 涵盖 "+allClubs.length+" 家俱乐部";
+ $("marketList").innerHTML=page.map(({owner,club,player})=>
+ '<article class="marketcard"><div class="badge">'+esc(club.league)+' · '+esc(club.name)+
+ ' · '+byPos[player.pos]+'</div><h3>'+esc(player.name)+'</h3>'+
+ '<p>'+esc(player.english||"")+'</p><p>能力 '+player.ability+
+ ' · 游戏潜力 '+player.potential+' · 状态 '+player.form+'</p>'+
+ '<div class="value">'+money(player.price)+'</div>'+
+ '<button type="button" class="primary" data-offer="'+player.id+'">向俱乐部报价</button></article>').join("")
+ ||'<div class="panel">没有符合条件的球员。请修改联赛、球队或搜索关键词。</div>';
+ $("marketMore").hidden=page.length>=items.length;
+ $("marketMore").textContent="加载更多（已显示 "+page.length+" / "+items.length+"）";
+}
+function openBid(id){
+ const found=playerFor(id);
+ if(!found||found.owner===state.clubId)return show("该球员目前不可收购。");
+ bidTarget=id;
+ const {player,owner}=found;
+ $("bidHeading").textContent="求购 "+player.name;
+ $("bidDetails").innerHTML="<strong>"+esc(player.name)+"</strong><p>"+
+    esc(player.english||"")+"</p><p>当前效力："+esc(allClubs[owner].league)+" · "+
+    esc(allClubs[owner].name)+"</p><p>位置："+byPos[player.pos]+
+    " · 能力："+player.ability+" · 游戏身价："+money(player.price)+"</p>";
+ $("bidAmount").value=offerFloor(owner,player);
+ $("bidInfo").textContent="对方预计心理价位："+money(offerFloor(owner,player))+
+    "，你的预算："+money(state.budget)+"。报价为游戏模拟，非现实转会估价。";
+ $("bidFeedback").textContent="";
+ const dlg=$("bidDialog");
+ if(typeof dlg.showModal==="function"&&!dlg.open)dlg.showModal();
+ else dlg.setAttribute("open","");
+}
+function closeBid(){
+ bidTarget=null;
+ const dlg=$("bidDialog");
+ if(typeof dlg.close==="function"&&dlg.open)dlg.close();
+ else dlg.removeAttribute("open");
 }
 function renderLeague(){
   $("leagueRound").textContent="已进行 "+state.round+" / "+LEAGUE_ROUNDS+" 轮";$("fullTable").innerHTML=tableHTML(false);
@@ -378,9 +454,24 @@ root.addEventListener("click",ev=>{
   const data=control.dataset;
   if(data.club!==undefined){start(Number(data.club));return;}
   if(data.view){nav(data.view);return;}
-  if(data.sign!==undefined){buy(Number(data.sign));return;}
+  if(data.offer!==undefined){openBid(Number(data.offer));return;}
   if(data.sell!==undefined){sell(Number(data.sell));return;}
   if(data.swap!==undefined){swap(Number(data.swap));return;}
+});
+$("marketSearch").addEventListener("input",ev=>{marketFilter.q=ev.target.value.slice(0,120);marketFilter.limit=24;renderMarket();});
+$("marketLeague").addEventListener("change",ev=>{marketFilter.league=ev.target.value;marketFilter.club="";marketFilter.limit=24;renderMarket();});
+$("marketClub").addEventListener("change",ev=>{marketFilter.club=ev.target.value;marketFilter.limit=24;renderMarket();});
+$("marketPos").addEventListener("change",ev=>{marketFilter.pos=ev.target.value;marketFilter.limit=24;renderMarket();});
+$("marketSort").addEventListener("change",ev=>{marketFilter.sort=ev.target.value;marketFilter.limit=24;renderMarket();});
+$("marketMore").addEventListener("click",()=>{marketFilter.limit+=24;renderMarket();});
+$("bidClose").addEventListener("click",closeBid);
+$("bidDialog").addEventListener("close",()=>{bidTarget=null;});
+$("bidForm").addEventListener("submit",ev=>{
+ ev.preventDefault();
+ if(bidTarget===null)return;
+ const amount=Number($("bidAmount").value);
+ const result=buy(bidTarget,amount);
+ if(result.ok){closeBid();}else $("bidFeedback").textContent=result.message;
 });
 $("playOne").addEventListener("click",()=>advance(1));
 $("playFive").addEventListener("click",()=>advance(5));
