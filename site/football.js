@@ -117,11 +117,25 @@ function initialAge(name){
 const zdate=(y,m,d)=>String(y)+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0");
 const dateAdd=(iso,days)=>new Date(Date.parse(iso+"T12:00:00Z")+days*86400000).toISOString().slice(0,10);
 function fixtureDates(league,year,count){
+ if(league==="英超"&&count===38){
+  // 33 simulated weekend rounds plus five midweek match rounds, as per PL
+  // season structure; actual club matchups and dates are NOT official fixtures.
+  const first=zdate(year,8,22),finalSat=zdate(year+1,5,29);
+  const weekends=[];
+  for(let date=first;date<=finalSat;date=dateAdd(date,7))weekends.push(date);
+  const selected=Array.from({length:33},(_,i)=>
+    weekends[Math.round(i*(weekends.length-1)/32)]);
+  const midweek=[3,9,15,21,27].map(i=>dateAdd(selected[i],4));
+  const dates=selected.concat(midweek).sort();
+  dates[0]=zdate(year,8,21);
+  dates[dates.length-1]=zdate(year+1,5,30);
+  return dates;
+ }
  const china=league==="中超";
- const start=china?zdate(year,3,6):zdate(year,8,21);
- const end=china?zdate(year,11,8):zdate(year+1,5,30);
- const days=Math.round((Date.parse(end)-Date.parse(start))/86400000);
- return Array.from({length:count},(_,i)=>dateAdd(start,Math.round(days*i/Math.max(1,count-1))));
+ const begin=china?zdate(year,3,6):zdate(year,8,22);
+ const finish=china?zdate(year,11,8):zdate(year+1,5,30);
+ const days=Math.round((Date.parse(finish)-Date.parse(begin))/86400000);
+ return Array.from({length:count},(_,i)=>dateAdd(begin,Math.round(days*i/Math.max(1,count-1))));
 }
 function gameDate(){
  if(!state)return "";
