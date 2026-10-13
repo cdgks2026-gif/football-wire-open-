@@ -16,11 +16,11 @@
   <header class="topbar">
     <a href="/game" class="brand" aria-label="绿茵王朝主页"><span class="brandicon">⚽</span><span><strong>绿茵王朝</strong><small>FOOTBALL DYNASTY</small></span></a>
     <span class="eyebrow">自动化足球经理 · 模拟世界</span>
-    <div class="topactions"><a class="outline muted-link" href="/">返回原网站</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
+    <div class="topactions"><a class="outline muted-link" href="/">游戏首页</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
   </header>
 
   <section id="setup" class="setup">
-    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>20 支真实英超俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>自动本地存档</span></div></div>
+    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>20 支真实英超俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>多轮转会谈判</span><span>自动本地存档</span></div></div>
     <div class="section-title"><h2>选择执教球队</h2><span>球员所属俱乐部采用2026年9月英超公布名单</span></div>
     <div id="clubGrid" class="clubgrid"></div>
     <p class="disclaimer">本游戏为非官方独立模拟。英超初始球员参考2026/27赛季9月阵容；其他联赛为精选候选球员而非完整注册名单，部分球队资料可能随转会变化。年龄、能力、身价、交易和赛果均为游戏模拟，不代表真实报价。</p>
@@ -91,6 +91,9 @@
         </div>
         <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>精选数据库快照 · 非全球实时全量资料</span></div>
         <div id="marketList" class="marketgrid"></div>
+        <section class="panel offer-log"><div class="panelheading"><span>谈判办公室</span><span class="tag" id="offerCount">历史记录</span></div>
+          <div id="offerHistory" aria-live="polite"></div>
+        </section>
         <div class="more-holder"><button type="button" id="marketMore" class="outline" hidden>加载更多球员</button></div>
       </section>
 
@@ -108,8 +111,11 @@
       <label for="bidAmount">你的转会报价（单位：人民币万元）</label>
       <input type="number" min="1" max="99999999" step="1" id="bidAmount" inputmode="numeric" required>
       <p id="bidInfo" class="fine"></p>
-      <div id="bidFeedback" class="bid-feedback" role="status"></div>
-      <button type="submit" class="primary">正式提交报价</button>
+      <div id="bidFeedback" class="bid-feedback" role="status"></div><div id="bidQuote" class="bid-quote"></div>
+      <div class="bid-actions">
+       <button type="submit" class="primary" id="bidSubmit">发送报价</button>
+       <button type="button" id="acceptCounter" class="outline accept-counter" hidden>接受对方还价并签约</button>
+      </div>
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
