@@ -17,7 +17,7 @@ const patterns = {"4-3-3":{G:1,D:4,M:3,F:3},"4-2-3-1":{G:1,D:4,M:5,F:1},"4-4-2":
 const STORAGE="chengdu_football_dynasty_v4";
 const OLD_STORAGE="chengdu_football_dynasty_v3";
 const OLDER_STORAGE="chengdu_football_dynasty_v2";
-const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length-1)*2:38;
+const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length%2?state.leagueIds.length*2:(state.leagueIds.length-1)*2):38;
 const MAX_SQUAD=35;
 let state=null,currentView="dashboard",toastTimer=null;
 let bidTarget=null;
@@ -51,14 +51,14 @@ function newPlayer(info,power,index){
     price:Math.round((ability-52)*(ability-52)*2.4+rnd(150,800)),played:0};
 }
 function fixtures(){
- const ids=state.leagueIds,n=ids.length;
- if(n<2||n%2)throw Error("Invalid league field");
- let order=ids.slice(),first=[];
+ const ids=state.leagueIds,count=ids.length,n=count+(count%2);
+ if(count<2)throw Error("Invalid league field");
+ let order=ids.slice();if(count%2)order.push(-1);const first=[];
  for(let r=0;r<n-1;r++){
   const games=[];
   for(let i=0;i<n/2;i++){
    const a=order[i],b=order[n-1-i];
-   games.push((r+i)%2?{home:b,away:a}:{home:a,away:b});
+   if(a>=0&&b>=0)games.push((r+i)%2?{home:b,away:a}:{home:a,away:b});
   }
   first.push(games);
   order=[order[0],order[n-1],...order.slice(1,n-1)];
@@ -390,8 +390,8 @@ function renderSetup(){
  const clubs=allClubs.map((c,id)=>({...c,id})).filter(c=>c.league===setupLeague);
  const full=fullLeagues.has(setupLeague);
  $("setupLeagueHint").textContent=setupLeague+"共有"+clubs.length+
- "支可执教俱乐部 · 每队"+Math.max(0,(clubs.length-1)*2)+
- "轮。"+(full?"完整联赛名单；缺失的实名球员用明确标注的模拟青训球员补充。":
+ "支可执教俱乐部 · 每队"+Math.max(0,clubs.length%2?clubs.length*2:(clubs.length-1)*2)+
+ "个比赛周。"+(full?"完整联赛名单；缺失的实名球员用明确标注的模拟青训球员补充。":
  "精选俱乐部小型模拟比赛，尚未覆盖此联赛全部真实参赛球队。");
  $("clubGrid").innerHTML=clubs.map(c=>'<button type="button" class="clubitem" data-club="'+c.id+'">'+
  badge(c.id)+'<strong>'+esc(c.name)+'</strong><small>初始实力 '+c.power+
@@ -545,7 +545,7 @@ function closeBid(){
  else dlg.removeAttribute("open");
 }
 function renderLeague(){
-  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("leagueDescription").textContent=state.league+" · "+state.leagueIds.length+"支球队，主客场双循环 "+leagueRounds()+"轮，合计 "+(state.leagueIds.length*leagueRounds()/2)+" 场。对阵赛程为游戏生成，非官方现实赛程。";$("fullTable").innerHTML=tableHTML(false);
+  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("leagueDescription").textContent=state.league+" · "+state.leagueIds.length+"支球队，主客场双循环共"+leagueRounds()+"个比赛周、"+(state.leagueIds.length*(state.leagueIds.length-1))+"场，球队各赛"+((state.leagueIds.length-1)*2)+"场。赛程为游戏生成，非官方现实赛程。";$("fullTable").innerHTML=tableHTML(false);
   $("fixtureList").innerHTML=state.fixtures.map((games,index)=>'<div class="fixture-round"><strong>第 '+(index+1)+' 轮 '+(index===state.round?'· 下一轮':'')+'</strong>'+games.map(g=>{
     const r=state.results.find(x=>x.round===index+1&&x.home===g.home&&x.away===g.away);
     return '<div class="fixture '+(g.home===state.clubId||g.away===state.clubId?'mine':'')+'"><span>'+esc(clubInfo[g.home].name)+'</span><b>'+(r?r.hg+" : "+r.ag:"—")+'</b><span>'+esc(clubInfo[g.away].name)+'</span></div>';
