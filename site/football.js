@@ -270,10 +270,12 @@ function canRelease(owner,player){
  return team.length>13&&team.filter(p=>p.pos===player.pos).length>minimum[player.pos];
 }
 function offerFloor(owner,player){
- const quality=Math.max(0,player.ability-78);
- const prestige=(allClubs[owner]?.power||76)>=85?.10:0;
+ const fromTM=!!tmRecord(player),quality=Math.max(0,player.ability-78);
+ const prestige=(allClubs[owner]?.power||76)>=85?.025:0;
  // This is a simulated asking price, not Transfermarkt's published market value.
- return Math.max(1,Math.ceil(player.price*(1.05+quality*.014+prestige)));
+ const markup=fromTM?(1.015+Math.min(.07,quality*.004)+prestige):
+   (1.04+Math.min(.13,quality*.009)+prestige);
+ return Math.max(1,Math.ceil(player.price*markup));
 }
 function playerFor(id){
  for(let owner=0;owner<allClubs.length;owner++){
@@ -595,11 +597,12 @@ function negotiationInfo(id){
  if(!found || found.owner===state.clubId)return null;
  const p=found.player,owner=found.owner;
  const listingCount=squadFor(owner).filter(x=>x.pos===p.pos).length;
- const scarcity=listingCount<5?0.09:0;
- const keyPlayer=p.ability>=88?0.08:p.ability>=83?0.04:0;
- const morale=p.form>=91?0.03:0;
+ const fromTM=!!tmRecord(p);
+ const scarcity=listingCount<5?(fromTM?.025:.09):0;
+ const keyPlayer=p.ability>=88?(fromTM?.03:.08):p.ability>=83?(fromTM?.015:.04):0;
+ const morale=p.form>=91?(fromTM?.01:.03):0;
  const reserve=Math.ceil(offerFloor(owner,p)*(1+scarcity+keyPlayer+morale));
- const asking=Math.ceil(reserve*1.18);
+ const asking=Math.ceil(reserve*(fromTM?1.09:1.18));
  const alive=saved && saved.season===state.season && saved.expiresRound>=state.round &&
       saved.owner===owner && saved.status==="counter";
  return {found,owner,player:p,asking,reserve,
