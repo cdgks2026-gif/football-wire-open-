@@ -17,7 +17,7 @@
   <header class="topbar">
     <a href="/game" class="brand" aria-label="绿茵王朝主页"><span class="brandicon">⚽</span><span><strong>绿茵王朝</strong><small>FOOTBALL DYNASTY</small></span></a>
     <span class="eyebrow">自动化足球经理 · 模拟世界</span>
-    <div class="topactions"><a class="outline muted-link" href="/">游戏首页</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
+    <div class="topactions"><a class="outline muted-link" href="/">游戏首页</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="exportBtn" class="outline" type="button" hidden>导出存档</button><button id="importBtn" class="outline" type="button">导入存档</button><input id="importFile" hidden type="file" accept="application/json,.json"><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
   </header>
 
   <section id="setup" class="setup">
@@ -45,7 +45,7 @@
       <button type="button" class="nav-btn" data-view="squad">球员阵容</button>
       <button type="button" class="nav-btn" data-view="tactics">战术中心</button>
       <button type="button" class="nav-btn" data-view="market">转会市场</button>
-      <button type="button" class="nav-btn" data-view="league">联赛中心</button>
+      <button type="button" class="nav-btn" data-view="league">联赛中心</button><button type="button" class="nav-btn" data-view="office">俱乐部经营</button>
     </nav>
 
     <main>
@@ -55,7 +55,7 @@
             <div class="panelheading"><span>下一场比赛</span><span id="stageLabel" class="tag">联赛</span></div>
             <div id="nextMatch" class="nextmatch"></div>
             <div class="matchactions"><button id="playOne" class="primary" type="button">▶ 模拟下一轮</button><button id="playFive" class="outline" type="button">快进 5 轮</button><button id="playSeason" class="outline" type="button">模拟剩余赛季</button></div>
-            <div id="lastMatch" class="lastmatch"></div>
+            <div id="lastMatch" class="lastmatch"></div><div id="matchReport" class="match-report" aria-live="polite"></div>
           </div>
           <div class="panel sidepanel"><div class="panelheading"><span>球队状态</span><span class="tag">实时</span></div><div id="clubMetrics"></div><div class="sidehint">电脑俱乐部会自动优化阵容、轮换球员，并定期参与转会。</div></div>
         </div>
@@ -67,7 +67,7 @@
 
       <section id="view-squad" class="view" hidden>
         <div class="section-title"><div><h2>一线队阵容</h2><p>能力、状态与体能会影响模拟比赛。可以将球员挂牌出售，再补强短板。</p></div><span id="squadCount" class="tag"></span></div>
-        <div id="squadTable" class="tablewrap panel"></div>
+        <div id="squadTable" class="tablewrap panel"></div><div class="panel scorers-panel"><div class="panelheading"><span>本赛季球队射手榜</span><span class="tag">仅统计模拟联赛</span></div><div id="scorerList"></div></div>
       </section>
 
       <section id="view-tactics" class="view" hidden>
@@ -106,8 +106,16 @@
         <div class="section-title"><div><h2>联赛中心</h2><p id="leagueDescription">所选联赛按主客场双循环进行，实际对阵为游戏自动生成。</p></div><span id="leagueRound" class="tag"></span></div>
         <div class="leaguegrid"><div class="panel"><div class="panelheading"><span>积分榜</span><span class="tag">胜 3 分 · 平 1 分</span></div><div id="fullTable" class="tablewrap"></div></div><div class="panel"><div class="panelheading"><span>赛程与结果</span><span class="tag">本赛季</span></div><div id="fixtureList" class="fixtures"></div></div></div>
       </section>
+      <section id="view-office" class="view" hidden>
+        <div class="section-title"><div><h2>俱乐部经营中心</h2><p>管理训练设施、青训梯队、主场收入和董事会目标。升级项目影响后续比赛和球员成长。</p></div></div>
+        <div class="office-grid">
+          <div class="panel office-finance"><div class="panelheading"><span>财务报告</span><span class="tag">本赛季 · 游戏模拟</span></div><div id="financeReport"></div></div>
+          <div class="panel office-finance"><div class="panelheading"><span>董事会与球迷</span><span class="tag">经理考核</span></div><div id="boardReport"></div></div>
+          <div class="panel office-finance"><div class="panelheading"><span>青训与设施建设</span><span class="tag">长期培养</span></div><div id="facilityReport"></div></div>
+        </div>
+      </section>
     </main>
-    <footer class="footer">绿茵王朝 · 规则驱动的独立模拟游戏 · 进度仅存储在当前浏览器（新版独立存档）</footer>
+    <footer class="footer">绿茵王朝 · 非官方模拟经理游戏 · 支持浏览器自动存档及手动导出备份</footer>
   </div>
   <dialog id="bidDialog" aria-labelledby="bidHeading">
     <form id="bidForm">
