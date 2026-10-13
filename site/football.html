@@ -8,6 +8,7 @@
   <title>绿茵王朝 | 足球经理</title>
   <link rel="stylesheet" href="/football.css">
   <script src="/football-data.js" defer></script>
+  <script src="/football-world.js" defer></script>
   <script src="/football.js" defer></script>
 </head>
 <body>
@@ -22,7 +23,7 @@
     <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>20 支真实英超俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>自动本地存档</span></div></div>
     <div class="section-title"><h2>选择执教球队</h2><span>球员所属俱乐部采用2026年9月英超公布名单</span></div>
     <div id="clubGrid" class="clubgrid"></div>
-    <p class="disclaimer">本游戏为独立非官方作品。现实球员姓名与初始球队参考英超 2026/27 赛季阵容（2026年9月名单）；能力值、潜力、年龄、身价、预算及赛果属于游戏模拟，不代表现实数据。</p>
+    <p class="disclaimer">本游戏为非官方独立模拟。英超初始球员参考2026/27赛季9月阵容；其他联赛为精选候选球员而非完整注册名单，部分球队资料可能随转会变化。年龄、能力、身价、交易和赛果均为游戏模拟，不代表真实报价。</p>
   </section>
 
   <div id="workspace" hidden>
@@ -80,8 +81,17 @@
       </section>
 
       <section id="view-market" class="view" hidden>
-        <div class="section-title"><div><h2>转会市场</h2><p>与其他真实英超俱乐部进行模拟转会，支付转会费后，球员会从原球队转入你的球队；电脑球队也会自主交易。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="section-title"><div><h2>转会市场</h2><p>搜索英超、西甲、德甲、意甲、法甲、中超等10个联赛的球员，向其俱乐部报价购买。买入后原俱乐部同步失去该球员。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="market-controls panel">
+          <label>搜索球员（支持中文/英文）<input id="marketSearch" type="search" placeholder="如 姆巴佩、梅西、武磊、哈兰德"></label>
+          <label>所属联赛<select id="marketLeague"><option value="">全球全部联赛</option></select></label>
+          <label>俱乐部<select id="marketClub"><option value="">全部俱乐部</option></select></label>
+          <label>场上位置<select id="marketPos"><option value="">全部位置</option><option value="G">门将</option><option value="D">后卫</option><option value="M">中场</option><option value="F">前锋</option></select></label>
+          <label>排序<select id="marketSort"><option value="rating">能力由高到低</option><option value="priceHigh">身价由高到低</option><option value="priceLow">身价由低到高</option><option value="name">球员姓名</option></select></label>
+        </div>
+        <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>精选数据库快照 · 非全球实时全量资料</span></div>
         <div id="marketList" class="marketgrid"></div>
+        <div class="more-holder"><button type="button" id="marketMore" class="outline" hidden>加载更多球员</button></div>
       </section>
 
       <section id="view-league" class="view" hidden>
@@ -91,6 +101,17 @@
     </main>
     <footer class="footer">绿茵王朝 · 规则驱动的独立模拟游戏 · 进度仅存储在当前浏览器（新版独立存档）</footer>
   </div>
+  <dialog id="bidDialog" aria-labelledby="bidHeading">
+    <form id="bidForm">
+      <div class="dialog-head"><h2 id="bidHeading">向俱乐部报价</h2><button type="button" id="bidClose" class="outline">关闭</button></div>
+      <div id="bidDetails" class="bid-details"></div>
+      <label for="bidAmount">你的转会报价（单位：人民币万元）</label>
+      <input type="number" min="1" max="99999999" step="1" id="bidAmount" inputmode="numeric" required>
+      <p id="bidInfo" class="fine"></p>
+      <div id="bidFeedback" class="bid-feedback" role="status"></div>
+      <button type="submit" class="primary">正式提交报价</button>
+    </form>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 </body>
