@@ -366,9 +366,9 @@ function simulateOne(){
   output.forEach(applyResult);
   state.results.push(...output);
   const mine=output.find(r=>r.home===state.clubId||r.away===state.clubId);
-  state.lastResult=clubInfo[mine.home].name+" "+mine.hg+" : "+mine.ag+" "+clubInfo[mine.away].name;
-  state.lastEvents=mine.events||[];
-  updateFinance(mine);
+  state.lastResult=mine?(clubInfo[mine.home].name+" "+mine.hg+" : "+mine.ag+" "+clubInfo[mine.away].name):"本轮轮空";
+  state.lastEvents=mine?.events||[];
+  if(mine)updateFinance(mine);
   state.round++;
   fatigue();
   news(state.league+"第"+state.round+"轮 "+state.lastResult+"。当前排名第"+rank()+"。");
@@ -505,6 +505,11 @@ function renderDashboard(){
   if(game){
     $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(game.home)+'<strong>'+esc(clubInfo[game.home].name)+'</strong></div><div class="vs">VS</div><div class="team">'+badge(game.away)+'<strong>'+esc(clubInfo[game.away].name)+'</strong></div></div><p class="matchmeta">模拟联赛 · 第'+(state.round+1)+'轮 · 即将开赛</p>';
     $("playOne").textContent="▶ 模拟下一轮";$("playFive").hidden=false;$("playSeason").hidden=false;
+  }else if(state.round<leagueRounds()){
+    $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(state.clubId)+
+    '<strong>'+esc(clubInfo[state.clubId].name)+'</strong></div><div class="vs">轮空</div></div>'+
+    '<p class="matchmeta">本轮没有本队比赛 · 其他球队照常比赛</p>';
+    $("playOne").textContent="▶ 快进轮空周";$("playFive").hidden=false;$("playSeason").hidden=false;
   }else{
     $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(standings()[0].id)+'<strong>联赛冠军</strong></div><div class="vs">🏆</div><div class="team">'+badge(state.clubId)+'<strong>第 '+rank()+' 名</strong></div></div><p class="matchmeta">赛季结束 · 可继承阵容开始新赛季</p>';
     $("playOne").textContent="开启下一赛季";$("playFive").hidden=true;$("playSeason").hidden=true;
