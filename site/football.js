@@ -510,6 +510,11 @@ function renderDashboard(){
     $("playOne").textContent="开启下一赛季";$("playFive").hidden=true;$("playSeason").hidden=true;
   }
   $("lastMatch").textContent=state.lastResult?"最近一轮："+state.lastResult:"准备就绪：调整阵容与战术后即可开赛。";
+  $("matchReport").innerHTML=state.lastEvents?.length?
+    '<strong>最近一场 · 进球回放</strong>'+
+    state.lastEvents.map(e=>'<div class="goal-event"><span>'+e.minute+"' "+esc(clubInfo[e.team].name)+'</span><b>'+esc(e.name)+'</b>'+
+      (e.helperName?'<small>助攻 '+esc(e.helperName)+'</small>':'')+'</div>').join("")
+    :'<p class="fine">模拟一轮后，将显示该场比赛的射手和进球时间。</p>';
   const xi=userXI(),avg=Math.round(xi.reduce((s,p)=>s+p.ability,0)/Math.max(1,xi.length)),fit=Math.round(xi.reduce((s,p)=>s+p.fitness,0)/Math.max(1,xi.length));
   const metrics=[["首发综合能力",avg],["主力体能",fit],["更衣室士气",state.moods[state.clubId]],["队伍完整度",Math.round(clamp(state.squads[state.clubId].length/25*100,0,100))]];
   $("clubMetrics").innerHTML=metrics.map(([key,val])=>'<div class="metric"><div class="metrichead"><span>'+key+'</span><strong>'+val+'</strong></div><progress class="meter" max="100" value="'+clamp(val,0,100)+'"></progress></div>').join("");
@@ -519,7 +524,10 @@ function renderDashboard(){
 function renderSquad(){
   const squad=[...state.squads[state.clubId]].sort((a,b)=>"GDMF".indexOf(a.pos)-"GDMF".indexOf(b.pos)||b.ability-a.ability);
   $("squadCount").textContent=squad.length+" 名球员";
-  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>模拟身价</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong></td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+money(p.price)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
+  $("scorerList").innerHTML=[...squad].sort((a,b)=>(b.goals||0)-(a.goals||0)||b.ability-a.ability)
+  .slice(0,7).map((p,i)=>'<div class="office-row"><span>'+(i+1)+'. '+esc(p.name)+
+  (p.synthetic?' <small>模拟青训</small>':'')+'</span><strong>'+(p.goals||0)+' 球 · '+(p.assists||0)+' 助</strong></div>').join("");
+  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>模拟身价</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+'</td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+money(p.price)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
 }
 function renderTactics(){
   $("formationSelect").value=state.tactics.formation;$("styleSelect").value=state.tactics.style;$("trainingSelect").value=state.tactics.training;
