@@ -17,24 +17,24 @@
   <header class="topbar">
     <a href="/game" class="brand" aria-label="绿茵王朝主页"><span class="brandicon">⚽</span><span><strong>绿茵王朝</strong><small>FOOTBALL DYNASTY</small></span></a>
     <span class="eyebrow">自动化足球经理 · 模拟世界</span>
-    <div class="topactions"><a class="outline muted-link" href="/">游戏首页</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="exportBtn" class="outline" type="button" hidden>导出存档</button><button id="importBtn" class="outline" type="button">导入存档</button><input id="importFile" hidden type="file" accept="application/json,.json"><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
+    <div class="topactions"><label class="currency-switch" for="currencySelect">显示币种<select id="currencySelect" aria-label="转会身价显示币种"><option value="EUR">欧元 €</option><option value="GBP">英镑 £</option></select></label><a class="outline muted-link" href="/">游戏首页</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="exportBtn" class="outline" type="button" hidden>导出存档</button><button id="importBtn" class="outline" type="button">导入存档</button><input id="importFile" hidden type="file" accept="application/json,.json"><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
   </header>
 
   <section id="setup" class="setup">
-    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>六大完整模拟联赛</span><span>主客场双循环</span><span>全球球星转会</span><span>多轮转会谈判</span><span>自动本地存档</span></div></div>
+    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>真实转会期</span><span>欧元／英镑身价</span><span>六大完整模拟联赛</span><span>主客场双循环</span><span>全球球星转会</span><span>多轮转会谈判</span><span>自动本地存档</span></div></div>
     <div class="section-title"><h2>选择执教球队</h2><span>英超、西甲、意甲各38轮 · 德甲、法甲各34轮 · 中超30轮</span></div>
     <div class="setup-filters">
       <label for="setupLeague">选择联赛</label><select id="setupLeague" aria-label="选择执教联赛"><option value="英超">英超</option><option value="西甲">西甲</option><option value="德甲">德甲</option><option value="意甲">意甲</option><option value="法甲">法甲</option><option value="中超">中超</option><option value="葡超">葡超 · 精选</option><option value="荷甲">荷甲 · 精选</option><option value="沙特联">沙特联 · 精选</option><option value="美职联">美职联 · 精选</option></select>
       <p id="setupLeagueHint" class="fine">选择联赛，挑选你想执教的俱乐部。</p>
     </div>
     <div id="clubGrid" class="clubgrid"></div>
-    <p class="disclaimer">独立非官方模拟作品。英超有501位现实球员的中文姓名；其他联赛已录入精选球员，未收录的阵容位置由标记为「青训」的虚拟球员补位。六大主要联赛支持完整参赛球队数量和主客场赛制；葡超、荷甲、沙特联及美职联为精选小型模拟赛制。球员能力、年龄、预算与赛果均是模拟数据，非官方赛程。</p>
+    <p class="disclaimer">独立非官方模拟作品。英超有501位现实球员的中文姓名；其他联赛已录入精选球员，未收录的阵容位置由标记为「青训」的虚拟球员补位。六大主要联赛支持完整参赛球队数量和主客场赛制；葡超、荷甲、沙特联及美职联为精选小型模拟赛制。球员能力、年龄、预算与赛果均是模拟数据，非官方赛程。各轮比赛日期按赛季区间生成，并非官方具体对阵日程。英镑显示采用固定游戏参考汇率，不实时更新。</p>
   </section>
 
   <div id="workspace" hidden>
     <section class="statstrip">
       <div><small>当前俱乐部 / 联赛</small><b id="statClub">—</b></div>
-      <div><small>模拟赛季</small><b id="statSeason">—</b></div>
+      <div><small>模拟赛季</small><b id="statSeason">—</b></div><div><small>游戏日期</small><b id="statDate">—</b></div>
       <div><small>赛程进度</small><b id="statRound">—</b></div>
       <div><small>转会预算</small><b id="statBudget">—</b></div>
       <div><small>联赛排名</small><b id="statRank">—</b></div>
@@ -55,7 +55,7 @@
             <div class="panelheading"><span>下一场比赛</span><span id="stageLabel" class="tag">联赛</span></div>
             <div id="nextMatch" class="nextmatch"></div>
             <div class="matchactions"><button id="playOne" class="primary" type="button">▶ 模拟下一轮</button><button id="playFive" class="outline" type="button">快进 5 轮</button><button id="playSeason" class="outline" type="button">模拟剩余赛季</button></div>
-            <div id="lastMatch" class="lastmatch"></div><div id="matchReport" class="match-report" aria-live="polite"></div>
+            <div id="roundCalendar" class="round-calendar"></div><div id="lastMatch" class="lastmatch"></div><div id="matchReport" class="match-report" aria-live="polite"></div>
           </div>
           <div class="panel sidepanel"><div class="panelheading"><span>球队状态</span><span class="tag">实时</span></div><div id="clubMetrics"></div><div class="sidehint">电脑俱乐部会自动优化阵容、轮换球员，并定期参与转会。</div></div>
         </div>
@@ -86,7 +86,9 @@
       </section>
 
       <section id="view-market" class="view" hidden>
-        <div class="section-title"><div><h2>转会市场</h2><p>搜索英超、西甲、德甲、意甲、法甲、中超等10个联赛的球员，向其俱乐部报价购买。买入后原俱乐部同步失去该球员。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="section-title"><div><h2>转会市场</h2><p>球员按欧元估值，可切换英镑显示。报价与签约遵循你执教联赛的注册期；关窗期间仍可查看并关注球员。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div class="transfer-window panel" id="transferWindow" aria-live="polite"></div>
+        <div class="window-calendar panel" id="windowCalendar"></div>
         <div class="market-controls panel">
           <label>搜索球员（支持中文/英文）<input id="marketSearch" type="search" placeholder="如 姆巴佩、梅西、武磊、哈兰德"></label>
           <label>所属联赛<select id="marketLeague"><option value="">全球全部联赛</option></select></label>
@@ -94,7 +96,7 @@
           <label>场上位置<select id="marketPos"><option value="">全部位置</option><option value="G">门将</option><option value="D">后卫</option><option value="M">中场</option><option value="F">前锋</option></select></label>
           <label>排序<select id="marketSort"><option value="rating">能力由高到低</option><option value="priceHigh">身价由高到低</option><option value="priceLow">身价由低到高</option><option value="name">球员姓名</option></select></label>
         </div>
-        <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>精选数据库快照 · 非全球实时全量资料</span></div>
+        <div class="market-summary"><span id="marketCount">正在读取转会球员</span><span>身价为游戏模拟的市场估值，非 Transfermarkt 实时报价</span></div>
         <div id="marketList" class="marketgrid"></div>
         <section class="panel offer-log"><div class="panelheading"><span>谈判办公室</span><span class="tag" id="offerCount">历史记录</span></div>
           <div id="offerHistory" aria-live="polite"></div>
@@ -121,9 +123,9 @@
     <form id="bidForm">
       <div class="dialog-head"><h2 id="bidHeading">向俱乐部报价</h2><button type="button" id="bidClose" class="outline">关闭</button></div>
       <div id="bidDetails" class="bid-details"></div>
-      <label for="bidAmount">你的转会报价（单位：人民币万元）</label>
+      <label for="bidAmount" id="bidCurrencyLabel">你的转会报价（单位：万欧元 €）</label>
       <input type="number" min="1" max="99999999" step="1" id="bidAmount" inputmode="numeric" required>
-      <p id="bidInfo" class="fine"></p>
+      <p id="bidInfo" class="fine"></p><p id="bidWindowInfo" class="fine"></p>
       <div id="bidFeedback" class="bid-feedback" role="status"></div><div id="bidQuote" class="bid-quote"></div>
       <div class="bid-actions">
        <button type="submit" class="primary" id="bidSubmit">发送报价</button>
