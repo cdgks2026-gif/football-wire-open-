@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09121c">
+  <meta name="description" content="绿茵王朝：自动化足球经理模拟游戏，经营俱乐部、战术排阵、转会、模拟联赛。">
+  <title>绿茵王朝 | 足球经理</title>
+  <link rel="stylesheet" href="/football.css">
+  <script src="/football.js" defer></script>
+</head>
+<body>
+<div class="shell" id="footballApp">
+  <header class="topbar">
+    <a href="/game" class="brand" aria-label="绿茵王朝主页"><span class="brandicon">⚽</span><span><strong>绿茵王朝</strong><small>FOOTBALL DYNASTY</small></span></a>
+    <span class="eyebrow">自动化足球经理 · 模拟世界</span>
+    <div class="topactions"><a class="outline muted-link" href="/">返回原网站</a><button id="saveBtn" class="outline" type="button" hidden>保存进度</button><button id="resetBtn" class="outline danger" type="button" hidden>重新开档</button></div>
+  </header>
+
+  <section id="setup" class="setup">
+    <div class="intro"><div class="tiny"><span class="dot"></span> 新赛季 · 经理任命</div><h1>你的球队，<em>由你决定命运。</em></h1><p>选择一支俱乐部，从排兵布阵到转会签约。对手会自动安排阵容、完成交易，联赛按轮次自主运行。</p><div class="chips"><span>8 支俱乐部</span><span>主客场联赛</span><span>AI 对手自动经营</span><span>自动本地存档</span></div></div>
+    <div class="section-title"><h2>选择执教球队</h2><span>演示版球员与数值为虚构模拟数据</span></div>
+    <div id="clubGrid" class="clubgrid"></div>
+    <p class="disclaimer">本游戏为独立模拟作品，非任何俱乐部或联赛官方游戏。数据为游戏内生成，不代表现实阵容或战绩。</p>
+  </section>
+
+  <div id="workspace" hidden>
+    <section class="statstrip">
+      <div><small>当前执教</small><b id="statClub">—</b></div>
+      <div><small>模拟赛季</small><b id="statSeason">—</b></div>
+      <div><small>赛程进度</small><b id="statRound">—</b></div>
+      <div><small>转会预算</small><b id="statBudget">—</b></div>
+      <div><small>联赛排名</small><b id="statRank">—</b></div>
+    </section>
+
+    <nav class="navtabs" aria-label="游戏功能">
+      <button type="button" class="nav-btn active" data-view="dashboard">俱乐部首页</button>
+      <button type="button" class="nav-btn" data-view="squad">球员阵容</button>
+      <button type="button" class="nav-btn" data-view="tactics">战术中心</button>
+      <button type="button" class="nav-btn" data-view="market">转会市场</button>
+      <button type="button" class="nav-btn" data-view="league">联赛中心</button>
+    </nav>
+
+    <main>
+      <section id="view-dashboard" class="view">
+        <div class="dashgrid">
+          <div class="panel feature">
+            <div class="panelheading"><span>下一场比赛</span><span id="stageLabel" class="tag">联赛</span></div>
+            <div id="nextMatch" class="nextmatch"></div>
+            <div class="matchactions"><button id="playOne" class="primary" type="button">▶ 模拟下一轮</button><button id="playFive" class="outline" type="button">快进 5 轮</button><button id="playSeason" class="outline" type="button">模拟剩余赛季</button></div>
+            <div id="lastMatch" class="lastmatch"></div>
+          </div>
+          <div class="panel sidepanel"><div class="panelheading"><span>球队状态</span><span class="tag">实时</span></div><div id="clubMetrics"></div><div class="sidehint">电脑俱乐部会自动优化阵容、轮换球员，并定期参与转会。</div></div>
+        </div>
+        <div class="belowgrid">
+          <div class="panel"><div class="panelheading"><span>联赛前列</span><button class="textbtn" type="button" data-view="league">全部排名 →</button></div><div id="miniTable"></div></div>
+          <div class="panel"><div class="panelheading"><span>经理办公室 · 动态</span><span class="tag">比赛 & 转会</span></div><div id="newsFeed" class="feed"></div></div>
+        </div>
+      </section>
+
+      <section id="view-squad" class="view" hidden>
+        <div class="section-title"><div><h2>一线队阵容</h2><p>能力、状态与体能会影响模拟比赛。可以将球员挂牌出售，再补强短板。</p></div><span id="squadCount" class="tag"></span></div>
+        <div id="squadTable" class="tablewrap panel"></div>
+      </section>
+
+      <section id="view-tactics" class="view" hidden>
+        <div class="section-title"><div><h2>战术中心</h2><p>阵型与战术真实参与比赛概率计算，并影响球员体力消耗。</p></div></div>
+        <div class="tacticgrid">
+          <div class="panel inputs">
+            <label for="formationSelect">比赛阵型</label><select id="formationSelect"><option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option></select>
+            <label for="styleSelect">比赛风格</label><select id="styleSelect"><option value="balance">攻守均衡</option><option value="press">高位逼抢</option><option value="control">控球组织</option><option value="counter">稳守反击</option></select>
+            <label for="trainingSelect">本轮训练重点</label><select id="trainingSelect"><option value="fitness">体能恢复</option><option value="attack">进攻训练</option><option value="defense">防守训练</option></select>
+            <button type="button" id="autoLineup" class="primary">智能推荐最强首发</button>
+            <p class="fine">变更后自动保存。智能首发根据阵型、能力、状态和体能选择 11 人。</p>
+            <div id="lineupRoster" class="lineup-roster"></div>
+          </div>
+          <div class="panel pitchPanel"><div class="panelheading"><span>预计首发 · 11 人</span><span id="formationBadge" class="tag"></span></div><div id="pitch" class="pitch"></div><p class="fine">点球员名单中的“替换”可调整首发，系统会优先替换同位置评分最低的球员。</p></div>
+        </div>
+      </section>
+
+      <section id="view-market" class="view" hidden>
+        <div class="section-title"><div><h2>转会市场</h2><p>寻找自由市场球员，预算充足即可直接签约；电脑球队也会参与竞争。</p></div><span id="marketBudget" class="tag"></span></div>
+        <div id="marketList" class="marketgrid"></div>
+      </section>
+
+      <section id="view-league" class="view" hidden>
+        <div class="section-title"><div><h2>联赛中心</h2><p>8 队双循环，14 轮。所有比赛同时模拟并即时更新积分。</p></div><span id="leagueRound" class="tag"></span></div>
+        <div class="leaguegrid"><div class="panel"><div class="panelheading"><span>积分榜</span><span class="tag">胜 3 分 · 平 1 分</span></div><div id="fullTable" class="tablewrap"></div></div><div class="panel"><div class="panelheading"><span>赛程与结果</span><span class="tag">本赛季</span></div><div id="fixtureList" class="fixtures"></div></div></div>
+      </section>
+    </main>
+    <footer class="footer">绿茵王朝 · 规则驱动的独立模拟游戏 · 进度仅存储在当前浏览器</footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+</body>
+</html>
