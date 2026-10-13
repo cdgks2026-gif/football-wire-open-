@@ -61,7 +61,7 @@ function fixtures(){
 }
 function emptyStandings(){return clubInfo.map((_,id)=>({id,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}));}
 function start(id){
- state={clubId:id,year:2026,season:1,round:0,nextId:1,budget:clubInfo[id].budget,
+ state={clubId:id,year:2026,season:1,round:0,nextId:1,budget:clubInfo[id].budget,negotiations:{},
  aiBudgets:clubInfo.map(c=>c.budget),worldBudgets:worldClubs.map(c=>c.budget),
  squads:[],worldSquads:[],market:[],table:emptyStandings(),fixtures:fixtures(),results:[],
  news:[],lastResult:"",titles:0,
@@ -171,6 +171,7 @@ function load(){
   if(!Array.isArray(state.worldBudgets)||state.worldBudgets.length!==worldClubs.length)
     state.worldBudgets=worldClubs.map(c=>c.budget);
   state.market=[]; // Old limited listings are replaced by global live club rosters.
+  if(!state.negotiations||typeof state.negotiations!=="object")state.negotiations={};
   if(!localStorage.getItem(STORAGE))save();
  }catch(error){state=null;}
 }
@@ -273,20 +274,56 @@ function newSeason(){
  state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
  news("新赛季开启：英超38轮，全球转会市场持续开放。");save();
 }
-function buy(id,fee){
+function negotiationInfo(id){
  const found=playerFor(id);
- if(!found||found.owner===state.clubId)return {ok:false,message:"该球员已被买走。"};
- if(!canRelease(found.owner,found.player))return {ok:false,message:"卖方目前不愿意出售该球员。"};
- if(squadFor(state.clubId).length>=MAX_SQUAD)return {ok:false,message:"一线队已满35人，先出售部分球员。"};
- if(!Number.isSafeInteger(fee)||fee<1)return {ok:false,message:"请填写有效报价。"};
- if(state.budget<fee)return {ok:false,message:"转会预算不足，最高可报价"+money(state.budget)+"。"};
- const minimum=offerFloor(found.owner,found.player);
- if(fee<minimum)return {ok:false,message:allClubs[found.owner].name+"拒绝了报价，估计至少需要"+money(minimum)+"。"};
+ const saved=state.negotiations?.[id];
+ if(!found || found.owner===state.clubId)return null;
+ const p=found.player,owner=found.owner;
+ const listingCount=squadFor(owner).filter(x=>x.pos===p.pos).length;
+ const scarcity=owner<clubInfo.length && listingCount<5?0.09:0;
+ const keyPlayer=p.ability>=88?0.08:p.ability>=83?0.04:0;
+ const morale=p.form>=91?0.03:0;
+ const reserve=Math.ceil(offerFloor(owner,p)*(1+scarcity+keyPlayer+morale));
+ const asking=Math.ceil(reserve*1.18);
+ const alive=saved && saved.season===state.season && saved.expiresRound>=state.round &&
+      saved.owner===owner && saved.status==="counter";
+ return {found,owner,player:p,asking,reserve,
+    saved,activeCounter:alive?Number(saved.counter):0};
+}
+function recordNegotiation(id,fields){
+ const previous=state.negotiations[id]||{};
+ state.negotiations[id]={...previous,...fields,
+   season:state.season,round:state.round,expiresRound:Math.min(LEAGUE_ROUNDS,state.round+5)};
+ save();
+}
+function buy(id,fee){
+ const info=negotiationInfo(id);
+ if(!info)return {ok:false,kind:"unavailable",message:"球员已离队或已经在你的球队。"};
+ const {player,owner,reserve,activeCounter,saved}=info;
+ if(!canRelease(owner,player))return {ok:false,kind:"unavailable",message:"该球员是关键位置唯一人选，卖方需要保留他。"};
+ if(squadFor(state.clubId).length>=MAX_SQUAD)return {ok:false,kind:"unavailable",message:"一线队已满35人，请先出售球员。"};
+ if(!Number.isSafeInteger(fee)||fee<1)return {ok:false,kind:"invalid",message:"请填写有效的整数报价。"};
+ if(fee>state.budget)return {ok:false,kind:"funds",message:"预算不足，当前最多可报价"+money(state.budget)+"。"};
+ const attempts=Math.min(6,(saved?.attempts||0)+1);
+ const reduced=reserve*(1-Math.min(attempts-1,4)*.022);
+ const agreed=activeCounter>0 && fee>=activeCounter;
+ if(!agreed&&fee<reduced){
+   if(fee<reduced*.53){
+      recordNegotiation(id,{owner,name:player.name,club:allClubs[owner].name,fee,attempts,status:"low",counter:0});
+      return {ok:false,kind:"low",message:allClubs[owner].name+"认为报价偏离球员价值较远。建议将报价提高至约"+money(Math.ceil(reduced*.8))+"以上，仍可继续谈判。"};
+   }
+   const counter=Math.ceil(Math.max(reduced,Math.max(fee*1.025,reduced*(1.11-Math.min(attempts,4)*.025))));
+   recordNegotiation(id,{owner,name:player.name,club:allClubs[owner].name,fee,attempts,status:"counter",counter});
+   return {ok:false,kind:"counter",counter,
+      message:allClubs[owner].name+"没有直接拒绝。俱乐部提出还价 "+money(counter)+"，你可以接受，或再次提交你的报价（有效期5轮）。"};
+ }
  const deal=transferPlayer(id,state.clubId,fee);
- if(!deal)return {ok:false,message:"转会失败，球员已不可交易。"};
- news("成功收购"+deal.player.name+"：从"+allClubs[deal.from].name+"转入"+clubInfo[state.clubId].name+"，花费"+money(deal.fee)+"。");
- save();render();show("转会成功："+deal.player.name);
- return {ok:true,message:"签约成功！"+deal.player.name+"已进入你的球员阵容。"};
+ if(!deal)return {ok:false,kind:"unavailable",message:"交易未能完成，可能已经被其他球队买走。"};
+ recordNegotiation(id,{owner:deal.from,name:deal.player.name,club:allClubs[deal.from].name,fee,attempts,status:"signed",counter:0});
+ news("官宣："+deal.player.name+"从"+allClubs[deal.from].name+"加盟"+clubInfo[state.clubId].name+
+    "，转会费"+money(fee)+"，谈判"+attempts+"轮完成。");
+ save();render();show("成功签下："+deal.player.name);
+ return {ok:true,kind:"signed",message:"签约成功："+deal.player.name+"已加入你的阵容。"};
 }
 function sell(id){
  const found=playerFor(id);
@@ -412,25 +449,52 @@ function renderMarket(){
  '<p>'+esc(player.english||"")+'</p><p>能力 '+player.ability+
  ' · 游戏潜力 '+player.potential+' · 状态 '+player.form+'</p>'+
  '<div class="value">'+money(player.price)+'</div>'+
- '<button type="button" class="primary" data-offer="'+player.id+'">向俱乐部报价</button></article>').join("")
+ '<button type="button" class="primary" data-offer="'+player.id+'">'+
+ (state.negotiations[player.id]?.status==="counter"?"继续谈判":"向俱乐部报价")+'</button></article>').join("")
  ||'<div class="panel">没有符合条件的球员。请修改联赛、球队或搜索关键词。</div>';
  $("marketMore").hidden=page.length>=items.length;
  $("marketMore").textContent="加载更多（已显示 "+page.length+" / "+items.length+"）";
+ const negotiations=Object.entries(state.negotiations||{}).map(([id,v])=>({id:Number(id),...v}))
+   .filter(n=>n.season===state.season).sort((a,b)=>b.round-a.round);
+ $("offerCount").textContent=negotiations.length+" 条记录";
+ $("offerHistory").innerHTML=negotiations.length?negotiations.slice(0,16).map(n=>{
+   const available=playerFor(n.id);
+   const active=n.status==="counter" && n.expiresRound>=state.round &&
+       available && available.owner!==state.clubId;
+   const status=n.status==="signed"?"转会完成":active?"待你答复":n.status==="low"?"报价偏低":"已结束";
+   return '<div class="offer-row"><div><strong>'+esc(n.name||"球员")+'</strong><small>'+
+     esc(n.club||"原俱乐部")+' · 第'+(n.round+1)+'轮 · '+status+
+     '</small></div><div><strong>'+money(n.fee||0)+'</strong>'+
+     (active?'<button type="button" class="action" data-offer="'+n.id+'">继续谈判</button>':"")+
+     '</div></div>';
+ }).join(""):'<p class="fine">尚无转会谈判。点击球员的「向俱乐部报价」开始。</p>';
+}
+function showOfferFeedback(result){
+ $("bidFeedback").textContent=result.message||"";
+ const info=bidTarget===null?null:negotiationInfo(bidTarget);
+ const active=result.kind==="counter" ? result.counter : info?.activeCounter||0;
+ $("acceptCounter").hidden=!active;
+ $("acceptCounter").disabled=!!(active && state.budget<active);
+ $("acceptCounter").textContent=active?"接受还价 "+money(active)+" 并签约":"接受对方还价并签约";
+ $("bidQuote").textContent=active?
+   "卖方已提出还价。若预算不足，可先出售球员补充资金，报价将保留至有效期结束。":"";
 }
 function openBid(id){
- const found=playerFor(id);
- if(!found||found.owner===state.clubId)return show("该球员目前不可收购。");
+ const info=negotiationInfo(id);
+ if(!info)return show("该球员已离队或在你的球队。");
  bidTarget=id;
- const {player,owner}=found;
+ const {player,owner,asking,saved,activeCounter}=info;
  $("bidHeading").textContent="求购 "+player.name;
  $("bidDetails").innerHTML="<strong>"+esc(player.name)+"</strong><p>"+
-    esc(player.english||"")+"</p><p>当前效力："+esc(allClubs[owner].league)+" · "+
-    esc(allClubs[owner].name)+"</p><p>位置："+byPos[player.pos]+
-    " · 能力："+player.ability+" · 游戏身价："+money(player.price)+"</p>";
- $("bidAmount").value=offerFloor(owner,player);
- $("bidInfo").textContent="对方预计心理价位："+money(offerFloor(owner,player))+
-    "，你的预算："+money(state.budget)+"。报价为游戏模拟，非现实转会估价。";
+   esc(player.english||"")+"</p><p>当前所属："+esc(allClubs[owner].league)+" · "+
+   esc(allClubs[owner].name)+"</p><p>位置："+byPos[player.pos]+
+   " · 能力："+player.ability+" · 参考身价："+money(player.price)+"</p>";
+ $("bidAmount").value=activeCounter||Math.min(asking,Math.max(1,state.budget));
+ $("bidInfo").textContent="俱乐部起始要价约 "+money(asking)+"，当前预算 "+
+   money(state.budget)+"。你可以主动提交低价，对方会结合球员能力、球队实力和谈判轮次还价。";
  $("bidFeedback").textContent="";
+ showOfferFeedback({kind:activeCounter?"counter":"start",counter:activeCounter,message:
+   activeCounter?"上一次还价 "+money(activeCounter)+" 有效至本赛季第 "+(saved.expiresRound+1)+" 轮。":""});
  const dlg=$("bidDialog");
  if(typeof dlg.showModal==="function"&&!dlg.open)dlg.showModal();
  else dlg.setAttribute("open","");
@@ -465,13 +529,20 @@ $("marketPos").addEventListener("change",ev=>{marketFilter.pos=ev.target.value;m
 $("marketSort").addEventListener("change",ev=>{marketFilter.sort=ev.target.value;marketFilter.limit=24;renderMarket();});
 $("marketMore").addEventListener("click",()=>{marketFilter.limit+=24;renderMarket();});
 $("bidClose").addEventListener("click",closeBid);
+$("acceptCounter").addEventListener("click",()=>{
+ if(bidTarget===null)return;
+ const info=negotiationInfo(bidTarget);
+ if(!info?.activeCounter)return showOfferFeedback({kind:"unavailable",message:"还价已失效，请重新报价。"});
+ const result=buy(bidTarget,info.activeCounter);
+ if(result.ok)closeBid();else{showOfferFeedback(result);renderMarket();}
+});
 $("bidDialog").addEventListener("close",()=>{bidTarget=null;});
 $("bidForm").addEventListener("submit",ev=>{
  ev.preventDefault();
  if(bidTarget===null)return;
  const amount=Number($("bidAmount").value);
  const result=buy(bidTarget,amount);
- if(result.ok){closeBid();}else $("bidFeedback").textContent=result.message;
+ if(result.ok){closeBid();}else{showOfferFeedback(result);renderMarket();}
 });
 $("playOne").addEventListener("click",()=>advance(1));
 $("playFive").addEventListener("click",()=>advance(5));
