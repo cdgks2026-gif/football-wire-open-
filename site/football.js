@@ -633,7 +633,10 @@ function render(){
   renderSetup();if(!state)return;
   $("statClub").textContent=clubInfo[state.clubId].name+" · "+state.league;
   $("statSeason").textContent=state.year+"/"+String((state.year+1)%100).padStart(2,"0");
-  $("statRound").textContent=state.round+" / "+leagueRounds()+" 轮";
+  $("statRound").textContent="第"+(Math.min(state.round+1,leagueRounds()))+"轮 / 共"+leagueRounds()+"轮"+
+    (state.round>=leagueRounds()?"（已结束）":"");
+  $("statDate").textContent=gameDate();
+  $("currencySelect").value=displayCurrency;
   $("statBudget").textContent=money(state.budget);
   $("statRank").textContent="第 "+rank()+" 名";
   root.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===currentView));
@@ -641,19 +644,26 @@ function render(){
   renderDashboard();renderSquad();renderTactics();renderMarket();renderLeague();renderOffice();
 }
 function renderDashboard(){
-  const game=nextFixture();$("stageLabel").textContent=game?"第 "+(state.round+1)+" 轮":"赛季已结束";
+  const game=nextFixture();
+  $("stageLabel").textContent=state.round>=leagueRounds()?"赛季结束":
+    "第 "+(state.round+1)+" / "+leagueRounds()+" 轮 · "+(state.matchDates[state.round]||"待定");
   if(game){
-    $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(game.home)+'<strong>'+esc(clubInfo[game.home].name)+'</strong></div><div class="vs">VS</div><div class="team">'+badge(game.away)+'<strong>'+esc(clubInfo[game.away].name)+'</strong></div></div><p class="matchmeta">模拟联赛 · 第'+(state.round+1)+'轮 · 即将开赛</p>';
+    $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(game.home)+'<strong>'+esc(clubInfo[game.home].name)+'</strong></div><div class="vs">VS</div><div class="team">'+badge(game.away)+'<strong>'+esc(clubInfo[game.away].name)+'</strong></div></div><p class="matchmeta">模拟联赛 · 第'+(state.round+1)+'轮 · '+state.matchDates[state.round]+' · 即将开赛（游戏排期）</p>';
     $("playOne").textContent="▶ 模拟下一轮";$("playFive").hidden=false;$("playSeason").hidden=false;
   }else if(state.round<leagueRounds()){
     $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(state.clubId)+
     '<strong>'+esc(clubInfo[state.clubId].name)+'</strong></div><div class="vs">轮空</div></div>'+
-    '<p class="matchmeta">本轮没有本队比赛 · 其他球队照常比赛</p>';
+    '<p class="matchmeta">第'+(state.round+1)+'轮 · '+state.matchDates[state.round]+' · 本轮轮空，其他球队照常比赛</p>';
     $("playOne").textContent="▶ 快进轮空周";$("playFive").hidden=false;$("playSeason").hidden=false;
   }else{
     $("nextMatch").innerHTML='<div class="versus"><div class="team">'+badge(standings()[0].id)+'<strong>联赛冠军</strong></div><div class="vs">🏆</div><div class="team">'+badge(state.clubId)+'<strong>第 '+rank()+' 名</strong></div></div><p class="matchmeta">赛季结束 · 可继承阵容开始新赛季</p>';
     $("playOne").textContent="开启下一赛季";$("playFive").hidden=true;$("playSeason").hidden=true;
   }
+  const peek=state.matchDates.slice(state.round,Math.min(state.round+5,state.matchDates.length));
+  $("roundCalendar").innerHTML='<div class="calendar-title"><strong>赛程日期（游戏模拟）</strong><span>'+
+    esc(state.league)+' · 已完成'+state.round+'轮</span></div>'+
+    (peek.length?peek.map((date,j)=>'<span class="calendar-chip">'+date+'<b>第'+
+       (state.round+j+1)+'轮</b></span>').join(""):'<span>赛季全部轮次已结束</span>');
   $("lastMatch").textContent=state.lastResult?"最近一轮："+state.lastResult:"准备就绪：调整阵容与战术后即可开赛。";
   $("matchReport").innerHTML=state.lastEvents?.length?
     '<strong>最近一场 · 进球回放</strong>'+
@@ -790,8 +800,8 @@ function closeBid(){
  else dlg.removeAttribute("open");
 }
 function renderLeague(){
-  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮";$("leagueDescription").textContent=state.league+" · "+state.leagueIds.length+"支球队，主客场双循环共"+leagueRounds()+"个比赛周、"+(state.leagueIds.length*(state.leagueIds.length-1))+"场，球队各赛"+((state.leagueIds.length-1)*2)+"场。赛程为游戏生成，非官方现实赛程。";$("fullTable").innerHTML=tableHTML(false);
-  $("fixtureList").innerHTML=state.fixtures.map((games,index)=>'<div class="fixture-round"><strong>第 '+(index+1)+' 轮 '+(index===state.round?'· 下一轮':'')+'</strong>'+games.map(g=>{
+  $("leagueRound").textContent="已进行 "+state.round+" / "+leagueRounds()+" 轮 · 当前"+gameDate();$("leagueDescription").textContent=state.league+" · "+state.leagueIds.length+"支球队，主客场双循环共"+leagueRounds()+"个比赛周、"+(state.leagueIds.length*(state.leagueIds.length-1))+"场，球队各赛"+((state.leagueIds.length-1)*2)+"场。赛程为游戏生成，非官方现实赛程。";$("fullTable").innerHTML=tableHTML(false);
+  $("fixtureList").innerHTML=state.fixtures.map((games,index)=>'<div class="fixture-round"><strong>第 '+(index+1)+' 轮 · '+state.matchDates[index]+'（模拟） '+(index===state.round?'· 下一轮':'')+'</strong>'+games.map(g=>{
     const r=state.results.find(x=>x.round===index+1&&x.home===g.home&&x.away===g.away);
     return '<div class="fixture '+(g.home===state.clubId||g.away===state.clubId?'mine':'')+'"><span>'+esc(clubInfo[g.home].name)+'</span><b>'+(r?r.hg+" : "+r.ag:"—")+'</b><span>'+esc(clubInfo[g.away].name)+'</span></div>';
   }).join("")+'</div>').join("");
