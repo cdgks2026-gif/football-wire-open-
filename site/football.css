@@ -60,3 +60,27 @@
 .setup-filters select{min-width:170px;background:#20323a;border:1px solid #4c615c;color:#eef6ef;padding:12px;border-radius:9px}
 .setup-filters .fine{margin:0;flex:1;min-width:220px}
 @media(max-width:600px){.setup-filters{align-items:stretch}.setup-filters select{flex:1}.setup-filters .fine{min-width:100%}}
+
+/* Management office, match reporting and mobile save actions */
+.office-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}
+.office-grid .panel{padding:18px;min-width:0}
+.office-value{font-size:23px;color:#c9f58d;font-weight:800;margin:18px 0}
+.office-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 3px;border-bottom:1px solid #2a4047;font-size:13px}
+.office-row span{color:#b2c9c8}
+.office-row strong{color:#e8f8ed;text-align:right}
+.office-row small{font-size:10px;color:#9db0ad}
+.facility{display:flex;justify-content:space-between;gap:15px;align-items:center;border-bottom:1px solid #2a4047;padding:12px 0}
+.facility>div{display:flex;flex-direction:column;gap:7px}
+.facility strong{font-size:13px}
+.facility small{color:#92aba8;font-size:11px;line-height:1.5}
+.facility .action{font-size:12px;flex-shrink:0;white-space:nowrap}
+.scorers-panel{padding:15px;margin-top:15px}
+.match-report{padding:8px 0 0}
+.match-report>strong{font-size:12px;color:#bbd890}
+.goal-event{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #2d4644;padding:9px 5px;font-size:12px}
+.goal-event b{color:#cafa9a}
+.goal-event small{color:#9aaba9}
+.injury{display:block;font-size:10px;color:#fb9e9e;margin-top:4px}
+.topactions{flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:950px){.office-grid{grid-template-columns:1fr 1fr}.office-grid>.panel:last-child{grid-column:span 2}}
+@media(max-width:640px){.office-grid{grid-template-columns:1fr}.office-grid>.panel:last-child{grid-column:auto}.topactions{gap:5px}.topactions .outline{font-size:11px;padding:8px 9px;min-height:36px}.goal-event{font-size:11px}}
