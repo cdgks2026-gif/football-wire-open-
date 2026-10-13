@@ -24,7 +24,7 @@ const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
 const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = value => value >= 10000 ? "¥"+(value/10000).toFixed(2)+"亿" : "¥"+Math.round(value).toLocaleString("zh-CN")+"万";
-const badge = id => '<span class="clublogo" style="background:'+clubInfo[id].color+'">'+clubInfo[id].short+'</span>';
+const badge = id => '<span class="clublogo club-'+id+'">'+clubInfo[id].short+'</span>';
 const drawName = i => firstNames[(i*7+3)%firstNames.length]+"·"+lastNames[(i*11+5)%lastNames.length];
 function newPlayer(pos,power,index) {
   const id = state.nextId++;
@@ -232,7 +232,7 @@ function renderDashboard(){
   $("lastMatch").textContent=state.lastResult?"最近一轮："+state.lastResult:"准备就绪：调整阵容与战术后即可开赛。";
   const xi=userXI(),avg=Math.round(xi.reduce((s,p)=>s+p.ability,0)/Math.max(1,xi.length)),fit=Math.round(xi.reduce((s,p)=>s+p.fitness,0)/Math.max(1,xi.length));
   const metrics=[["首发综合能力",avg],["主力体能",fit],["更衣室士气",state.moods[state.clubId]],["队伍完整度",Math.round(clamp(state.squads[state.clubId].length/23*100,0,100))]];
-  $("clubMetrics").innerHTML=metrics.map(([key,val])=>'<div class="metric"><div class="metrichead"><span>'+key+'</span><strong>'+val+'</strong></div><div class="meter"><i style="width:'+clamp(val,0,100)+'%"></i></div></div>').join("");
+  $("clubMetrics").innerHTML=metrics.map(([key,val])=>'<div class="metric"><div class="metrichead"><span>'+key+'</span><strong>'+val+'</strong></div><progress class="meter" max="100" value="'+clamp(val,0,100)+'"></progress></div>').join("");
   $("miniTable").innerHTML=tableHTML(true);
   $("newsFeed").innerHTML=state.news.slice(0,6).map(n=>'<div class="feeditem"><small>S'+n.season+' / R'+n.round+'</small><span>'+esc(n.text)+'</span></div>').join("");
 }
