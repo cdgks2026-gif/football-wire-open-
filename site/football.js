@@ -118,7 +118,7 @@ const zdate=(y,m,d)=>String(y)+"-"+String(m).padStart(2,"0")+"-"+String(d).padSt
 const dateAdd=(iso,days)=>new Date(Date.parse(iso+"T12:00:00Z")+days*86400000).toISOString().slice(0,10);
 function fixtureDates(league,year,count){
  const china=league==="中超";
- const start=china?zdate(year,3,6):zdate(year,8,22);
+ const start=china?zdate(year,3,6):zdate(year,8,21);
  const end=china?zdate(year,11,8):zdate(year+1,5,30);
  const days=Math.round((Date.parse(end)-Date.parse(start))/86400000);
  return Array.from({length:count},(_,i)=>dateAdd(start,Math.round(days*i/Math.max(1,count-1))));
@@ -627,7 +627,7 @@ function renderSetup(){
  "精选俱乐部小型模拟比赛，尚未覆盖此联赛全部真实参赛球队。");
  $("clubGrid").innerHTML=clubs.map(c=>'<button type="button" class="clubitem" data-club="'+c.id+'">'+
  badge(c.id)+'<strong>'+esc(c.name)+'</strong><small>初始实力 '+c.power+
- ' · '+money(c.budget)+'</small><span class="pick">执教 '+esc(setupLeague)+' ↗</span></button>').join("");
+ ' · '+money(initialBudget(c))+'</small><span class="pick">执教 '+esc(setupLeague)+' ↗</span></button>').join("");
 }
 function render(){
   renderSetup();if(!state)return;
@@ -868,7 +868,7 @@ $("autoLineup").addEventListener("click",()=>{state.lineup=bestXI(state.clubId,s
 $("saveBtn").addEventListener("click",()=>{save();show("进度已保存到当前浏览器。");});
 $("exportBtn").addEventListener("click",()=>{
  if(!state)return;
- const blob=new Blob([JSON.stringify({format:"football-dynasty-save",version:4,state},null,2)],{type:"application/json"});
+ const blob=new Blob([JSON.stringify({format:"football-dynasty-save",version:5,state},null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="绿茵王朝-"+state.league+"-"+state.year+"-存档.json";
  document.body.appendChild(a);a.click();a.remove();
