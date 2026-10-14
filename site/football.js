@@ -22,6 +22,7 @@ const leagueRounds=()=>state?.leagueIds?.length?(state.leagueIds.length%2?state.
 const MAX_SQUAD=35;
 let state=null,currentView="dashboard",toastTimer=null;
 let bidTarget=null;
+let selectedPitchSlot=null;
 let displayCurrency="EUR";
 const GAME_GBP_RATE=0.845; // Static in-game reference, EUR -> GBP, not a live FX feed
 let setupLeague="英超";
@@ -303,6 +304,7 @@ function start(id){
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
  moods:allClubs.map(()=>rnd(66,85))};
  allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power,0,c.league)));ensureSquad(i);});
+ syncPlayerPositions();
  state.fixtures=fixtures();state.matchDates=fixtureDates(state.league,state.year,state.fixtures.length);syncMarketValues();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
  news("欢迎执教"+allClubs[id].name+"！"+league+leagueRounds()+"轮"+
  (fullLeagues.has(league)?"完整联赛":"精选俱乐部模拟联赛")+"，全球转会开启。");
@@ -344,22 +346,34 @@ function transferPlayer(id,buyer,fee){
  if(found.owner===state.clubId)state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
  return {player:found.player,from:found.owner,fee,buyer};
 }
-function bestXI(team,formation) {
-  const plan=patterns[formation]||patterns["4-3-3"];
-  const list=state.squads[team], lineup=[];
-  for(const pos of ["G","D","M","F"]) {
-    const sorted=list.filter(p=>p.pos===pos&&(p.injury||0)===0).sort((a,b)=>scorePlayer(b)-scorePlayer(a));
-    lineup.push(...sorted.slice(0,plan[pos]));
+
+const positionEngine=window.FOOTBALL_LINEUP_ENGINE;
+const bigPosition={GK:"G",LB:"D",CB:"D",RB:"D",DM:"M",CM:"M",AM:"M",LM:"M",RM:"M",LW:"F",RW:"F",ST:"F",SS:"F"};
+function syncPlayerPositions(){
+  if(!positionEngine)return;
+  for(const team of state.squads)for(const p of team){
+    const profile=positionEngine.info(p);
+    if(profile.verified){
+      if(!p.startingPositionCategory)p.startingPositionCategory=p.pos;
+      p.pos=bigPosition[profile.main]||p.pos;
+    }
   }
-  return lineup;
+  if(state.positionsVersion!==2){
+    state.positionsVersion=2;
+    state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
+    news("球员主位置已与2026年德转历史位置数据对齐。战术首发已根据真实位置自动重新分配。");
+  }
 }
-function scorePlayer(p){return p.ability*.68+p.form*.17+p.fitness*.15;}
+function bestXI(team,formation){
+  const picks=positionEngine?.buildXI(state.squads[team],formation)||[];
+  return picks.filter(Boolean);
+}
+function scorePlayer(p){return positionEngine?.score(p)??(p.ability*.68+p.form*.17+p.fitness*.15);}
 function userXI(){
-  const list=state.squads[state.clubId];
-  const existing=state.lineup.map(id=>list.find(p=>p.id===id&&(p.injury||0)===0)).filter(Boolean);
-  const required=patterns[state.tactics.formation],counts={G:0,D:0,M:0,F:0};
-  existing.forEach(p=>counts[p.pos]++);
-  if(existing.length!==11 || Object.keys(required).some(pos=>counts[pos]!==required[pos])){
+  const list=state.squads[state.clubId],slots=positionEngine.slots(state.tactics.formation);
+  const previous=Array.isArray(state.lineup)?state.lineup:[];
+  const chosen=previous.map(id=>list.find(p=>p.id===id&&(p.injury||0)===0)).filter(Boolean);
+  if(chosen.length!==slots.length||new Set(chosen.map(p=>p.id)).size!==slots.length){
     state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
   }
   return state.lineup.map(id=>list.find(p=>p.id===id)).filter(Boolean);
@@ -441,6 +455,7 @@ function load(){
     news("经济体系已升级：身价和资金统一为欧元计价，并按旧币值转换现有存档预算；历史旧币种报价清空。");
   }
   syncMarketValues();
+  syncPlayerPositions();
   save();
  }catch(error){state=null;}
 }
@@ -707,12 +722,20 @@ function sell(id){
  save();render();show("出售成功："+deal.player.name+"，已收到转会费。");
 }
 function swap(id){
-  const squad=state.squads[state.clubId],p=squad.find(x=>x.id===id);
-  if(!p||state.lineup.includes(id))return;
-  const starters=userXI().filter(x=>x.pos===p.pos).sort((a,b)=>scorePlayer(a)-scorePlayer(b));
-  if(!starters.length)return show("此阵型不需要该位置。");
-  state.lineup=state.lineup.map(x=>x===starters[0].id?id:x);
-  save();render();show("已换上"+p.name+"。");
+ const squad=state.squads[state.clubId],p=squad.find(x=>x.id===id);
+ if(!p||state.lineup.includes(id))return;
+ const slots=positionEngine.slots(state.tactics.formation),lineup=userXI();
+ const explicit=Number.isInteger(selectedPitchSlot)?selectedPitchSlot:null;
+ const options=slots.map((spot,i)=>({i,spot,starter:lineup[i],fit:positionEngine.fit(p,spot.role)}))
+   .filter(x=>x.starter && x.fit>0);
+ if(!options.length)return show("没有可用的阵型位置。");
+ const ranked=options.sort((a,b)=>b.fit-a.fit || a.starter.ability-b.starter.ability);
+ let chosen=explicit===null?ranked[0]:options.find(o=>o.i===explicit);
+ if(!chosen)return show("该球员无法客串所选位置，请选择合适的场上球员。");
+ if(chosen.fit<40&&!confirm(p.name+"不擅长踢"+chosen.spot.display+"（适配度"+chosen.fit+"），确认客串吗？"))return;
+ state.lineup=state.lineup.map((x,i)=>i===chosen.i?id:x);
+ selectedPitchSlot=null;save();render();
+ show("已换上"+p.name+"，担任"+chosen.spot.display+"。");
 }
 function show(msg){const el=$("toast");el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,2700);}
 function nav(view){currentView=view;render();}
@@ -791,12 +814,57 @@ function renderSquad(){
   $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+'</td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
 }
 function renderTactics(){
-  $("formationSelect").value=state.tactics.formation;$("styleSelect").value=state.tactics.style;$("trainingSelect").value=state.tactics.training;
-  $("formationBadge").textContent=state.tactics.formation;
-  const lineup=userXI(),starters=new Set(lineup.map(p=>p.id)),groups={G:[],D:[],M:[],F:[]};
-  lineup.forEach(p=>groups[p.pos].push(p));
-  $("pitch").innerHTML='<div class="center-circle"></div>'+["F","M","D","G"].map(pos=>'<div class="pitchrow">'+groups[pos].map(p=>'<div class="pitchplayer"><div class="shirt">'+p.ability+'</div><span>'+esc(p.name.split("·").pop())+'</span></div>').join("")+'</div>').join("");
-  $("lineupRoster").innerHTML='<div class="panelheading"><span>阵容轮换</span><span class="tag">首发 11 人</span></div>'+state.squads[state.clubId].map(p=>'<div class="rosterline"><span>'+esc(p.name)+' <small>'+byPos[p.pos]+' '+p.ability+'</small></span>'+(starters.has(p.id)?'<small>首发</small>':'<button type="button" data-swap="'+p.id+'">替换上场</button>')+'</div>').join("");
+ $("formationSelect").value=state.tactics.formation;
+ $("styleSelect").value=state.tactics.style;
+ $("trainingSelect").value=state.tactics.training;
+ $("formationBadge").textContent=state.tactics.formation;
+ const lineup=userXI(),starters=new Set(lineup.map(p=>p.id));
+ const slots=positionEngine.slots(state.tactics.formation);
+ const rows=[...new Set(slots.map(slot=>slot.row))];
+ $("pitch").innerHTML='<div class="center-circle"></div>'+
+ rows.map(row=>{
+   const places=slots.filter(slot=>slot.row===row);
+   const items=places.map(slot=>{
+    const p=lineup[slot.index],profile=p?positionEngine.info(p):null;
+    const fit=p?positionEngine.fit(p,slot.role):0;
+    const mismatch=fit<58,active=selectedPitchSlot===slot.index;
+    return '<button type="button" class="pitchplayer '+(active?"active ":"")+
+       (mismatch?"misfit":"")+'" data-pitch-slot="'+slot.index+
+       '" aria-label="'+esc(slot.display)+" "+esc(p?.name||"空缺")+'">'+
+       '<small class="pitch-role">'+esc(slot.display)+'</small>'+
+       '<span class="shirt">'+(p?p.ability:"—")+'</span>'+
+       '<span class="pitch-name">'+esc(p?.name.split("·").pop()||"待安排")+'</span>'+
+       (p?'<small class="pitch-fit '+(mismatch?"pitch-warning":"")+
+         '">'+(profile.verified?"适配":"粗估")+fit+'</small>':"")+
+       '</button>';
+   }).join("");
+   return '<div class="pitchrow pitch-band-'+row+'" data-band="'+row+
+       '" style="--spots:'+places.length+'">'+items+'</div>';
+ }).join("");
+ const choose=Number.isInteger(selectedPitchSlot)?slots[selectedPitchSlot]:null;
+ const playerAt=choose?lineup[selectedPitchSlot]:null;
+ const positional=choose&&playerAt?positionEngine.info(playerAt):null;
+ $("positionSummary").innerHTML=choose?
+   '<strong>已选 '+esc(choose.display)+'</strong> · '+esc(playerAt?.name||"")+
+   ' · 适配度 '+(playerAt?positionEngine.fit(playerAt,choose.role):0)+
+   '<p class="fine">从左侧球员名单选择替补，将其换到'+esc(choose.display)+'；客串位置会标记警告。</p>':
+   '<strong>按真实位置排列</strong><p class="fine">点击球场上的位置，再从替补名单选择球员；高适配度优先，低适配度会提示客串。</p>';
+ $("lineupRoster").innerHTML='<div class="panelheading"><span>阵容轮换与位置</span>'+
+  '<span class="tag">'+(choose?"目标 "+esc(choose.display):"先选择球场位置")+'</span></div>'+
+ state.squads[state.clubId].slice().sort((a,b)=>{
+  if(choose)return positionEngine.fit(b,choose.role)-positionEngine.fit(a,choose.role);
+  return scorePlayer(b)-scorePlayer(a);
+ }).map(p=>{
+   const inf=positionEngine.info(p),isStarter=starters.has(p.id),
+      fit=choose?positionEngine.fit(p,choose.role):0;
+   const labels=[inf.main,...inf.alternates].map(code=>positionEngine.roles[code]||code);
+   return '<div class="rosterline"><span><strong>'+esc(p.name)+'</strong> <small>'+
+     (inf.verified?'位置':'待核实')+'：'+esc(labels.slice(0,3).join("/"))+
+     ' · 评分'+p.ability+(choose?' · 适配 '+fit:'')+'</small></span>'+
+    (isStarter?'<small>首发</small>':'<button type="button" data-swap="'+p.id+
+       '"'+((p.injury||0)>0?' disabled title="伤停中"':'')+
+       '>'+(choose?"替换该位置":"上场")+'</button>')+'</div>';
+ }).join("");
 }
 function marketCandidates(){
  const result=[];
