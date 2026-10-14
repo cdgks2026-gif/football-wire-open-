@@ -187,3 +187,11 @@
 .scout-line small{display:block;color:#fac289}
 .opponent-scout>small{display:block;margin-top:10px;font-size:11px;color:#8caaa6}
 @media(max-width:550px){.opponent-scout{padding:13px}.scout-line{gap:3px}.scout-line span{font-size:9px;padding:6px 2px}}
+
+/* Verified biography/source statuses and tactical fit feedback */
+.age-source{display:block;margin-top:4px;font-size:10px;line-height:1.45}
+.age-real{color:#c5edc6}
+.age-sim{color:#f8c393}
+.match-model-info{font-size:11px;line-height:1.7;margin:9px 0;color:#c6cda8;border-top:1px solid #36544d;padding-top:9px}
+.window-calendar a{color:#b2efec;text-decoration:underline;text-underline-offset:2px}
+#clubMetrics .metric-label{overflow-wrap:anywhere}
