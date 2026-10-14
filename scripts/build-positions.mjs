@@ -129,6 +129,10 @@ try{
   console.log("[POS] historical match appearances sampled:",counts.size);
  }
 }catch(error){console.warn("[POS] historical per-match lineup positions unavailable:",error.message);}
-const payload={asOf:"2026-07-06",coverage:Object.keys(data).length,matchPositions:Object.values(data).filter(p=>p.recentPositions?.length).length,players:data};
+const payload={asOf:"2026-07-06",coverage:Object.keys(data).length,
+ birthDates:Object.values(data).filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.dob||"")).length,
+ matchPositions:Object.values(data).filter(p=>p.recentPositions?.length).length,players:data};
 writeFileSync(folder+"/site/football-positions.js","/* Transfermarkt historical position snapshots; NOT realtime. */\nwindow.FOOTBALL_POSITION_DATA="+JSON.stringify(payload)+";\n");
-console.log("[POS] mapped",payload.coverage,"of",requested.size,"player names; historical match sample",payload.matchPositions);
+console.log("[POS] mapped",payload.coverage,"of",requested.size,
+ "player names; sourced birth dates",payload.birthDates,
+ "; historical match sample",payload.matchPositions);
