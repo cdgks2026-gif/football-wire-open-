@@ -104,7 +104,10 @@ const positionNameToRole={ "Goalkeeper":"GK","Left-Back":"LB","Centre-Back":"CB"
  "Attacking Midfield":"AM","Left Midfield":"LM","Right Midfield":"RM",
  "Left Winger":"LW","Right Winger":"RW","Centre-Forward":"ST",
  "Second Striker":"SS"};
-try{
+// Full historical lineups archive exceeds economical build limits and is not required
+// for reliable primary/secondary position data. Opt-in only when provisioned
+// with sufficient resources; missing appearance samples remain explicitly empty.
+if(process.env.FOOTBALL_IMPORT_HISTORICAL_MATCHES==="1")try{
  const rows=csvRows(await fetchCSV("game_lineups.csv.gz",13000));
  const cols=mapFields(rows.next().value||[]);
  if(["player_id","position","date"].every(k=>cols[k]!==undefined)){
