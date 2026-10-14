@@ -687,10 +687,31 @@ function promoteYouth(){
  news("模拟青训球员"+p.name+"升入一线队，位置"+byPos[p.pos]+"，能力"+p.ability+"，潜力"+p.potential+"。");
  save();render();show("提拔成功："+p.name);
 }
+function restoreUpgradeBackup(){
+ const key="chengdu_football_dynasty_pre_upgrade_backup_v1";
+ const saved=localStorage.getItem(key);
+ if(!saved)return show("没有可恢复的旧版备份。");
+ if(!confirm("确认恢复升级前的存档？当前进度将被覆盖，建议先使用导出存档备份当前进度。"))return;
+ const current=localStorage.getItem(STORAGE);
+ try{
+   if(current)localStorage.setItem("chengdu_football_dynasty_before_restore_v1",current);
+   localStorage.setItem(STORAGE,saved);
+   state=null;load();
+   if(!state)throw Error("备份与当前数据结构不兼容");
+   currentView="dashboard";render();show("已从升级前备份恢复，并重新兼容当前版本。");
+ }catch(e){
+   if(current)localStorage.setItem(STORAGE,current);
+   state=null;load();render();show("恢复失败，已保留原存档："+e.message);
+ }
+}
 function renderOffice(){
  const f=state.finance,ranked=rank(),target=allClubs[state.clubId].power>=85?4:
  allClubs[state.clubId].power>=80?7:Math.min(12,state.leagueIds.length);
  const levelText={stadium:"球场商业设施",training:"训练中心",academy:"青训学院"};
+ $("saveRecovery").innerHTML=localStorage.getItem("chengdu_football_dynasty_pre_upgrade_backup_v1")?
+ '<button type="button" class="outline" data-restore-backup="1">恢复升级前备份</button>'+
+ '<p class="fine">自动保留旧版本数据；恢复前请先导出当前进度。</p>':
+ '<p class="fine">已开启本地存档；建议定期使用顶部“导出存档”保存到设备。</p>';
  $("financeReport").innerHTML='<div class="office-value">'+money(state.budget)+'</div>'+
  '<div class="office-row"><span>本赛季收入</span><strong>'+money(f.earned)+'</strong></div>'+
  '<div class="office-row"><span>本赛季运营与建设支出</span><strong>'+money(f.spent)+'</strong></div>'+
@@ -1168,6 +1189,7 @@ root.addEventListener("click",ev=>{
   }
   if(data.upgrade!==undefined){upgradeFacility(data.upgrade);return;}
   if(data.promote!==undefined){promoteYouth();return;}
+  if(data.restoreBackup!==undefined){restoreUpgradeBackup();return;}
 });
 $("setupLeague").addEventListener("change",ev=>{setupLeague=ev.target.value;renderSetup();});
 $("refreshMarketBtn").addEventListener("click",()=>{void syncMarketData(true);});
