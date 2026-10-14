@@ -147,26 +147,21 @@ function gameDate(){
  return dateAdd(state.matchDates[Math.min(state.round-1,state.matchDates.length-1)],1);
 }
 function registrationWindows(league,year){
- if(league==="中超")return [
-  {start:zdate(year,1,1),end:zdate(year,3,6),name:"冬季注册期"},
-  {start:zdate(year,6,18),end:zdate(year,7,22),name:"夏季注册期"}
- ];
- return [
-  {start:zdate(year,6,15),end:zdate(year,9,1),name:"夏季转会窗"},
-  {start:zdate(year+1,1,1),end:zdate(year+1,2,1),name:"冬季转会窗"}
- ];
+ const configured=window.FOOTBALL_TRANSFER_CALENDAR?.list(league,year);
+ if(configured?.length)return configured;
+ return [{start:zdate(year,6,15),end:zdate(year,9,1),name:"模拟夏窗",verified:false,label:"游戏模拟日期"},
+ {start:zdate(year+1,1,1),end:zdate(year+1,2,1),name:"模拟冬窗",verified:false,label:"游戏模拟日期"}];
 }
 function windowStatus(league=state.league){
- const date=gameDate(), year=Number(date.slice(0,4));
- const spans=[...registrationWindows(league,year-1),...registrationWindows(league,year),
-   ...registrationWindows(league,year+1)];
+ const date=gameDate(),year=Number(date.slice(0,4));
+ const spans=[...registrationWindows(league,year-1),...registrationWindows(league,year),...registrationWindows(league,year+1)];
  const active=spans.find(w=>w.start<=date&&w.end>=date);
  const future=spans.filter(w=>w.start>date).sort((a,b)=>a.start.localeCompare(b.start))[0];
  return {open:!!active,date,active,next:future,
-  text:active?active.name+"开放中 · 截止 "+active.end:
-   "转会窗已关闭 · 下次 "+(future?.name||"注册期")+" "+(future?.start||"待定")};
+  text:active?active.name+"开放中 · 截止 "+active.end+"（"+active.label+"）":
+   "转会窗已关闭 · 下次 "+(future?.name||"注册期")+" "+(future?.start||"待定")+
+   "（"+(future?.label||"游戏模拟")+"）"};
 }
-
 // Published Transfermarkt values are separate from simulated buy/sell offers.
 let tmSnapshot=window.FOOTBALL_TM_VALUES||{sourced:{},bulk:{}};
 function tmRecord(player){
@@ -254,11 +249,50 @@ function syncMarketValues(){
  for(const team of state.squads)for(const p of team)updatePlayerValuation(p);
 }
 
+function validBirthDate(date){
+ if(typeof date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;
+ const d=new Date(date+"T12:00:00Z");
+ return Number.isNaN(d.valueOf())||d.toISOString().slice(0,10)!==date?null:date;
+}
+function birthReference(name){
+ const p=window.FOOTBALL_POSITION_DATA?.players?.[name];
+ return validBirthDate(p?.dob||p?.birthDate);
+}
+function birthdayAge(dob,onDate){
+ const birth=validBirthDate(dob),when=validBirthDate(onDate);
+ if(!birth||!when)return null;
+ let age=Number(when.slice(0,4))-Number(birth.slice(0,4));
+ if(when.slice(5)<birth.slice(5))age--;
+ return age;
+}
+function careerAgeDate(year,league){return league==="中超"?zdate(year,1,20):zdate(year,7,15);}
+function syncBirthDates(){
+ if(!state?.squads)return;
+ const seasonDate=careerAgeDate(state.year,state.league);
+ let confirmed=0;
+ for(const team of state.squads)for(const p of team){
+  if(p.synthetic){p.ageSource="虚构青训";continue;}
+  if(!p.birthDate){
+    const recorded=birthReference(p.english);
+    if(recorded){p.birthDate=recorded;p.birthDateSource="德转历史球员资料";}
+  }
+  if(p.birthDate){
+    const corrected=birthdayAge(p.birthDate,seasonDate);
+    if(corrected!==null&&corrected>=15&&corrected<=55){p.age=corrected;p.ageSource="真实出生日期";confirmed++;}
+  }else p.ageSource="游戏模拟，生日待核实";
+ }
+ state.bioCoverage=confirmed;
+}
+
 function newPlayer(info,power,index,league="英超"){
   const id=state.nextId++;
-  const age=initialAge(info.name)??rnd(18,34),ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
+  const dob=birthReference(info.name);
+  const actual=dob?birthdayAge(dob,careerAgeDate(state.year,league)):null;
+  const age=actual!==null&&actual>=15&&actual<=55?actual:(initialAge(info.name)??rnd(18,34));
+  const ability=clamp(featuredRatings[info.name]??(power+rnd(-9,7)),57,96);
   const potential=clamp(ability+rnd(1,12),ability,98);
   const obj={id,name:info.cn||info.name,english:info.name,pos:info.pos,age,ability,potential,originLeague:league,
+    birthDate:dob,ageSource:dob?"真实出生日期":"游戏模拟，生日待核实",
     fitness:rnd(85,100),form:rnd(74,94),played:0,goals:0,assists:0,injury:0};
   updatePlayerValuation(obj);
   return obj;
@@ -307,7 +341,7 @@ function start(id){
  tactics:{formation:"4-3-3",style:"balance",training:"fitness"},lineup:[],
  moods:allClubs.map(()=>rnd(66,85))};
  allClubs.forEach((c,i)=>{state.squads.push((c.players||[]).map(entry=>newPlayer(entry,c.power,0,c.league)));ensureSquad(i);});
- syncPlayerPositions();
+ syncPlayerPositions();syncBirthDates();
  state.fixtures=fixtures();state.matchDates=fixtureDates(state.league,state.year,state.fixtures.length);syncMarketValues();state.lineup=bestXI(id,state.tactics.formation).map(p=>p.id);
  news("欢迎执教"+allClubs[id].name+"！"+league+leagueRounds()+"轮"+
  (fullLeagues.has(league)?"完整联赛":"精选俱乐部模拟联赛")+"，全球转会开启。");
@@ -459,6 +493,7 @@ function load(){
   }
   syncMarketValues();
   syncPlayerPositions();
+  syncBirthDates();
   save();
  }catch(error){state=null;}
 }
@@ -649,7 +684,8 @@ function newSeason(){
  state.lastResult="";state.lastEvents=[];
  state.finance.earned=0;state.finance.spent=0;state.finance.promoted=0;
  state.squads.forEach(team=>team.forEach(p=>{
-   p.age++;p.fitness=100;p.form=rnd(72,92);p.played=0;p.goals=0;p.assists=0;p.injury=0;
+   p.age=p.birthDate?(birthdayAge(p.birthDate,careerAgeDate(state.year,state.league))??p.age+1):p.age+1;
+   p.fitness=100;p.form=rnd(72,92);p.played=0;p.goals=0;p.assists=0;p.injury=0;
    if(p.age>31&&Math.random()<.45)p.ability=clamp(p.ability-1,45,99);
    else if(p.age<25&&p.ability<p.potential&&Math.random()<.55)p.ability++;
  }));
@@ -840,11 +876,14 @@ function renderSquad(){
   $("scorerList").innerHTML=[...squad].sort((a,b)=>(b.goals||0)-(a.goals||0)||b.ability-a.ability)
   .slice(0,7).map((p,i)=>'<div class="office-row"><span>'+(i+1)+'. '+esc(p.name)+
   (p.synthetic?' <small>模拟青训</small>':'')+'</span><strong>'+(p.goals||0)+' 球 · '+(p.assists||0)+' 助</strong></div>').join("");
-  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>主位置与可兼位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+
+  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>主位置与可兼位置</th><th>年龄 / 来源</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+
 '</td><td>'+(()=>{const roles=positionEngine.info(p);
 return '<strong>'+esc(positionEngine.roles[roles.main]||roles.main)+'</strong>'+
  (roles.alternates.length?'<small class="secondary-positions">兼 '+esc(roles.alternates.slice(0,3).map(x=>positionEngine.roles[x]||x).join(' / '))+'</small>':'')+
- (!roles.verified?'<small class="position-unverified">未核实</small>':'');})()+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
+ (!roles.verified?'<small class="position-unverified">未核实</small>':'');})()+'</td><td>'+p.age+
+  '<small class="age-source '+(p.birthDate?"age-real":"age-sim")+'">'+
+  (p.birthDate?"出生 "+esc(p.birthDate):p.synthetic?"虚构青训":"模拟年龄 · 生日待核实")+
+  '</small></td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
 }
 function renderTactics(){
  $("formationSelect").value=state.tactics.formation;
