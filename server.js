@@ -45,7 +45,7 @@ function marketPayload(){
 }
 const files={'/':'football.html','/index.html':'football.html','/game':'football.html','/game/':'football.html',
  '/football.html':'football.html','/football.css':'football.css','/football.js':'football.js',
- '/football-data.js':'football-data.js','/football-world.js':'football-world.js','/football-clubs.js':'football-clubs.js','/football-values.js':'football-values.js','/football-positions.js':'football-positions.js'};
+ '/football-data.js':'football-data.js','/football-world.js':'football-world.js','/football-clubs.js':'football-clubs.js','/football-values.js':'football-values.js','/football-positions.js':'football-positions.js','/football-lineup.js':'football-lineup.js'};
 http.createServer((req,res)=>{
  const pathname=String(req.url||'/').split('?')[0];
  const head={'Cache-Control':'no-store, max-age=0, must-revalidate',
