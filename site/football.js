@@ -856,7 +856,7 @@ function renderSetup(){
 function render(){
   renderSetup();if(!state)return;
   $("statClub").textContent=clubInfo[state.clubId].name+" · "+state.league;
-  $("statSeason").textContent=state.year+"/"+String((state.year+1)%100).padStart(2,"0");
+  $("statSeason").textContent=["中超","美职联"].includes(state.league)?String(state.year):state.year+"/"+String((state.year+1)%100).padStart(2,"0");
   $("statRound").textContent="第"+(Math.min(state.round+1,leagueRounds()))+"轮 / 共"+leagueRounds()+"轮"+
     (state.round>=leagueRounds()?"（已结束）":"");
   $("statDate").textContent=gameDate();
