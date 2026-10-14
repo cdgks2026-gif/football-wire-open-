@@ -195,3 +195,7 @@
 .match-model-info{font-size:11px;line-height:1.7;margin:9px 0;color:#c6cda8;border-top:1px solid #36544d;padding-top:9px}
 .window-calendar a{color:#b2efec;text-decoration:underline;text-underline-offset:2px}
 #clubMetrics .metric-label{overflow-wrap:anywhere}
+
+.save-recovery{border-top:1px solid #304445;margin-top:12px;padding-top:12px}
+.save-recovery .outline{min-height:34px;padding:7px 12px;font-size:12px}
+.save-recovery p{font-size:11px;color:#9aafa9;line-height:1.6}
