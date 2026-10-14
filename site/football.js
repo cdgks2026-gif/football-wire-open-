@@ -282,6 +282,7 @@ function syncBirthDates(){
   }else p.ageSource="游戏模拟，生日待核实";
  }
  state.bioCoverage=confirmed;
+ state.bioVersion=1;
 }
 
 function newPlayer(info,power,index,league="英超"){
@@ -429,6 +430,12 @@ function load(){
   if(!parsed||!Number.isInteger(parsed.clubId)||!allClubs[parsed.clubId]||
    !Array.isArray(parsed.squads)||!parsed.tactics||!Array.isArray(parsed.fixtures)||
    !Array.isArray(parsed.aiBudgets))return;
+  // Preserve a recoverable copy prior to age/currency/lineup migrations.
+  if(parsed.bioVersion!==1||parsed.economyVersion!==5||parsed.positionsVersion!==2){
+    try{const key="chengdu_football_dynasty_pre_upgrade_backup_v1";
+      if(!localStorage.getItem(key))localStorage.setItem(key,raw);
+    }catch(error){}
+  }
   state=parsed;
   if(state.squads.length!==allClubs.length){
     const oldSquads=state.squads,oldWorld=state.worldSquads||[];
@@ -604,24 +611,42 @@ function fatigue(){
   });
 }
 function aiTransfer(){
- if(!windowStatus().open)return;
- const buyers=state.leagueIds.filter(id=>id!==state.clubId&&windowStatus(allClubs[id].league).open);
- if(!buyers.length)return;
- const buyer=buyers[rnd(0,buyers.length-1)];
- const available=[];
- for(let owner=0;owner<allClubs.length;owner++){
-  if(owner===buyer||owner===state.clubId)continue;
-  for(const player of squadFor(owner)){
-    if(canRelease(owner,player) && !player.synthetic && squadFor(buyer).length<MAX_SQUAD &&
-       fundsFor(buyer)>offerFloor(owner,player) && player.ability>=79)
-      available.push({owner,player});
+ // Computer clubs now inspect positional needs rather than buy random stars.
+ // The buying club's own transfer window must be open and a cash reserve remains.
+ const eligible=allClubs.map((c,id)=>id).filter(id=>
+   id!==state.clubId&&windowStatus(allClubs[id].league).open&&
+   state.squads[id].length<MAX_SQUAD&&fundsFor(id)>200);
+ if(!eligible.length)return;
+ for(let attempt=0;attempt<Math.min(2,eligible.length);attempt++){
+  const buyer=eligible[rnd(0,eligible.length-1)];
+  eligible.splice(eligible.indexOf(buyer),1);
+  const squad=state.squads[buyer],roster={G:0,D:0,M:0,F:0};
+  squad.forEach(p=>roster[p.pos]++);
+  const target=Object.entries({G:3,D:8,M:7,F:5})
+    .map(([role,needed])=>({role,gap:needed-(roster[role]||0)}))
+    .sort((x,y)=>y.gap-x.gap)[0];
+  const limit=Math.floor(fundsFor(buyer)*.62);
+  if(limit<20||target.gap<=0)continue;
+  const candidates=[];
+  for(let owner=0;owner<allClubs.length;owner++){
+    if(owner===buyer||owner===state.clubId)continue;
+    for(const p of state.squads[owner]){
+      if(p.pos!==target.role||p.synthetic||!canRelease(owner,p)||p.age>32||p.ability<65)continue;
+      const fee=offerFloor(owner,p);
+      if(fee>limit)continue;
+      const benefit=(p.ability-65)*2+(p.potential-p.ability)*.3-
+        Math.abs(26-p.age)*.8-fee/Math.max(1,limit)*14;
+      candidates.push({owner,p,fee,benefit});
+    }
   }
+  candidates.sort((x,y)=>y.benefit-x.benefit);
+  const shortlist=candidates.slice(0,7);
+  if(!shortlist.length)continue;
+  const pick=shortlist[rnd(0,shortlist.length-1)];
+  const deal=transferPlayer(pick.p.id,buyer,pick.fee);
+  if(deal)news(allClubs[buyer].name+"针对"+byPos[target.role]+"缺口，从"+
+      allClubs[deal.from].name+"签下"+deal.player.name+"，游戏转会费"+money(pick.fee)+"。");
  }
- if(!available.length)return;
- const found=available[rnd(0,available.length-1)];
- const fee=offerFloor(found.owner,found.player);
- const deal=transferPlayer(found.player.id,buyer,fee);
- if(deal)news(allClubs[buyer].name+"从"+allClubs[deal.from].name+"签下"+deal.player.name+"，转会费"+money(fee)+"。");
 }
 function updateFinance(game){
  const finance=state.finance,home=game.home===state.clubId;
@@ -1020,10 +1045,14 @@ function renderMarket(){
  '</strong><span>游戏日期 '+transfer.date+' · '+esc(transfer.text)+'</span>'+
  '<small>关窗后可搜索球员，但不能签约或注册。此处限制依据买方所在联赛。</small>';
  const active=transfer.active,upcoming=transfer.next;
+ const showPeriod=(p,label)=>p?'<span>'+label+'：'+p.start+' 至 '+p.end+
+ ' · '+esc(p.label||"游戏模拟日期")+'</span>':"";
+ const source=(active?.source||upcoming?.source)||null;
  $("windowCalendar").innerHTML='<strong>'+esc(state.league)+' · 注册时间表</strong>'+
- (active?'<span>当前：'+active.start+' 至 '+active.end+'</span>':'')+
- (upcoming?'<span>下一次：'+upcoming.start+' 至 '+upcoming.end+'</span>':'')+
- '<small>英超参考2026/27官方日期，中超参考2026年国际足联注册期；其余联赛采用简化模拟窗口。</small>';
+ showPeriod(active,"当前")+showPeriod(upcoming,"下一次")+
+ '<small>已核实窗口按联赛独立执行；未核实窗口与未来赛季标注“游戏模拟日期”。'+
+ (source?' <a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">来源↗</a>':'')+
+ '</small>';
  const leagueSelect=$("marketLeague"),clubSelect=$("marketClub");
  if(!leagueSelect.dataset.initialized){
    const leagues=leagueList;
