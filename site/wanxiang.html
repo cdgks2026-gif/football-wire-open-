@@ -19,10 +19,10 @@
 <main>
 <section id="wx-setup" class="wx-setup">
   <div class="wx-hero">
-    <div class="wx-kicker">六人足球自走棋 · 单机试玩</div>
+    <div class="wx-kicker">六人足球自走棋 · 18轮冠军赛</div>
     <h1>执掌球队，<br><em>逐鹿绿茵。</em></h1>
     <p>招募真实姓名的球员卡牌，激活六大足球战术羁绊，与你的五名电脑对手争夺最终的万象冠军杯。</p>
-    <div class="wx-badges"><span>1人 + 5人机</span><span>6大羁绊</span><span>事件牌</span><span>自动对战</span><span>本机自动存档</span></div>
+    <div class="wx-badges"><span>1人挑战5位AI</span><span>6条成长路线</span><span>英雄式足球卡牌</span><span>智能阵容建议</span><span>本机自动存档</span></div><div class="wx-preview"><span>本局目标</span><b>收集 → 联动 → 成长 → 淘汰对手</b><small>每张球员牌都是一枚棋子，关键不是堆数值，而是打出相互配合的组合。</small></div>
   </div>
   <div class="wx-setup-card">
     <h2>创建你的经理</h2>
@@ -36,40 +36,47 @@
       <option value="star">更衣室大师 · 巨星管理</option>
       <option value="academy">青训导师 · 明日之星</option>
     </select>
-    <button type="button" class="wx-primary wx-wide" data-act="start">开始六人对局</button>
+    <div class="wx-coach-tip" id="wx-coach-tip">推荐：豪门传承。适合喜欢稳定成长、不断培养球员的玩家。</div>
+    <button type="button" class="wx-primary wx-wide" data-act="start">开启冠军争夺战 →</button>
     <button type="button" class="wx-secondary wx-wide" data-act="resume" id="wx-resume" hidden>继续本机存档</button>
     <p class="wx-note">当前是单机测试版：与5名独立经营的AI对战。无需账号，进度仅保存在当前浏览器，尚未开放注册、联机和跨设备同步。</p>
   </div>
   <div class="wx-guide">
-    <h2>怎么赢？</h2>
+    <h2>三步上手</h2>
     <div><b>① 选人</b><span>用转会币签约球员。球员上场后按位置自动排阵，最多7人。</span></div>
     <div><b>② 成长</b><span>训练球员、激活同一流派的2人或4人羁绊，选择临场事件牌。</span></div>
-    <div><b>③ 开赛</b><span>每回合自动匹配，AI会买人、升级并调整战术。输球扣声望，存活到最后夺冠。</span></div>
+    <div><b>③ 开赛</b><span>每回合自动匹配，AI会买人、升级并调整战术。输球扣声望，存活到最后或第18回合按声望排名决出冠军。</span></div>
   </div>
 </section>
 <section id="wx-game" hidden>
-  <div class="wx-topline"><div><small>万象冠军杯 / 当前阶段</small><h1 id="wx-headline">第 1 回合</h1></div><button type="button" class="wx-secondary" data-act="restart">重新开局</button></div>
-  <div class="wx-summary"><div><span>俱乐部声望</span><strong id="wx-hp">70 / 70</strong></div><div><span>转会资金</span><strong id="wx-credits">22 转会币</strong></div><div><span>阵容战力</span><strong id="wx-powers">加载中</strong></div></div>
+  <div class="wx-topline"><div><small>🏆 万象冠军杯 · 6支球队争夺最后席位</small><h1 id="wx-headline">第 1 回合</h1></div><button type="button" class="wx-secondary wx-reset" data-act="restart">重新开局</button></div>
+  <div class="wx-round-progress"><div id="wx-round-bar"></div></div>
+  <div class="wx-summary"><div><span>♥ 俱乐部声望</span><strong id="wx-hp">80 / 80</strong></div><div><span>◆ 可用转会币</span><strong id="wx-credits">28</strong></div><div><span>⚔ 攻 / 守 / 控</span><strong id="wx-powers">加载中</strong></div><div><span>🏅 你的名次</span><strong id="wx-rank">1 / 6</strong></div></div>
+  <div class="wx-coach-plan"><div><small>★ 当前构筑方向</small><strong id="wx-objective">优先凑出你的第一组配合</strong><span id="wx-objective-note">找到同流派的球员来激活专属成长效果。</span></div><div class="wx-coach-suggestion" id="wx-suggest-card">推荐签约</div></div><div class="wx-quicknav"><a href="#wx-market">↓ 去球员商店</a><a href="#wx-factions">查看羁绊规则</a><a href="#wx-scoreboard">查看六队排名</a></div>
   <p id="wx-current" class="wx-alert" role="status" aria-live="polite">比赛开始</p>
   <div id="wx-finish" class="wx-winner" role="status" hidden></div>
   <div class="wx-main-grid">
     <div class="wx-column">
       <section class="wx-panel">
-        <div class="wx-section-head"><h2>你的战术棋盘</h2><span>7人制 · 1门将＋6外场</span></div>
+        <div class="wx-section-head"><h2>⚽ 你的战术棋盘</h2><span id="wx-lineup-count">4 / 7 位球员</span></div>
         <div id="wx-pitch" class="wx-pitch" aria-label="当前球队站位"></div>
-        <div id="wx-factions" class="wx-tags wx-factions"></div>
-        <p class="wx-caption">同一流派上阵2人可激活羁绊，4人获得进阶效果。棋盘显示前锋、中场、后卫和门将。</p>
+        <div class="wx-mini-head"><h3>阵营联动 <span>点选查看技能</span></h3></div>
+        <div id="wx-factions" class="wx-factions"></div>
+        <div id="wx-faction-detail" class="wx-faction-detail" aria-live="polite"></div>
+        <p class="wx-caption">这是足球版的原创联动机制。2人开启基础能力，4人解锁强化效果；部分阵营还会积累专属成长资源。</p>
         <div class="wx-tacticbar"><label for="wx-tactic">本轮战术</label><select id="wx-tactic"><option value="balance">攻守均衡</option><option value="control">控球组织</option><option value="press">高位逼抢</option><option value="counter">稳守反击</option></select></div>
       </section>
-      <section class="wx-panel"><div class="wx-section-head"><h2>主力阵容</h2><span>点击替补/训练/出售</span></div><div id="wx-lineup" class="wx-roster"></div></section>
-      <section class="wx-panel"><div class="wx-section-head"><h2>替补席</h2><span>上限8人</span></div><div id="wx-bench" class="wx-roster"></div></section>
+      <section class="wx-panel"><div class="wx-section-head"><h2>🃏 我的上场球员</h2><span>可以升级、替换和出售</span></div><div id="wx-lineup" class="wx-roster"></div><div id="wx-lineup-hint" class="wx-caption"></div></section>
+      <section class="wx-panel"><div class="wx-section-head"><h2>替补席</h2><span>最多8人 · 可随时轮换</span></div><div id="wx-bench" class="wx-roster"></div></section>
     </div>
     <div class="wx-column">
-      <section class="wx-panel"><div class="wx-section-head"><h2>本轮转会市场</h2><span>招募和培养</span></div><div id="wx-market" class="wx-market"></div><div class="wx-actions"><button type="button" class="wx-secondary" data-act="refresh" id="wx-refresh">刷新市场 · 2币</button><button type="button" class="wx-secondary" data-act="freeze" id="wx-freeze">锁定商店</button></div></section>
-      <section class="wx-panel"><div class="wx-section-head"><h2>事件牌 · 选1张</h2><span>本轮临时加成</span></div><div id="wx-events" class="wx-events"></div><p class="wx-caption" id="wx-event-note"></p></section>
-      <button type="button" class="wx-primary wx-battle" data-act="fight" id="wx-fight">▶ 开始本轮比赛</button>
-      <section class="wx-panel"><div class="wx-section-head"><h2>六队积分榜</h2><span>点击球队查看战力</span></div><div id="wx-scoreboard" class="wx-scoreboard"></div><div class="wx-scout" id="wx-scout"></div></section>
-      <section class="wx-panel"><div class="wx-section-head"><h2>上一轮三场比赛</h2><span>电脑自主对战</span></div><div id="wx-last-results" class="wx-results"></div></section>
+      <section class="wx-panel wx-market-panel"><div class="wx-section-head"><h2>✦ 本轮球员商店</h2><span>招募后自动安排空位</span></div><div class="wx-market-tip" id="wx-market-tip">金色推荐：购买后可推动你的主力羁绊成长。</div><div id="wx-market" class="wx-market"></div><div class="wx-actions"><button type="button" class="wx-secondary" data-act="refresh" id="wx-refresh">⟳ 重新搜卡 · 2币</button><button type="button" class="wx-secondary" data-act="freeze" id="wx-freeze">锁定商店</button></div></section>
+      <section class="wx-panel wx-talent-panel" id="wx-talent-panel" hidden><div class="wx-section-head"><h2>🏆 阶段天赋 · 三选一</h2><span>关键成长 · 免费获取</span></div><p class="wx-caption">重要回合解锁，选择一种适合阵容的永久强化。选择后可以继续比赛。</p><div id="wx-talents" class="wx-talents"></div></section>
+      <div id="wx-current-talents" class="wx-current-talents" hidden></div>
+      <section class="wx-panel"><div class="wx-section-head"><h2>✨ 临场效果牌</h2><span>每回合二选一</span></div><div id="wx-events" class="wx-events"></div><p class="wx-caption" id="wx-event-note"></p></section>
+      <button type="button" class="wx-primary wx-battle" data-act="fight" id="wx-fight">⚔ 阵容已就绪 · 开始交锋 →</button>
+      <section class="wx-panel"><div class="wx-section-head"><h2>🏅 六队生存榜</h2><span>点击侦查对手</span></div><div id="wx-scoreboard" class="wx-scoreboard"></div><div class="wx-scout" id="wx-scout"></div></section>
+      <section class="wx-panel"><div class="wx-section-head"><h2>⚡ 本轮比赛回放</h2><span>包含战术结算说明</span></div><div id="wx-battle-report" class="wx-battle-report"><p class="wx-muted">首场比赛结束后，这里会展示比赛重点及成长收益。</p></div><div id="wx-last-results" class="wx-results"></div></section>
       <section class="wx-panel"><div class="wx-section-head"><h2>赛事日志</h2></div><div id="wx-history" class="wx-history"></div></section>
     </div>
   </div>

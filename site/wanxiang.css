@@ -3,3 +3,166 @@
 @media(max-width:790px){.wx-main-grid{grid-template-columns:1fr}.wx-setup{grid-template-columns:1fr;gap:15px;margin-top:22px}.wx-hero{min-height:0;padding:20px 0}.wx-guide{grid-template-columns:1fr}.wx-guide h2{grid-column:auto}.wx-header nav a{font-size:11px}.wx-brand strong{font-size:19px}}@media(max-width:440px){#wanxiang{padding:0 10px}.wx-header{min-height:70px}.wx-ball{width:35px;height:35px;font-size:19px}.wx-brand{gap:7px}.wx-brand strong{font-size:17px}.wx-brand small{font-size:8px}.wx-header nav a{font-size:10px;padding:3px}.wx-panel{padding:12px}.wx-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wx-summary div:last-child{grid-column:1/-1}.wx-summary strong{font-size:14px}.wx-section-head span{max-width:130px;text-align:right}.wx-hero h1{font-size:43px}.wx-standing{grid-template-columns:minmax(0,1fr) 50px 76px;font-size:12px}.wx-standing small{font-size:10px}.wx-card-actions{gap:4px}.wx-card-actions button{padding:4px;font-size:10px}.wx-token b{font-size:11px}.wx-market{gap:7px}}
 
 [hidden]{display:none!important}
+
+/* V2: playful, legible card battlefield and explicit progression; original visual language */
+:root{--bg:#080f1a;--panel:#131e2d;--edge:#394a68;--text:#f7f6f3;--muted:#bdc8d7;--gold:#f3cf85;--red:#ff746d}
+html{background:#070e17}
+body{background:radial-gradient(ellipse at 54% 0%,#1b3651 0,#0c1726 33%,#090f1b 70%,#080d15 100%);color:#f9f6ef}
+#wanxiang{width:min(1260px,100%)}
+.wx-header{border-color:#364865;min-height:72px}.wx-header nav a{border-radius:6px;color:#eee4cd;font-weight:700;border:1px solid #51607c;background:#1b2638}
+.wx-brand strong{font-weight:900;letter-spacing:.04em}
+.wx-ball{background:linear-gradient(140deg,#c7aa69,#6d4b29);border-color:#d3b982}
+.wx-setup-card,.wx-guide,.wx-panel{background:linear-gradient(160deg,#1a2838 0,#111b29 90%);border:1px solid #384961;box-shadow:0 6px 14px #00000026}
+.wx-hero{background:radial-gradient(circle at 40% 45%,#2f445c 0,transparent 60%)}
+.wx-kicker{color:#f6d391}
+.wx-hero h1 em{color:#f4cf87;text-shadow:0 2px 17px #a9752744}
+.wx-setup-card input,.wx-setup-card select,.wx-tacticbar select{background:#111c2c;border:1px solid #53617b;color:#f5f2ec}
+.wx-setup-card input:focus,.wx-setup-card select:focus{border-color:#efd38d}
+.wx-coach-tip{margin-top:13px;min-height:57px;padding:10px;border-radius:8px;background:#213147;border-left:3px solid #f0ca81;color:#ebdbc0;font-size:13px}
+.wx-preview{padding:17px 18px;display:grid;gap:5px;background:#0f1d2e;border-radius:13px;border:1px solid #576a80;max-width:510px}
+.wx-preview span{font-size:12px;color:#f5cf83}
+.wx-preview b{font-size:17px;letter-spacing:.04em}
+.wx-preview small{color:#b4c1ce;font-size:12px}
+.wx-guide{border-color:#454e66}.wx-guide div{border-color:#caab70}
+.wx-primary{background:linear-gradient(110deg,#f1cb87,#ffc775);border:1px solid #ffd99b;color:#172238;box-shadow:inset 0 1px 0 #fff7d6;font-weight:900}
+.wx-primary:hover:not(:disabled){filter:brightness(1.08)}
+.wx-secondary{border-color:#475b76;background:#1a2a3d;color:#e9e8ed}
+.wx-topline{align-items:center}.wx-topline small{color:#d9c393;font-size:11px}.wx-topline h1{font-size:26px}
+.wx-round-progress{height:5px;border-radius:12px;background:#2a3952;margin:-4px 0 16px;overflow:hidden}
+.wx-round-progress div{height:100%;width:4%;background:linear-gradient(90deg,#c59d5c,#ffdf94);transition:width .25s ease}
+.wx-summary{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.wx-summary div{background:linear-gradient(110deg,#1a2e42,#152337);border-color:#394d67;border-radius:9px;padding:13px 14px}
+.wx-summary span{color:#c4c9d6}.wx-summary strong{font-size:17px;line-height:1.35;font-variant-numeric:tabular-nums;color:#f7e1ac}
+.wx-coach-plan{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,.42fr);gap:10px;align-items:stretch;margin-bottom:14px}
+.wx-coach-plan>div{background:#1b293d;border:1px solid #536480;border-radius:9px;padding:13px 18px;min-width:0}
+.wx-coach-plan small{display:block;font-size:11px;color:#f7d48c;font-weight:800;margin-bottom:4px}
+.wx-coach-plan strong{display:block;font-size:16px;line-height:1.5}
+.wx-coach-plan span{display:block;color:#c2cfde;font-size:12px;margin-top:3px}
+.wx-coach-suggestion{display:grid;align-content:center;border-color:#a18b5c!important;background:linear-gradient(115deg,#433a2b,#262b39)!important}
+.wx-alert{background:#1e2e40;border-left-color:#e0bd77;color:#e9f0f9}
+.wx-section-head h2{font-size:16px}.wx-section-head span{font-size:11px}
+.wx-mini-head{margin:12px 0 8px}.wx-mini-head h3{font-size:15px;margin:0;display:flex;justify-content:space-between;align-items:center}
+.wx-mini-head h3 span{color:#9faeca;font-size:11px;font-weight:400}
+.wx-factions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.wx-faction-tile{position:relative;min-width:0;text-align:left;color:#e9edf5;display:grid;grid-template-columns:34px minmax(0,1fr) 31px;gap:6px;align-items:center;min-height:65px;padding:9px 8px 13px;border:1px solid #4c5970;border-left:3px solid var(--f);border-radius:9px;background:#182638}
+.wx-faction-tile.is-on{background:linear-gradient(105deg,#294554,#1c2d40);box-shadow:inset 0 0 0 1px #ffffff12}
+.wx-faction-tile.is-picked{outline:2px solid #ecc37c;outline-offset:-2px}
+.wx-faction-icon{font-size:22px;color:var(--f);text-align:center;font-weight:900}
+.wx-faction-copy{display:grid;gap:2px;min-width:0}
+.wx-faction-copy b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-faction-copy small{font-size:10px;line-height:1.35;color:#b9c8d9}
+.wx-faction-count{font-size:14px;font-weight:900;text-align:right;color:var(--f);font-variant-numeric:tabular-nums}
+.wx-faction-meter{height:3px;background:#364860;display:block;position:absolute;bottom:5px;left:8px;right:8px;border-radius:8px;overflow:hidden}
+.wx-faction-meter i{height:100%;display:block;background:var(--f);border-radius:8px;transition:width .2s}
+.wx-faction-detail{border:1px solid #65718c;border-radius:9px;background:#121e2c;padding:14px;margin-top:10px}
+.wx-detail-title{display:flex;align-items:center;gap:11px;border-bottom:1px solid #38495f;padding-bottom:10px}
+.wx-detail-title>span{width:36px;height:36px;display:grid;place-items:center;font-size:22px;border:1px solid var(--f);color:var(--f);border-radius:9px}
+.wx-detail-title b,.wx-detail-title small{display:block}.wx-detail-title small{font-size:11px;color:#b9c8d9}
+.wx-milestone{padding:10px 0 3px;opacity:.72}
+.wx-milestone.unlocked{opacity:1}.wx-milestone b{font-size:12px;color:#d0d8e3}
+.wx-milestone.unlocked b{color:#f6d999}.wx-milestone p{font-size:12px;color:#c9d6e5;margin:4px 0 0}
+.wx-guide-tip{border-top:1px dashed #506079;padding-top:10px;font-size:12px;color:#e2c693;margin-bottom:0}
+.wx-growth{background:#283545;padding:8px 9px;border-radius:6px;font-size:12px;margin-top:8px;display:flex;justify-content:space-between;gap:10px}
+.wx-growth strong{color:#f3d78e}
+.wx-tacticbar select{min-height:44px}.wx-tacticbar label{font-weight:700}
+.wx-pitch{min-height:292px;border:3px solid #628d86;background:repeating-linear-gradient(0deg,#11604d 0,#11604d 41px,#0d5846 41px,#0d5846 82px)}
+.wx-pitch:before{border:0;height:2px;background:#d0f8e877}
+.wx-line{gap:6px}
+.wx-token{background:#0b2633ee;border:1px solid var(--f);box-shadow:0 3px 10px #0009;border-bottom:3px solid var(--f);width:min(44%,145px);min-height:51px;padding:5px}
+.wx-token b{font-size:11px}.wx-token small{font-size:9px}
+.wx-token-icon{display:block;position:absolute;margin:-13px 0 0 -9px;background:#101e2a;border-radius:50%;height:20px;width:20px;font-size:13px;line-height:19px;color:var(--f);border:1px solid var(--f)}
+.wx-slot{background:#07382eaa}
+.wx-roster{gap:10px}
+.wx-card,.wx-buy{position:relative;overflow:hidden;transition:transform .15s,border-color .15s;background:linear-gradient(160deg,#273c53,#152439 70%);border:1px solid #4c6179;border-top:3px solid var(--f)}
+.wx-card:hover,.wx-buy:hover{border-color:var(--f)}
+.wx-card{padding:10px}.wx-card-head,.wx-buy-meta{font-size:11px;color:#dfdfe9;display:flex;justify-content:space-between;align-items:center;gap:5px}
+.wx-card strong,.wx-buy b.wx-buy-name{font-size:14px;text-align:center;line-height:1.35;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-card small.wx-card-affinity{display:grid;gap:2px;text-align:center;margin-top:6px;color:var(--f);font-size:12px}
+.wx-card-affinity em{font-size:10px;font-style:normal;color:#c7d0df}
+.wx-levelline{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#e6cf97;margin-top:7px;border-top:1px solid #495d70;padding-top:5px}
+.wx-levelline span{letter-spacing:1px;color:#ffd78a;font-size:12px;white-space:nowrap}
+.wx-art{height:105px;display:grid;place-items:center;position:relative;overflow:hidden;margin:6px 0 8px;border-radius:8px;background:radial-gradient(ellipse at 50% 0%,#4b6b8b,transparent 68%),linear-gradient(155deg,#34536b,#0c1e30)}
+.wx-art:before{content:"";position:absolute;inset:16px 16% -26px;opacity:.4;border:1px solid #b2cbde50;border-radius:50%}
+.wx-art:after{content:"";position:absolute;width:130px;height:26px;border-radius:50%;bottom:-19px;background:#030d16aa;filter:blur(3px)}
+.wx-art-G{color:#f6aa69}.wx-art-D{color:#6baff4}.wx-art-M{color:#c9a3ff}.wx-art-F{color:#ef867e}
+.wx-jersey{height:87px;width:82px;filter:drop-shadow(0 5px 6px #0009);z-index:1}
+.wx-avatar-label{position:absolute;top:5px;right:6px;font-size:9px;color:#fff;opacity:.8}
+.wx-card .wx-art{height:75px}.wx-card .wx-jersey{height:75px}
+.wx-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.wx-card-actions button{background:#283b55;color:#f0f5f9;border:1px solid #657590;min-height:35px;font-size:11px;font-weight:700}
+.wx-card-actions button:last-child{grid-column:1/-1;min-height:29px;opacity:.75}
+.wx-market{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.wx-market-panel{border-color:#746952}
+.wx-market-tip{background:#3a342a;border:1px solid #786748;color:#edddbc;font-size:12px;border-radius:7px;padding:9px;margin-bottom:12px}
+.wx-buy{display:flex;flex-direction:column;padding:10px;border-radius:10px}
+.wx-buy.combo-ready{border-color:#f7d188;box-shadow:inset 0 0 0 1px #ffdb9991,0 0 18px #b5853c33}
+.wx-buy.recommended{border-color:#a98b69}
+.wx-buy-meta{margin:0 0 2px}
+.wx-buy .wx-art{margin:8px 0 5px;height:112px}
+.wx-buy small{text-align:center;font-size:11px;color:var(--f);margin-bottom:3px}
+.wx-buy-benefit{font-size:11px;min-height:35px;display:grid;place-items:center;text-align:center;padding:4px;margin:6px 0;border-radius:6px;background:#172a3f;color:#e7d09d;font-weight:700}
+.wx-buy.combo-ready .wx-buy-benefit{background:#695335;color:#ffe8a8}
+.wx-buy button{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;background:linear-gradient(90deg,#dbb77c,#f4d493);font-size:12px;border-radius:6px;min-height:42px;padding:8px;color:#19263a}
+.wx-buy button b{font-size:12px;color:#182436}
+.wx-actions button{border-color:#59708b}
+.wx-events{gap:10px}
+.wx-events .wx-event-card{min-height:122px;padding:12px;background:linear-gradient(150deg,#2e374b,#212639);border:1px solid #766b8b;border-top:3px solid #d5bc7c;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.wx-event-glyph{font-size:26px;font-weight:900;color:#efd198}
+.wx-events .wx-event-card b{font-size:14px}.wx-events .wx-event-card small{line-height:1.45;color:#bdcce3}
+.wx-events .wx-event-card em{font-style:normal;color:#cebb94;font-size:10px;margin-top:auto}
+.wx-battle{min-height:63px;letter-spacing:.06em;font-size:17px;box-shadow:0 8px 20px #0005}
+.wx-standing{display:grid;grid-template-columns:24px minmax(0,1fr) 58px 76px;align-items:center;gap:8px;padding:10px 7px;border-bottom:1px solid #34465c}
+.wx-standing.on{background:#293b50}.wx-standing b{color:#f4ca88;font-size:12px}
+.wx-rank-pos{font-size:15px;color:#e3c58c;font-weight:900}
+.wx-rank-name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-rank-name i{font-size:10px;font-style:normal;color:#facd87}
+.wx-scout{background:#16273a;border-color:#536982}
+.wx-recap-score{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;border:1px solid #706342;background:#283042;border-radius:8px;padding:13px 7px;font-size:12px}
+.wx-recap-score b{font-size:27px;color:#f8da9e;font-variant-numeric:tabular-nums}
+.wx-recap-tip{font-size:12px;color:#d1d9e4;line-height:1.6}
+.wx-bonus-list{display:flex;gap:6px;flex-wrap:wrap}
+.wx-bonus-list span{background:#314638;border:1px solid #667452;color:#e8daa3;font-size:11px;border-radius:6px;padding:5px}
+.wx-results>div{align-items:center}.wx-results>div span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.wx-results>div span:last-child{text-align:right}
+.wx-guide-tip,.wx-milestone p{overflow-wrap:anywhere}
+@media(hover:hover) and (pointer:fine){.wx-buy:hover{transform:translateY(-3px)}}
+@media(max-width:900px){.wx-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wx-coach-plan{grid-template-columns:1fr}.wx-main-grid{grid-template-columns:1fr}}
+@media(max-width:440px){.wx-summary div:last-child{grid-column:auto}.wx-summary strong{font-size:14px}.wx-buy .wx-art{height:94px}.wx-art{height:85px}.wx-jersey{height:78px}.wx-roster{gap:7px}.wx-faction-tile{grid-template-columns:27px minmax(0,1fr) 27px;gap:5px;padding:9px 5px 11px}.wx-faction-icon{font-size:17px}.wx-faction-copy b{font-size:11px}.wx-faction-copy small{font-size:9px}.wx-faction-count{font-size:12px}.wx-header{min-height:62px}.wx-topline h1{font-size:23px}.wx-reset{font-size:12px;min-height:40px;padding:6px 9px}.wx-section-head h2{font-size:15px}.wx-event-card{min-height:118px}.wx-standing{grid-template-columns:18px minmax(0,1fr) 45px 64px;gap:5px}.wx-standing small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.wx-round-progress div,.wx-card,.wx-buy{transition:none}}
+
+/* V2 game loop: ability keywords, milestone talents, mobile shortcuts */
+.wx-quicknav{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px}
+.wx-quicknav a{font-size:12px;color:#ebd7a9;text-decoration:none;background:#263447;padding:8px 13px;border:1px solid #52627b;border-radius:8px}
+.wx-quicknav a:hover{background:#34465b}
+.wx-card-skill{min-height:57px;margin:9px 0 7px;padding:7px;border:1px solid #475a75;border-radius:6px;background:#17263c;display:grid;align-content:start;gap:3px}
+.wx-card-skill b{font-size:11px;color:#ffe3a0}
+.wx-card-skill small{font-size:10px;color:#bac9dd;line-height:1.3}
+.wx-buy-skill{min-height:58px;display:grid;align-content:start;gap:3px;margin:1px 0 9px;border-top:1px solid #4a5c73;padding:8px 2px 2px}
+.wx-buy-skill b{font-size:12px;color:#e8d3a6}
+.wx-buy-skill small{font-size:11px;color:#c6d5e7;line-height:1.5;margin:0;text-align:left}
+.wx-talent-panel{border-color:#b49157;background:linear-gradient(135deg,#3e3b38,#1e2937)}
+.wx-talents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wx-talent-card{background:#222f43;border:1px solid #a99065;border-top:3px solid #fad58c;border-radius:8px;padding:10px 8px;min-height:150px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;color:#f5f0e2}
+.wx-talent-card:hover{background:#3c4051;border-color:#ffd790}
+.wx-talent-card>span{font-size:25px;color:#ffdd9a}.wx-talent-card b{font-size:13px}
+.wx-talent-card small{font-size:11px;color:#cbd6e0;line-height:1.5}
+.wx-talent-card em{font-size:10px;color:#e3c890;font-style:normal;margin-top:auto}
+.wx-current-talents{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid #5d6c7e;border-radius:8px;padding:10px 11px;background:#1a283b}
+.wx-current-talents b{font-size:11px;color:#decaa8;margin-right:4px}
+.wx-current-talents span{font-size:11px;color:#ebdba8;background:#394356;border-radius:5px;padding:4px 8px}
+@media(max-width:900px){
+ .wx-main-grid{display:flex;flex-direction:column;gap:13px}
+ .wx-main-grid>.wx-column{display:contents}
+ .wx-main-grid>.wx-column:nth-child(1)>.wx-panel:nth-child(1){order:1}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-market-panel{order:2}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-talent-panel{order:3}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-current-talents{order:3}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-panel:has(#wx-events){order:4}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-battle{order:5}
+ .wx-main-grid>.wx-column:nth-child(1)>.wx-panel:nth-child(2){order:6}
+ .wx-main-grid>.wx-column:nth-child(1)>.wx-panel:nth-child(3){order:7}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-panel:has(#wx-scoreboard){order:8}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-panel:has(#wx-battle-report){order:9}
+ .wx-main-grid>.wx-column:nth-child(2)>.wx-panel:has(#wx-history){order:10}
+ .wx-main-grid>.wx-panel{width:100%;min-width:0}
+}
+@media(max-width:440px){.wx-card-skill{min-height:68px}.wx-buy-skill{min-height:62px}.wx-quicknav{gap:6px}.wx-quicknav a{padding:6px 8px;font-size:11px}.wx-talent-card{padding:9px 4px;min-height:160px}.wx-talent-card b{font-size:12px}.wx-talent-card small{font-size:10px}}
