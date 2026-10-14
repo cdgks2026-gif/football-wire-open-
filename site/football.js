@@ -518,9 +518,11 @@ function lineupStrength(id){
   const spot=slots[i],p=xi[i];
   if(!p)continue;
   const profile=positionEngine.info(p),fit=clamp(positionEngine.fit(p,spot.role),0,100);
-  // No fake precision: if profile is unverified, neutral fit multiplier.
-  const matchFactor=profile.verified?clamp(.73+.27*fit/100,.73,1):1;
-  if(profile.verified&&fit<58)misplaced++;
+  // Unknown detailed profiles are neutral when their broad G/D/M/F class fits.
+  // But a known defender forced into AM is still a genuine category mismatch.
+  const matchFactor=profile.verified?clamp(.73+.27*fit/100,.73,1):
+    fit<40?.82:1;
+  if((profile.verified&&fit<58)||(!profile.verified&&fit<40))misplaced++;
   const effective=(p.ability*.7+p.form*.15+p.fitness*.15)*matchFactor;
   // Holding midfielder supports defense; attacking midfield supports attack.
   const defensive=["GK","CB","LB","RB","DM"].includes(spot.role);
