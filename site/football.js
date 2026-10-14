@@ -502,10 +502,36 @@ function goalDraw(lambda){
   while(product>limit&&k<7){product*=Math.random();k++;}
   return clamp(k-1,0,6);
 }
+function lineupStrength(id){
+ const formation=id===state.clubId?state.tactics.formation:"4-3-3";
+ const slots=positionEngine.slots(formation);
+ const xi=id===state.clubId?userXI():bestXI(id,formation);
+ let atk=0,def=0,atkWeight=0,defWeight=0,fitSum=0,valid=0,misplaced=0;
+ for(let i=0;i<slots.length;i++){
+  const spot=slots[i],p=xi[i];
+  if(!p)continue;
+  const profile=positionEngine.info(p),fit=clamp(positionEngine.fit(p,spot.role),0,100);
+  // No fake precision: if profile is unverified, neutral fit multiplier.
+  const matchFactor=profile.verified?clamp(.73+.27*fit/100,.73,1):1;
+  if(profile.verified&&fit<58)misplaced++;
+  const effective=(p.ability*.7+p.form*.15+p.fitness*.15)*matchFactor;
+  // Holding midfielder supports defense; attacking midfield supports attack.
+  const defensive=["GK","CB","LB","RB","DM"].includes(spot.role);
+  const aWeight=defensive?(spot.role==="DM"?.25:0):1;
+  const dWeight=defensive?1:(spot.role==="CM"?.22:.04);
+  atk+=effective*aWeight;atkWeight+=aWeight;
+  def+=effective*dWeight;defWeight+=dWeight;
+  if(profile.verified){fitSum+=fit;valid++;}
+ }
+ const mood=state.moods[id]*.06;
+ return {attack:atk/Math.max(1,atkWeight)+mood,
+  defense:def/Math.max(1,defWeight)+mood,
+  fit:valid?Math.round(fitSum/valid):null,
+  verified:valid,misplaced};
+}
 function strength(id,kind){
-  const xi=id===state.clubId?userXI():bestXI(id,"4-3-3");
-  const subset=kind==="attack"?xi.filter(p=>p.pos==="F"||p.pos==="M"):xi.filter(p=>p.pos==="D"||p.pos==="G");
-  return subset.reduce((sum,p)=>sum+p.ability*.7+p.form*.15+p.fitness*.15,0)/Math.max(1,subset.length)+state.moods[id]*.06;
+ const scored=lineupStrength(id);
+ return kind==="attack"?scored.attack:scored.defense;
 }
 function styleFactor(id){if(id!==state.clubId)return {atk:0,def:0};const s=state.tactics.style;return s==="press"?{atk:7,def:-3}:s==="control"?{atk:4,def:2}:s==="counter"?{atk:1,def:4}:{atk:0,def:0};}
 function resultFor(game){
@@ -530,7 +556,12 @@ function resultFor(game){
    }
   }
   events.sort((a,b)=>a.minute-b.minute);
-  return {home:game.home,away:game.away,hg,ag,events,round:state.round+1};
+  const hFit=lineupStrength(game.home),aFit=lineupStrength(game.away);
+  return {home:game.home,away:game.away,hg,ag,events,round:state.round+1,
+    simulation:{homeRoleFit:hFit.fit,awayRoleFit:aFit.fit,
+      homeOutOfPosition:hFit.misplaced,awayOutOfPosition:aFit.misplaced,
+      homeExpectedGoals:Number(homeLambda.toFixed(2)),awayExpectedGoals:Number(awayLambda.toFixed(2)),
+      policy:state.tactics.style}};
 }
 function applyResult(result){
   for(const evt of result.events||[]){
@@ -838,8 +869,22 @@ function renderDashboard(){
     state.lastEvents.map(e=>'<div class="goal-event"><span>'+e.minute+"' "+esc(clubInfo[e.team].name)+'</span><b>'+esc(e.name)+'</b>'+
       (e.helperName?'<small>助攻 '+esc(e.helperName)+'</small>':'')+'</div>').join("")
     :'<p class="fine">模拟一轮后，将显示该场比赛的射手和进球时间。</p>';
+  const lastGame=state.results.slice().reverse().find(x=>x.home===state.clubId||x.away===state.clubId);
+  if(lastGame?.simulation){
+    const mine=lastGame.home===state.clubId?"home":"away";
+    const positionFit=mine==="home"?lastGame.simulation.homeRoleFit:lastGame.simulation.awayRoleFit;
+    $("matchReport").innerHTML+='<p class="match-model-info">比赛模型：预期进球 '+
+      lastGame.simulation.homeExpectedGoals+' : '+lastGame.simulation.awayExpectedGoals+
+      ' · 本队位置适配 '+(positionFit??"资料不足")+
+      ' · 战术 '+esc(({balance:"攻守均衡",press:"高位逼抢",control:"控球组织",counter:"稳守反击"})[lastGame.simulation.policy]||"均衡")+
+      '（均为模拟参数，非真实比赛技术统计）</p>';
+  }
   const xi=userXI(),avg=Math.round(xi.reduce((s,p)=>s+p.ability,0)/Math.max(1,xi.length)),fit=Math.round(xi.reduce((s,p)=>s+p.fitness,0)/Math.max(1,xi.length));
-  const metrics=[["首发综合能力",avg],["主力体能",fit],["更衣室士气",state.moods[state.clubId]],["队伍完整度",Math.round(clamp(state.squads[state.clubId].length/25*100,0,100))]];
+  const placement=lineupStrength(state.clubId);
+  const metrics=[["首发综合能力",avg],["主力体能",fit],["更衣室士气",state.moods[state.clubId]],
+    ["位置适配",placement.fit===null?"未核实":placement.fit+"/100"],
+    ["明显错位",placement.misplaced],
+    ["队伍完整度",Math.round(clamp(state.squads[state.clubId].length/25*100,0,100))]];
   $("clubMetrics").innerHTML=metrics.map(([key,val])=>'<div class="metric"><div class="metrichead"><span>'+key+'</span><strong>'+val+'</strong></div><progress class="meter" max="100" value="'+clamp(val,0,100)+'"></progress></div>').join("");
   $("miniTable").innerHTML=tableHTML(true);
   $("newsFeed").innerHTML=state.news.slice(0,6).map(n=>'<div class="feeditem"><small>S'+n.season+' / R'+n.round+'</small><span>'+esc(n.text)+'</span></div>').join("");
