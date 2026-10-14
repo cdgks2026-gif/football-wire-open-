@@ -37,7 +37,16 @@ async function fetchCSV(file,time=16000){
  return gunzipSync(bytes).toString("utf8");
 }
 function mapFields(columns){return Object.fromEntries(columns.map((key,index)=>[key,index]));}
-const data={},wantedIds=new Set(),byId=new Map();
+const data={},wantedIds=new Set(),byId=new Map(),dobSamples=[];
+function normalizeDob(raw){
+ const value=String(raw||"").trim();
+ if(/^\d{4}-\d{2}-\d{2}/.test(value))return value.slice(0,10);
+ let found=value.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+ if(found)return found[3]+"-"+found[2]+"-"+found[1];
+ found=value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+ if(found)return found[3]+"-"+found[2]+"-"+found[1];
+ return "";
+}
 try{
  const rows=csvRows(await fetchCSV("players.csv.gz"));
  const cols=mapFields(rows.next().value||[]);
@@ -48,8 +57,9 @@ try{
   if(!match)continue;
   const id=Number(row[cols.player_id]);
   if(!Number.isSafeInteger(id))continue;
+  if(dobSamples.length<4)dobSamples.push(String(row[cols.date_of_birth]||"").slice(0,38));
   const record={id,main:row[cols.sub_position]||"",family:row[cols.position]||"",
-    foot:row[cols.foot]||"",dob:row[cols.date_of_birth]||"",
+    foot:row[cols.foot]||"",dob:normalizeDob(row[cols.date_of_birth]),
     source:"历史德转球员资料",asOf:"2026-07-06"};
   for(const name of match){
    if(!candidates.has(name))candidates.set(name,new Map());
@@ -136,6 +146,7 @@ const payload={asOf:"2026-07-06",coverage:Object.keys(data).length,
  birthDates:Object.values(data).filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.dob||"")).length,
  matchPositions:Object.values(data).filter(p=>p.recentPositions?.length).length,players:data};
 writeFileSync(folder+"/site/football-positions.js","/* Transfermarkt historical position snapshots; NOT realtime. */\nwindow.FOOTBALL_POSITION_DATA="+JSON.stringify(payload)+";\n");
+console.log("[POS] source DOB formats (sample):",JSON.stringify(dobSamples));
 console.log("[POS] mapped",payload.coverage,"of",requested.size,
  "player names; sourced birth dates",payload.birthDates,
  "; historical match sample",payload.matchPositions);
