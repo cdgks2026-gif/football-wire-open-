@@ -175,3 +175,15 @@
  .pitchplayer .pitch-fit{font-size:8px}
  .center-circle{width:80px;height:80px}
 }
+
+/* Opponent tactical scouting, not official team sheets. */
+.opponent-scout{padding:17px 20px;margin:18px 0}
+.scout-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:12px 0}
+.scout-top strong{font-size:16px;color:#e4f6e4}
+.scout-top span{font-size:12px;color:#b8d5cb}
+.scout-lines{display:flex;flex-direction:column;gap:9px;max-width:800px;margin:auto;padding:12px 6px;background:#113d34;border-radius:12px}
+.scout-line{display:flex;gap:7px;justify-content:space-evenly;align-items:center;min-height:40px;text-align:center}
+.scout-line span{flex:1;min-width:0;max-width:160px;padding:8px 4px;border-radius:8px;background:#1c4c3f;border:1px solid #39785e;font-size:11px;line-height:1.4;color:#dcf6d7;overflow-wrap:anywhere}
+.scout-line small{display:block;color:#fac289}
+.opponent-scout>small{display:block;margin-top:10px;font-size:11px;color:#8caaa6}
+@media(max-width:550px){.opponent-scout{padding:13px}.scout-line{gap:3px}.scout-line span{font-size:9px;padding:6px 2px}}
