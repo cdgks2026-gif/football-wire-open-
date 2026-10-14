@@ -134,3 +134,44 @@
 .market-sync button{flex-shrink:0;font-size:12px}
 .market-sync button:disabled{opacity:.55;cursor:wait}
 @media(max-width:570px){.market-sync{flex-direction:column;align-items:stretch}.market-sync button{width:100%}}
+
+/* Position-aware pitch: one independent line per tactical unit. */
+.pitch{display:flex;flex-direction:column;justify-content:space-between;gap:2px;min-height:615px;max-width:720px;margin-inline:auto;padding:18px 12px 16px;border-width:3px;overflow:hidden;isolation:isolate}
+.pitchrow{display:flex;flex:1;align-items:center;justify-content:space-evenly;gap:4px;min-width:0;min-height:91px}
+.pitchplayer{font:inherit;appearance:none;background:transparent;border:1px solid transparent;color:#eaf5e8;
+ cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;
+ flex-direction:column;min-width:0;max-width:142px;flex:0 1 calc(98%/var(--spots));padding:5px 3px;
+ border-radius:12px;z-index:1;transition:background .16s,border-color .16s}
+.pitchplayer .shirt{width:42px;height:43px;flex:none;display:grid;place-items:center;
+ border-radius:10px;background:linear-gradient(145deg,#e8ffb3,#b1ea7e);
+ color:#142f24;font-weight:800;font-size:14px;box-shadow:0 2px 5px #08251c55}
+.pitchplayer .pitch-role{background:#0e3730dc;border-radius:8px;padding:3px 7px;color:#e2fadf;
+ font-size:11px;line-height:1.2;white-space:nowrap;margin-bottom:6px}
+.pitchplayer .pitch-name{display:block;max-width:100%;width:100%;border-radius:6px;background:#0c342cdd;
+ padding:4px 2px;color:white;font-size:11px;font-weight:700;line-height:1.2;
+ text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:normal;overflow:visible;min-height:29px}
+.pitchplayer .pitch-fit{display:block;margin-top:3px;font-size:9px;line-height:1.4;color:#c1eac7}
+.pitchplayer .pitch-warning{color:#ffe2b1}
+.pitchplayer.misfit{background:#90481855;border-color:#e8ad73aa}
+.pitchplayer.active,.pitchplayer:focus-visible{outline:2px solid #f3ffd1;outline-offset:0;
+ background:#4e6f35c4;border-color:#c4f68c}
+.pitchplayer:hover{background:#75a77450}
+.pitch-legend{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:7px;font-size:11px;color:#a7c4b5}
+.out-of-position-mark{display:inline-block;padding:3px 5px;color:#ffc891;background:#814b2a;border-radius:4px}
+.position-summary{background:#152d29;border:1px solid #35594b;border-radius:11px;padding:12px 15px;
+ margin:12px 0;color:#d2f5c6;font-size:12px;line-height:1.5}
+.position-summary p{margin:6px 0 0}
+.rosterline strong{font-size:12px}
+.rosterline small{color:#a1b8b2;font-size:10px;line-height:1.4}
+.secondary-positions,.position-unverified{display:block;color:#9bbdb8;font-size:10px;margin-top:4px}
+.position-unverified{color:#ffd0a4}
+@media(max-width:550px){
+ .pitch{min-height:560px;padding:12px 6px 10px}
+ .pitchrow{min-height:80px;gap:0}
+ .pitchplayer{padding:4px 1px;flex-basis:calc(100%/var(--spots))}
+ .pitchplayer .shirt{width:31px;height:33px;border-radius:7px;font-size:12px}
+ .pitchplayer .pitch-role{font-size:10px;padding:2px 4px;margin-bottom:4px}
+ .pitchplayer .pitch-name{font-size:9px;min-height:28px;padding:4px 1px}
+ .pitchplayer .pitch-fit{font-size:8px}
+ .center-circle{width:80px;height:80px}
+}
