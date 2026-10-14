@@ -773,7 +773,7 @@ function render(){
   $("statRank").textContent="第 "+rank()+" 名";
   root.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===currentView));
   root.querySelectorAll(".view").forEach(v=>v.hidden=v.id!=="view-"+currentView);
-  renderDashboard();renderSquad();renderTactics();renderMarket();renderLeague();renderOffice();
+  renderDashboard();renderSquad();renderTactics();renderMarket();renderLeague();renderOffice();renderOpponentScout();
 }
 function renderDashboard(){
   const game=nextFixture();
@@ -807,6 +807,32 @@ function renderDashboard(){
   $("clubMetrics").innerHTML=metrics.map(([key,val])=>'<div class="metric"><div class="metrichead"><span>'+key+'</span><strong>'+val+'</strong></div><progress class="meter" max="100" value="'+clamp(val,0,100)+'"></progress></div>').join("");
   $("miniTable").innerHTML=tableHTML(true);
   $("newsFeed").innerHTML=state.news.slice(0,6).map(n=>'<div class="feeditem"><small>S'+n.season+' / R'+n.round+'</small><span>'+esc(n.text)+'</span></div>').join("");
+}
+function renderOpponentScout(){
+ const upcoming=nextFixture();
+ if(!upcoming){
+  $("opponentScout").innerHTML=state.round>=leagueRounds()?
+    '<p class="fine">赛季已结束。新赛季开启后将显示下一轮的对手阵型。</p>':
+    '<p class="fine">你的球队本轮轮空。</p>';
+  return;
+ }
+ const opponent=upcoming.home===state.clubId?upcoming.away:upcoming.home;
+ const formation="4-3-3",slots=positionEngine.slots(formation);
+ const XI=bestXI(opponent,formation);
+ const squad=state.squads[opponent];
+ const average=Math.round(XI.reduce((acc,p)=>acc+p.ability,0)/Math.max(1,XI.length));
+ $("opponentScout").innerHTML='<div class="scout-top"><strong>'+
+   esc(clubInfo[opponent].name)+'</strong><span>第'+(state.round+1)+
+   '轮 · 模拟阵型 '+formation+' · 首发均值 '+average+'</span></div>'+
+   '<div class="scout-lines">'+[...new Set(slots.map(x=>x.row))].map(row=>{
+     const output=slots.filter(x=>x.row===row).map(slot=>{
+       const player=XI[slot.index],suit=player?positionEngine.fit(player,slot.role):0;
+       return '<span>'+esc(slot.display)+' · '+esc(player?.name||"空位")+
+         (suit<58?'<small>客串</small>':'')+'</span>';
+     }).join("");
+     return '<div class="scout-line">'+output+'</div>';
+   }).join("")+'</div>'+
+   '<small>阵容人数 '+squad.length+' · 仅供赛前制定游戏战术参考。</small>';
 }
 function renderSquad(){
   const squad=[...state.squads[state.clubId]].sort((a,b)=>"GDMF".indexOf(a.pos)-"GDMF".indexOf(b.pos)||b.ability-a.ability);
