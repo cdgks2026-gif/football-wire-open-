@@ -43,6 +43,9 @@ function money(value){
 const badge = id => '<span class="clublogo club-'+id+'">'+clubInfo[id].short+'</span>';
 const drawName = i => firstNames[(i*7+3)%firstNames.length]+"·"+lastNames[(i*11+5)%lastNames.length];
 const featuredRatings={
+"Senne Lammens":83,"Karl Darlow":70,"Tom Heaton":68,
+"Joshua Zirkzee":79,"Patrick Dorgu":80,"Amad Diallo":83,
+"Diogo Dalot":82,"Matthijs de Ligt":85,"Leny Yoro":82,
 "Erling Haaland":95,"Gianluigi Donnarumma":92,"Phil Foden":90,"Bukayo Saka":92,
 "Declan Rice":90,"Bruno Fernandes":89,"Alexander Isak":92,"Florian Wirtz":90,
 "Virgil van Dijk":91,"Cole Palmer":90,"Joao Pedro":86,"Moises Caicedo":88,
@@ -848,10 +851,16 @@ function renderTactics(){
  const choose=Number.isInteger(selectedPitchSlot)?slots[selectedPitchSlot]:null;
  const playerAt=choose?lineup[selectedPitchSlot]:null;
  const positional=choose&&playerAt?positionEngine.info(playerAt):null;
+ const historical=positional?.historical?.length?
+  '<p class="fine">历史出场位置（2024—2026抽样）：'+
+  positional.historical.slice(0,4).map(([role,count])=>
+   esc(positionEngine.roles[role]||role)+' '+Number(count)+'场').join(" / ")+
+   '</p>':'<p class="fine">'+(positional?.verified?"有主位置档案，逐场位置统计暂无完整匹配。":
+    "缺少可信的细分位置与逐场数据，正在使用粗略分类。")+'</p>';
  $("positionSummary").innerHTML=choose?
    '<strong>已选 '+esc(choose.display)+'</strong> · '+esc(playerAt?.name||"")+
    ' · 适配度 '+(playerAt?positionEngine.fit(playerAt,choose.role):0)+
-   '<p class="fine">从左侧球员名单选择替补，将其换到'+esc(choose.display)+'；客串位置会标记警告。</p>':
+   '<p class="fine">从左侧球员名单选择替补，将其换到'+esc(choose.display)+'；客串位置会标记警告。</p>'+historical:
    '<strong>按真实位置排列</strong><p class="fine">点击球场上的位置，再从替补名单选择球员；高适配度优先，低适配度会提示客串。</p>';
  $("lineupRoster").innerHTML='<div class="panelheading"><span>阵容轮换与位置</span>'+
   '<span class="tag">'+(choose?"目标 "+esc(choose.display):"先选择球场位置")+'</span></div>'+
