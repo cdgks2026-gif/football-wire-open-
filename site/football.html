@@ -11,6 +11,7 @@
   <script src="/football-world.js" defer></script>
   <script src="/football-clubs.js" defer></script>
   <script src="/football-values.js" defer></script>
+  <script src="/football-positions.js" defer></script>
   <script src="/football.js" defer></script>
 </head>
 <body>
@@ -80,9 +81,10 @@
             <label for="trainingSelect">本轮训练重点</label><select id="trainingSelect"><option value="fitness">体能恢复</option><option value="attack">进攻训练</option><option value="defense">防守训练</option></select>
             <button type="button" id="autoLineup" class="primary">智能推荐最强首发</button>
             <p class="fine">变更后自动保存。智能首发根据阵型、能力、状态和体能选择 11 人。</p>
-            <div id="lineupRoster" class="lineup-roster"></div>
+            <div id="lineupRoster" class="lineup-roster"></div><p class="fine">主要位置以德转历史资料为基础，适用的位置会显示在名单中；缺少数据的选手将标记为「粗略分类」。</p>
           </div>
-          <div class="panel pitchPanel"><div class="panelheading"><span>预计首发 · 11 人</span><span id="formationBadge" class="tag"></span></div><div id="pitch" class="pitch"></div><p class="fine">点球员名单中的“替换”可调整首发，系统会优先替换同位置评分最低的球员。</p></div>
+          <div class="panel pitchPanel"><div class="panelheading"><span>预计首发 · 11 人</span><span id="formationBadge" class="tag"></span></div><div id="pitch" class="pitch" aria-label="足球战术站位图"></div><div id="positionSummary" class="position-summary" aria-live="polite"></div><div class="pitch-legend"><span>主位置合适</span><span class="out-of-position-mark">▮</span><span>客串／位置不符</span></div>
+<p class="fine">4-2-3-1 按单前锋／三前腰／双后腰／四后卫四条外场线排布，门将独立。点击场上球员后从替补名单换人；也可按位置自动选出最适合的11人。</p></div>
         </div>
       </section>
 
