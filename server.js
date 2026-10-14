@@ -43,7 +43,8 @@ function marketPayload(){
   checkedAt:lastCheck,changedCount,checkIntervalHours:24,lastError,
   note:"Transfermarkt历史快照非实时API；无核实数据的球员保持待核实"});
 }
-const files={'/':'football.html','/index.html':'football.html','/game':'football.html','/game/':'football.html',
+const files={'/':'wanxiang.html','/index.html':'wanxiang.html','/game':'wanxiang.html','/game/':'wanxiang.html',
+ '/classic':'football.html','/classic/':'football.html','/wanxiang.html':'wanxiang.html','/wanxiang.css':'wanxiang.css','/wanxiang.js':'wanxiang.js',
  '/football.html':'football.html','/football.css':'football.css','/football.js':'football.js',
  '/football-data.js':'football-data.js','/football-world.js':'football-world.js','/football-clubs.js':'football-clubs.js','/football-values.js':'football-values.js','/football-positions.js':'football-positions.js','/football-lineup.js':'football-lineup.js','/football-calendar.js':'football-calendar.js'};
 http.createServer((req,res)=>{
