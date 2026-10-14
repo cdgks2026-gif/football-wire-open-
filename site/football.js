@@ -811,7 +811,11 @@ function renderSquad(){
   $("scorerList").innerHTML=[...squad].sort((a,b)=>(b.goals||0)-(a.goals||0)||b.ability-a.ability)
   .slice(0,7).map((p,i)=>'<div class="office-row"><span>'+(i+1)+'. '+esc(p.name)+
   (p.synthetic?' <small>模拟青训</small>':'')+'</span><strong>'+(p.goals||0)+' 球 · '+(p.assists||0)+' 助</strong></div>').join("");
-  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+'</td><td>'+byPos[p.pos]+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
+  $("squadTable").innerHTML='<table class="data-table"><thead><tr><th>姓名</th><th>主位置与可兼位置</th><th>模拟年龄</th><th>能力</th><th>潜力</th><th>状态</th><th>体能</th><th>进球</th><th>助攻</th><th>德转参考身价 / 数据日期</th><th>操作</th></tr></thead><tbody>'+squad.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong>'+(p.injury>0?'<small class="injury">伤停 '+p.injury+'轮</small>':'')+
+'</td><td>'+(()=>{const roles=positionEngine.info(p);
+return '<strong>'+esc(positionEngine.roles[roles.main]||roles.main)+'</strong>'+
+ (roles.alternates.length?'<small class="secondary-positions">兼 '+esc(roles.alternates.slice(0,3).map(x=>positionEngine.roles[x]||x).join(' / '))+'</small>':'')+
+ (!roles.verified?'<small class="position-unverified">未核实</small>':'');})()+'</td><td>'+p.age+'</td><td class="high">'+p.ability+'</td><td>'+p.potential+'</td><td>'+p.form+'</td><td>'+p.fitness+'</td><td>'+(p.goals||0)+'</td><td>'+(p.assists||0)+'</td><td>'+marketValueMarkup(p)+'</td><td><button type="button" class="action" data-sell="'+p.id+'">出售</button></td></tr>').join("")+'</tbody></table>';
 }
 function renderTactics(){
  $("formationSelect").value=state.tactics.formation;
@@ -1003,6 +1007,15 @@ root.addEventListener("click",ev=>{
   if(data.offer!==undefined){openBid(Number(data.offer));return;}
   if(data.sell!==undefined){sell(Number(data.sell));return;}
   if(data.swap!==undefined){swap(Number(data.swap));return;}
+  if(data.pitchSlot!==undefined){
+    const selected=Number(data.pitchSlot);
+    const spots=positionEngine.slots(state.tactics.formation);
+    if(Number.isInteger(selected)&&spots[selected]){
+      selectedPitchSlot=selectedPitchSlot===selected?null:selected;
+      renderTactics();
+    }
+    return;
+  }
   if(data.upgrade!==undefined){upgradeFacility(data.upgrade);return;}
   if(data.promote!==undefined){promoteYouth();return;}
 });
@@ -1071,7 +1084,7 @@ $("resetBtn").addEventListener("click",()=>{if(!confirm("确定重新开档？�
 [["formationSelect","formation"],["styleSelect","style"],["trainingSelect","training"]].forEach(([id,key])=>{
   $(id).addEventListener("change",ev=>{
     state.tactics[key]=ev.target.value;
-    if(key==="formation")state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);
+    if(key==="formation"){selectedPitchSlot=null;state.lineup=bestXI(state.clubId,state.tactics.formation).map(p=>p.id);}
     save();render();show("战术设置已更新。");
   });
 });
